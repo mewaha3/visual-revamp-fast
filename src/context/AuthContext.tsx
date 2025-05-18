@@ -21,7 +21,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string) {
     try {
       // ดึงข้อมูลผู้ใช้จาก Google Sheet
-      const response = await fetch("/api/users");
+      const response = await fetch("http://localhost:4000/api/users");
       if (!response.ok) {
         console.error("Failed to fetch users:", response.statusText);
         return false;
@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Users data:", data);
       
       // ตรวจสอบรูปแบบข้อมูลที่ได้รับ
-      if (!Array.isArray(data.users)) {
+      if (!data.users || !Array.isArray(data.users)) {
         console.error("Invalid users data format:", data);
         return false;
       }
@@ -41,6 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (user) => user.email === email && user.password === password
       );
 
+      console.log("Match found:", match ? "Yes" : "No");
+      
       if (match) {
         setUserEmail(email);
         localStorage.setItem("fastlabor_user", email);

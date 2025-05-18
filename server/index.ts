@@ -6,7 +6,11 @@ import { addRowToSheet1 } from '../sheets.mjs';  // ← note .mjs
 import usersRouter from './api/users.js'; // นำเข้า router สำหรับผู้ใช้
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: '*', // อนุญาตการเข้าถึงจากทุกโดเมน
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // เพิ่ม endpoint สำหรับดึงข้อมูลผู้ใช้

@@ -32,17 +32,21 @@ router.get('/', async (req, res) => {
 
     // แปลงข้อมูลเป็นรูปแบบที่เหมาะสม
     const rows = response.data.values || [];
+    console.log("Retrieved rows from sheet:", rows);
     
     // สมมติว่าข้อมูลในชีต มีการจัดเรียงดังนี้: email (คอลัมน์ 0), password (คอลัมน์ 1)
-    const users = rows.slice(1).map(row => ({
-      email: row[0],
-      password: row[1]
+    // Skip header row if it exists
+    const dataRows = rows.length > 0 ? rows.slice(1) : [];
+    const users = dataRows.map(row => ({
+      email: row[0] || '',
+      password: row[1] || ''
     }));
 
+    console.log("Formatted users:", users);
     res.status(200).json({ users });
   } catch (error) {
     console.error('Error fetching users from Google Sheets:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    res.status(500).json({ error: 'Failed to fetch users', message: error.message });
   }
 });
 
