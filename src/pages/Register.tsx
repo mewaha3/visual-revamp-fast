@@ -73,11 +73,6 @@ const Register = () => {
       <main className="flex-grow py-8 md:py-16">
         <div className="container max-w-3xl">
           <div className="flex items-center justify-center mb-8">
-            <img
-              src="/lovable-uploads/6b8700b7-44f3-4c99-a721-287636ceb933.png"
-              alt="FastLabor Logo"
-              className="w-16 h-16 mr-4"
-            />
             <h1 className="text-2xl md:text-3xl font-bold">สมัครสมาชิกใหม่</h1>
           </div>
           

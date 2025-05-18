@@ -47,11 +47,7 @@ const Login = () => {
         <div className="container max-w-md">
           <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-center mb-6">
-              <img
-                src="/lovable-uploads/365674fc-1bea-4770-b4cb-f2f99ec0e841.png"
-                alt="FastLabor Logo"
-                className="h-16 w-auto"
-              />
+              
             </div>
             
             <h1 className="text-2xl font-bold text-center mb-6">เข้าสู่ระบบ</h1>

@@ -18,7 +18,7 @@ const UploadDocuments = () => {
   const navigate = useNavigate();
   
   const [documents, setDocuments] = useState<DocumentType[]>([
-    { id: "certificate", name: "หนังสือรับรอง (Certificate)", file: null, status: "idle" },
+    { id: "ID card", name: "บัตรประชาชน", file: null, status: "idle" },
     { id: "passport", name: "หนังสือเดินทาง (Passport)", file: null, status: "idle" },
     { id: "visa", name: "หนังสือวีซ่า (Visa)", file: null, status: "idle" },
     { id: "workPermit", name: "หนังสืออนุญาตทำงาน (Work Permit)", file: null, status: "idle" },
