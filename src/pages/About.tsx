@@ -33,9 +33,12 @@ const About = () => {
           <h2 className="text-2xl font-semibold mb-6">ทีมของเรา</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {[
-              { name: "สมชาย ใจดี", role: "ผู้ก่อตั้งและประธานเจ้าหน้าที่บริหาร" },
-              { name: "สมหญิง รักงาน", role: "ประธานเจ้าหน้าที่ฝ่ายปฏิบัติการ" },
-              { name: "สมศักดิ์ นวัตกรรม", role: "ประธานเจ้าหน้าที่ฝ่ายเทคโนโลยี" }
+              { name: "Narissara Suwatthee", role: "CEO" },
+              { name: "Intouch Pattananupong", role: "CTO" },
+              { name: "Pratsara Chukkhuchun", role: "CFO" 
+              { name: "Panjai Bennarong", role: "Strategic Partnership/Marketing" }
+              { name: "Pasinee Yingyongdumrongrit", role: "Head of Product" }
+              { name: "Wiritphon Yusamran", role: "Technical Developer" }
             ].map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
