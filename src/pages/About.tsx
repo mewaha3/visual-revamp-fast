@@ -35,9 +35,9 @@ const About = () => {
             {[
               { name: "Narissara Suwatthee", role: "CEO" },
               { name: "Intouch Pattananupong", role: "CTO" },
-              { name: "Pratsara Chukkhuchun", role: "CFO" 
-              { name: "Panjai Bennarong", role: "Strategic Partnership/Marketing" }
-              { name: "Pasinee Yingyongdumrongrit", role: "Head of Product" }
+              { name: "Pratsara Chukkhuchun", role: "CFO" },
+              { name: "Panjai Bennarong", role: "Strategic Partnership/Marketing" },
+              { name: "Pasinee Yingyongdumrongrit", role: "Head of Product" },
               { name: "Wiritphon Yusamran", role: "Technical Developer" }
             ].map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
