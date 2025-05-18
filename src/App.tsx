@@ -10,6 +10,9 @@ import Services from "./pages/Services";
 import FindWorker from "./pages/FindWorker";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import UploadDocuments from "./pages/UploadDocuments";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/find-worker" element={<FindWorker />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/upload-documents" element={<UploadDocuments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

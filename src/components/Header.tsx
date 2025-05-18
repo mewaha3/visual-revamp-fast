@@ -11,7 +11,7 @@ const Header = () => {
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
     { text: "ค้นหาแรงงาน", path: "/find-worker" },
-    { text: "สมัครเป็นแรงงาน", path: "/apply-worker" },
+    { text: "สมัครเป็นแรงงาน", path: "/register" },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
   ];
@@ -42,8 +42,12 @@ const Header = () => {
         </nav>
         
         <div className="hidden md:flex items-center space-x-4">
-          <Button variant="ghost" className="text-fastlabor-700 hover:text-fastlabor-800 hover:bg-fastlabor-50">เข้าสู่ระบบ</Button>
-          <Button className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white">สมัครสมาชิก</Button>
+          <Link to="/login">
+            <Button variant="ghost" className="text-fastlabor-700 hover:text-fastlabor-800 hover:bg-fastlabor-50">เข้าสู่ระบบ</Button>
+          </Link>
+          <Link to="/register">
+            <Button className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white">สมัครสมาชิก</Button>
+          </Link>
         </div>
         
         {/* Mobile menu button */}
@@ -70,8 +74,12 @@ const Header = () => {
               </Link>
             ))}
             <div className="flex flex-col space-y-3 pt-3 border-t border-gray-100">
-              <Button variant="ghost" className="text-fastlabor-700 hover:text-fastlabor-800 justify-center">เข้าสู่ระบบ</Button>
-              <Button className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white justify-center">สมัครสมาชิก</Button>
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className="text-fastlabor-700 hover:text-fastlabor-800 justify-center w-full">เข้าสู่ระบบ</Button>
+              </Link>
+              <Link to="/register" onClick={() => setIsOpen(false)}>
+                <Button className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white justify-center w-full">สมัครสมาชิก</Button>
+              </Link>
             </div>
           </div>
         </div>
