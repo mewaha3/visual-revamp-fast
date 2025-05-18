@@ -1,25 +1,38 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   
+  const navLinks = [
+    { text: "หน้าหลัก", path: "/" },
+    { text: "บริการ", path: "/services" },
+    { text: "ค้นหาแรงงาน", path: "/find-worker" },
+    { text: "เกี่ยวกับเรา", path: "/about" },
+    { text: "ติดต่อ", path: "/contact" },
+  ];
+
   return (
     <header className="py-4 bg-white/90 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="container flex items-center justify-between">
-        <a href="/" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <span className="text-2xl font-bold text-fastlabor-700">Fast<span className="text-fastlabor-500">Labor</span></span>
-        </a>
+        </Link>
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-gray-600 hover:text-fastlabor-600 font-medium">หน้าหลัก</a>
-          <a href="#" className="text-gray-600 hover:text-fastlabor-600 font-medium">บริการ</a>
-          <a href="#" className="text-gray-600 hover:text-fastlabor-600 font-medium">ค้นหาแรงงาน</a>
-          <a href="#" className="text-gray-600 hover:text-fastlabor-600 font-medium">เกี่ยวกับเรา</a>
-          <a href="#" className="text-gray-600 hover:text-fastlabor-600 font-medium">ติดต่อ</a>
+          {navLinks.map((link, index) => (
+            <Link 
+              key={index} 
+              to={link.path} 
+              className="text-gray-600 hover:text-fastlabor-600 font-medium"
+            >
+              {link.text}
+            </Link>
+          ))}
         </nav>
         
         <div className="hidden md:flex items-center space-x-4">
@@ -40,11 +53,16 @@ const Header = () => {
       {isOpen && (
         <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 py-4 shadow-lg animate-fade-in">
           <div className="container flex flex-col space-y-4">
-            <a href="#" className="text-gray-700 hover:text-fastlabor-600 font-medium py-2">หน้าหลัก</a>
-            <a href="#" className="text-gray-700 hover:text-fastlabor-600 font-medium py-2">บริการ</a>
-            <a href="#" className="text-gray-700 hover:text-fastlabor-600 font-medium py-2">ค้นหาแรงงาน</a>
-            <a href="#" className="text-gray-700 hover:text-fastlabor-600 font-medium py-2">เกี่ยวกับเรา</a>
-            <a href="#" className="text-gray-700 hover:text-fastlabor-600 font-medium py-2">ติดต่อ</a>
+            {navLinks.map((link, index) => (
+              <Link 
+                key={index} 
+                to={link.path} 
+                className="text-gray-700 hover:text-fastlabor-600 font-medium py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                {link.text}
+              </Link>
+            ))}
             <div className="flex flex-col space-y-3 pt-3 border-t border-gray-100">
               <Button variant="ghost" className="text-fastlabor-700 hover:text-fastlabor-800 justify-center">เข้าสู่ระบบ</Button>
               <Button className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white justify-center">สมัครสมาชิก</Button>

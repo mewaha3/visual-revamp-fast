@@ -1,23 +1,25 @@
 
+import { Link } from 'react-router-dom';
+
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   const links = {
     company: [
-      { name: "เกี่ยวกับเรา", href: "#" },
+      { name: "เกี่ยวกับเรา", href: "/about" },
       { name: "บล็อก", href: "#" },
       { name: "ข่าวสาร", href: "#" },
       { name: "ร่วมงานกับเรา", href: "#" },
     ],
     services: [
-      { name: "หาแรงงาน", href: "#" },
+      { name: "หาแรงงาน", href: "/find-worker" },
       { name: "สมัครเป็นแรงงาน", href: "#" },
-      { name: "ค่าบริการ", href: "#" },
+      { name: "ค่าบริการ", href: "/services" },
       { name: "วิธีการทำงาน", href: "#" },
     ],
     support: [
       { name: "คำถามที่พบบ่อย", href: "#" },
-      { name: "ติดต่อเรา", href: "#" },
+      { name: "ติดต่อเรา", href: "/contact" },
       { name: "นโยบายความเป็นส่วนตัว", href: "#" },
       { name: "เงื่อนไขการใช้งาน", href: "#" },
     ],
@@ -28,9 +30,9 @@ const Footer = () => {
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           <div className="lg:col-span-2">
-            <a href="/" className="inline-block mb-4">
+            <Link to="/" className="inline-block mb-4">
               <span className="text-2xl font-bold text-fastlabor-700">Fast<span className="text-fastlabor-500">Labor</span></span>
-            </a>
+            </Link>
             <p className="text-gray-600 mb-6 max-w-md">
               แพลตฟอร์มจัดหาแรงงานที่มีคุณภาพ รวดเร็ว และน่าเชื่อถือ เรามุ่งมั่นเชื่อมโยงธุรกิจกับแรงงานที่เหมาะสมที่สุด
             </p>
@@ -55,9 +57,15 @@ const Footer = () => {
             <ul className="space-y-3">
               {links.company.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
-                    {link.name}
-                  </a>
+                  {link.href.startsWith('/') ? (
+                    <Link to={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -68,9 +76,15 @@ const Footer = () => {
             <ul className="space-y-3">
               {links.services.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
-                    {link.name}
-                  </a>
+                  {link.href.startsWith('/') ? (
+                    <Link to={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -81,9 +95,15 @@ const Footer = () => {
             <ul className="space-y-3">
               {links.support.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
-                    {link.name}
-                  </a>
+                  {link.href.startsWith('/') ? (
+                    <Link to={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className="text-gray-600 hover:text-fastlabor-600 transition-colors">
+                      {link.name}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
