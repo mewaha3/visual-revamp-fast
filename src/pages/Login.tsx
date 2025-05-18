@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -18,6 +19,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -30,8 +32,10 @@ const formSchema = z.object({
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,11 +47,25 @@ const Login = () => {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const ok = await login(values.email, values.password);
-    if (ok) {
-      navigate("/upload-documents");
-    } else {
-      setErrorMsg("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    setIsLoading(true);
+    setErrorMsg("");
+    
+    try {
+      const ok = await login(values.email, values.password);
+      if (ok) {
+        toast({
+          title: "เข้าสู่ระบบสำเร็จ",
+          description: "ยินดีต้อนรับกลับมา!",
+        });
+        navigate("/upload-documents");
+      } else {
+        setErrorMsg("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrorMsg("เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -156,8 +174,9 @@ const Login = () => {
                 <Button
                   type="submit"
                   className="w-full bg-fastlabor-600 hover:bg-fastlabor-700"
+                  disabled={isLoading}
                 >
-                  เข้าสู่ระบบ
+                  {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
                 </Button>
 
                 <p className="text-center mt-4 text-sm text-gray-600">

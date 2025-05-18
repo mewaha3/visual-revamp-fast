@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
@@ -18,17 +19,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    // fetch users from your API
-    const resp = await fetch("/api/sheets");
-    if (!resp.ok) return false;
-    const { users } = await resp.json() as { users: Array<{email:string,password:string}> };
-    const match = users.find((u) => u.email === email && u.password === password);
-    if (match) {
-      setUserEmail(email);
-      localStorage.setItem("fastlabor_user", email);
-      return true;
+    try {
+      // ดึงข้อมูลผู้ใช้จาก Google Sheet
+      const response = await fetch("/api/users");
+      if (!response.ok) {
+        console.error("Failed to fetch users:", response.statusText);
+        return false;
+      }
+      
+      const data = await response.json();
+      console.log("Users data:", data);
+      
+      // ตรวจสอบรูปแบบข้อมูลที่ได้รับ
+      if (!Array.isArray(data.users)) {
+        console.error("Invalid users data format:", data);
+        return false;
+      }
+
+      // ตรวจสอบว่ามี user ที่ตรงกับ email และ password หรือไม่
+      const match = data.users.find(
+        (user) => user.email === email && user.password === password
+      );
+
+      if (match) {
+        setUserEmail(email);
+        localStorage.setItem("fastlabor_user", email);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login error:", error);
+      return false;
     }
-    return false;
   }
 
   function logout() {
