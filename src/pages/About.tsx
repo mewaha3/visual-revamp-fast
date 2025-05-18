@@ -33,12 +33,12 @@ const About = () => {
           <h2 className="text-2xl font-semibold mb-6">ทีมของเรา</h2>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {[
-              { name: "Narissara Suwatthee", role: "CEO" },
-              { name: "Intouch Pattananupong", role: "CTO" },
-              { name: "Pratsara Chukkhuchun", role: "CFO" },
-              { name: "Panjai Bennarong", role: "Strategic Partnership/Marketing" },
-              { name: "Pasinee Yingyongdumrongrit", role: "Head of Product" },
-              { name: "Wiritphon Yusamran", role: "Technical Developer" }
+              { name: "Narissara Suwatthee", role: "CEO",image: "/lovable-uploads/1.png" },
+              { name: "Intouch Pattananupong", role: "CTO",image: "/lovable-uploads/2.png" },
+              { name: "Pratsara Chukkhuchun", role: "CFO",image: "/lovable-uploads/3.png"},
+              { name: "Panjai Bennarong", role: "Strategic Partnership/Marketing" ,image: "/lovable-uploads/4.png"},
+              { name: "Pasinee Yingyongdumrongrit", role: "Head of Product",image: "/lovable-uploads/5.png" },
+              { name: "Wiritphon Yusamran", role: "Technical Developer",image: "/lovable-uploads/6.png" }
             ].map((member, index) => (
               <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
                 <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
