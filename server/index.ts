@@ -13,6 +13,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// แสดงข้อความเมื่อเริ่มใช้งาน API
+app.get('/', (req, res) => {
+  res.send('FastLabor API is running');
+});
+
 // เพิ่ม endpoint สำหรับดึงข้อมูลผู้ใช้
 app.use('/api/users', usersRouter);
 
@@ -27,4 +32,6 @@ app.post('/sheets', async (req, res) => {
   }
 });
 
-app.listen(4000, () => console.log('Sheet-backend on http://localhost:4000'));
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`Sheet-backend running on http://localhost:${PORT}`));
+

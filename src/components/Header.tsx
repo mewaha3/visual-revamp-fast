@@ -1,27 +1,32 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X, User, LogOut } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { userEmail, logout } = useAuth();
+  const location = useLocation();
+  
+  // Close mobile menu when changing routes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location]);
   
   const navLinks = [
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
     { text: "ค้นหาแรงงาน", path: "/find-worker" },
-    { text: "สมัครเป็นแรงงาน", path: "/register" },
+    // Only show register link if not logged in
+    ...(!userEmail ? [{ text: "สมัครเป็นแรงงาน", path: "/register" }] : []),
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
   ];
 
   const handleLogout = () => {
     logout();
-    // เมื่อ logout อาจจะต้องการนำทางไปหน้าอื่น เช่น หน้าหลัก
-    window.location.href = '/';
   };
 
   return (
@@ -59,8 +64,9 @@ const Header = () => {
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
-                className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50"
+                className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 flex items-center gap-2"
               >
+                <LogOut size={16} />
                 ออกจากระบบ
               </Button>
             </div>
@@ -109,8 +115,9 @@ const Header = () => {
                   <Button 
                     variant="outline" 
                     onClick={handleLogout}
-                    className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 justify-center w-full"
+                    className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 justify-center w-full flex items-center gap-2"
                   >
+                    <LogOut size={16} />
                     ออกจากระบบ
                   </Button>
                 </>

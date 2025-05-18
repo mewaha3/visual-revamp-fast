@@ -7,6 +7,8 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
   try {
+    console.log("API: Fetching users from Google Sheets");
+    
     // อ่านไฟล์ credentials
     const creds = JSON.parse(
       await readFile(new URL('../../credentials.json', import.meta.url), 'utf8')
@@ -24,6 +26,8 @@ router.get('/', async (req, res) => {
     const SPREADSHEET_ID = '1ZUWl-l3qa0lOpW0-lfsrYmiuOO-0s0Nmlecq5Pr26Mg';
     const TAB_NAME = 'ชีต1';
 
+    console.log(`API: Retrieving data from spreadsheet ${SPREADSHEET_ID}, tab ${TAB_NAME}`);
+
     // ดึงข้อมูลทั้งหมดจากแท็บ "ชีต1"
     const response = await sheetsApi.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
@@ -32,7 +36,7 @@ router.get('/', async (req, res) => {
 
     // แปลงข้อมูลเป็นรูปแบบที่เหมาะสม
     const rows = response.data.values || [];
-    console.log("Retrieved rows from sheet:", rows);
+    console.log("API: Retrieved rows from sheet:", rows);
     
     // สมมติว่าข้อมูลในชีต มีการจัดเรียงดังนี้: email (คอลัมน์ 0), password (คอลัมน์ 1)
     // Skip header row if it exists
@@ -42,10 +46,10 @@ router.get('/', async (req, res) => {
       password: row[1] || ''
     }));
 
-    console.log("Formatted users:", users);
+    console.log(`API: Formatted ${users.length} users for response`);
     res.status(200).json({ users });
   } catch (error) {
-    console.error('Error fetching users from Google Sheets:', error);
+    console.error('API ERROR: Error fetching users from Google Sheets:', error);
     res.status(500).json({ error: 'Failed to fetch users', message: error.message });
   }
 });

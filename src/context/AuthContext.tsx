@@ -9,6 +9,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+// Use API URL based on environment
+const API_URL = import.meta.env.PROD 
+  ? "https://your-production-api.com" 
+  : "http://localhost:4000";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -20,15 +25,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function login(email: string, password: string) {
     try {
+      console.log("Attempting to login with:", email);
+      
       // ดึงข้อมูลผู้ใช้จาก Google Sheet
-      const response = await fetch("http://localhost:4000/api/users");
+      const response = await fetch(`${API_URL}/api/users`);
+      
       if (!response.ok) {
         console.error("Failed to fetch users:", response.statusText);
         return false;
       }
       
       const data = await response.json();
-      console.log("Users data:", data);
+      console.log("Users data received:", data);
       
       // ตรวจสอบรูปแบบข้อมูลที่ได้รับ
       if (!data.users || !Array.isArray(data.users)) {
@@ -41,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         (user) => user.email === email && user.password === password
       );
 
-      console.log("Match found:", match ? "Yes" : "No");
+      console.log("Login match found:", match ? "Yes" : "No");
       
       if (match) {
         setUserEmail(email);
@@ -58,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   function logout() {
     setUserEmail(null);
     localStorage.removeItem("fastlabor_user");
+    // Redirect to homepage after logout
+    window.location.href = '/';
   }
 
   return (
