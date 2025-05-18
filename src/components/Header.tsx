@@ -19,7 +19,11 @@ const Header = () => {
     <header className="py-4 bg-white/90 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="container flex items-center justify-between">
         <Link to="/" className="flex items-center">
-          <span className="text-2xl font-bold text-fastlabor-700">Fast<span className="text-fastlabor-500">Labor</span></span>
+          <img 
+            src="/lovable-uploads/365674fc-1bea-4770-b4cb-f2f99ec0e841.png" 
+            alt="FastLabor Logo" 
+            className="h-10 w-auto"
+          />
         </Link>
         
         {/* Desktop Navigation */}
