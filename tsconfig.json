@@ -1,19 +1,38 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
   "compilerOptions": {
+    // Use Node-style ESM resolution so TS ↔ Node agree on imports
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "ES2020",
+    
+    // Enable default-interop so CJS packages still work
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    // Your path aliases
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
+
+    // Relax strictness as needed
     "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
-    "allowJs": true,
-    "noUnusedLocals": false,
-    "strictNullChecks": false
-  }
+    "allowJs": true
+  },
+
+  // Ensure TS sees your front- and back-end code
+  "include": [
+    "src/**/*",
+    "server/**/*",
+    "sheets.ts"
+  ],
+
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }
