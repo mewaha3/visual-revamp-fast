@@ -10,7 +10,7 @@ const Header = () => {
   const navLinks = [
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
-    { text: "ค้นหาแรงงาน", path: "/find-worker" 
+    { text: "ค้นหาแรงงาน", path: "/find-worker" },
     { text: "สมัครเป็นแรงงาน", path: "/apply-worker" },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
