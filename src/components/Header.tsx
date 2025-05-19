@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, Briefcase, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
@@ -19,8 +19,8 @@ const Header = () => {
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
     { text: "ค้นหาแรงงาน", path: "/find-worker" },
-    // Only show register link if not logged in
-    ...(!userEmail ? [{ text: "สมัครเป็นแรงงาน", path: "/register" }] : []),
+    { text: "ประกาศหางาน", path: "/post-job", icon: <Briefcase size={16} /> },
+    { text: "สมัครเป็นแรงงาน", path: "/find-job", icon: <Search size={16} /> },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
   ];
@@ -47,8 +47,9 @@ const Header = () => {
             <Link 
               key={index} 
               to={link.path} 
-              className="text-gray-600 hover:text-fastlabor-600 font-medium"
+              className="text-gray-600 hover:text-fastlabor-600 font-medium flex items-center gap-1.5"
             >
+              {link.icon && link.icon}
               {link.text}
             </Link>
           ))}
@@ -99,9 +100,10 @@ const Header = () => {
               <Link 
                 key={index} 
                 to={link.path} 
-                className="text-gray-700 hover:text-fastlabor-600 font-medium py-2"
+                className="text-gray-700 hover:text-fastlabor-600 font-medium py-2 flex items-center gap-2"
                 onClick={() => setIsOpen(false)}
               >
+                {link.icon && link.icon}
                 {link.text}
               </Link>
             ))}
