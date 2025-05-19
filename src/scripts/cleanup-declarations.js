@@ -4,7 +4,6 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 
 // Function to recursively find all .d.ts files in a directory
 function findDTSFiles(dir, fileList = []) {

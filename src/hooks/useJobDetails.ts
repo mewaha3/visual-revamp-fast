@@ -24,10 +24,7 @@ export const useJobDetails = (jobId?: string) => {
         setEmployer(employerInfo);
       } catch (error) {
         console.error("Error fetching job details:", error);
-        toast({
-          description: "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
-          variant: "destructive",
-        });
+        toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
       } finally {
         setLoading(false);
       }

@@ -22,13 +22,16 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
   
   const handleGoToJobSummary = () => {
     if (jobId) {
+      // Close the modal first
+      onClose();
+      
+      // Then navigate with fromPayment state
       navigate(`/job-detail/${jobId}`, { 
         state: { 
           fromPayment: true 
         } 
       });
     }
-    onClose();
   };
   
   return (

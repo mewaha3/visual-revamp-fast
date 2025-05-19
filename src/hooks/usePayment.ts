@@ -1,11 +1,20 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
-export const usePayment = (fromPayment: boolean) => {
+export const usePayment = (initialFromPayment: boolean = false) => {
+  const location = useLocation();
+  const fromPaymentState = location.state?.fromPayment || false;
+  
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [hasPaid, setHasPaid] = useState(fromPayment);
+  const [hasPaid, setHasPaid] = useState(initialFromPayment || fromPaymentState);
+  
+  // Update hasPaid if the location state changes
+  useEffect(() => {
+    setHasPaid(prevState => prevState || fromPaymentState);
+  }, [fromPaymentState]);
   
   const handleOpenPaymentModal = () => {
     setShowPaymentModal(true);

@@ -17,9 +17,9 @@ const JobDetailPage: React.FC = () => {
   const location = useLocation();
   const workerId = new URLSearchParams(location.search).get('workerId');
   
-  // Check if we're coming from payment success
+  // Get fromPayment from location state if available
   const { state } = location;
-  const fromPayment = state?.fromPayment || false;
+  const fromPaymentState = state?.fromPayment || false;
   
   // Custom hooks
   const { jobDetails, employer, loading } = useJobDetails(jobId);
@@ -32,7 +32,15 @@ const JobDetailPage: React.FC = () => {
     handleOpenPaymentModal,
     handleConfirmPayment,
     handleCloseSuccessModal
-  } = usePayment(fromPayment);
+  } = usePayment(fromPaymentState);
+  
+  // For debugging
+  console.log("Payment state:", { 
+    hasPaid, 
+    fromPaymentState, 
+    showPaymentModal, 
+    showSuccessModal 
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -55,7 +63,7 @@ const JobDetailPage: React.FC = () => {
                 jobId={jobId}
                 workerId={workerId}
                 hasPaid={hasPaid}
-                fromPayment={fromPayment}
+                fromPayment={fromPaymentState}
                 onOpenPaymentModal={handleOpenPaymentModal}
               />
             </>
