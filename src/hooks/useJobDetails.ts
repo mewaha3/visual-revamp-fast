@@ -11,16 +11,23 @@ export const useJobDetails = (jobId?: string) => {
   
   useEffect(() => {
     const fetchData = async () => {
-      if (!jobId) return;
+      if (!jobId) {
+        setLoading(false);
+        return;
+      }
       
       setLoading(true);
       try {
+        console.log(`Fetching details for job ID: ${jobId}`);
+        
         // Get job details
         const details = await getJobDetails(jobId);
+        console.log("Job details fetched:", details);
         setJobDetails(details);
         
         // Get employer details
         const employerInfo = await getEmployerDetails(jobId);
+        console.log("Employer details fetched:", employerInfo);
         setEmployer(employerInfo);
       } catch (error) {
         console.error("Error fetching job details:", error);

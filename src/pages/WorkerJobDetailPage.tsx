@@ -9,6 +9,7 @@ import EmployerCard from '@/components/jobs/EmployerCard';
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from 'lucide-react';
+import { toast } from "sonner";
 
 const WorkerJobDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -17,8 +18,13 @@ const WorkerJobDetailPage: React.FC = () => {
   // Custom hooks
   const { jobDetails, employer, loading } = useJobDetails(jobId);
   
+  console.log("Worker Job Detail Page - Job ID:", jobId);
+  console.log("Job Details:", jobDetails);
+  console.log("Employer:", employer);
+  
   const handleJobDone = () => {
     if (jobId) {
+      toast.success("กำลังไปยังหน้ารีวิวนายจ้าง");
       navigate(`/employer-review/${jobId}`, {
         state: {
           jobId,
@@ -34,7 +40,7 @@ const WorkerJobDetailPage: React.FC = () => {
       <Header />
       <main className="flex-grow py-6">
         <div className="container mx-auto px-4">
-          <JobHeader />
+          <JobHeader backTo="/my-jobs/find" backLabel="กลับไปยังรายการงานของฉัน" />
           
           {loading ? (
             <div className="text-center py-8">
