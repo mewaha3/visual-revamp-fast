@@ -7,6 +7,7 @@ import { postJobs } from '@/data/postJobs';
 import { findJobs } from '@/data/findJobs';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MyJobs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'post' | 'find'>('post');
@@ -79,6 +80,66 @@ const MyJobs: React.FC = () => {
                 )}
               </div>
             )}
+            
+            {/* Work Flow Overview - based on the flow diagram */}
+            <div className="mt-8 pt-6 border-t border-gray-100">
+              <h3 className="text-lg font-semibold mb-4">ขั้นตอนการทำงาน</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-fastlabor-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-fastlabor-700 mb-2">ลงประกาศงาน / หางาน</h4>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li className="flex items-start">
+                      <span className="text-fastlabor-600 mr-2">•</span>
+                      <span>กรอกข้อมูลงานหรือทักษะ</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-fastlabor-600 mr-2">•</span>
+                      <span>ระบุเวลาและสถานที่</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-fastlabor-600 mr-2">•</span>
+                      <span>กำหนดค่าตอบแทน</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-green-700 mb-2">จับคู่งานและแรงงาน</h4>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li className="flex items-start">
+                      <span className="text-green-600 mr-2">•</span>
+                      <span>AI จับคู่ทักษะที่เหมาะสม</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-600 mr-2">•</span>
+                      <span>ตรวจสอบพื้นที่การทำงาน</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-green-600 mr-2">•</span>
+                      <span>ยืนยันเวลาและค่าตอบแทน</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-700 mb-2">ทำงานและชำระเงิน</h4>
+                  <ul className="text-sm space-y-2 text-gray-600">
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>ติดตามสถานะงาน</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>ชำระเงินเมื่องานเสร็จสิ้น</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-blue-600 mr-2">•</span>
+                      <span>ให้คะแนนและรีวิว</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
