@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// Function to recursively find and delete .d.ts files
+// ฟังก์ชันสำหรับค้นหาและลบไฟล์ .d.ts แบบรีเคอร์ซีฟ
 function deleteDtsFiles(directory) {
   const items = fs.readdirSync(directory);
   
@@ -11,18 +11,18 @@ function deleteDtsFiles(directory) {
     const stat = fs.statSync(itemPath);
     
     if (stat.isDirectory()) {
-      // Recursively process subdirectories
+      // ประมวลผลโฟลเดอร์ย่อยแบบรีเคอร์ซีฟ
       deleteDtsFiles(itemPath);
     } else if (item.endsWith('.d.ts')) {
-      // Delete .d.ts files
+      // ลบไฟล์ .d.ts
       fs.unlinkSync(itemPath);
-      console.log(`Deleted: ${itemPath}`);
+      console.log(`ลบไฟล์: ${itemPath}`);
     }
   });
 }
 
-// Start the cleanup from the src directory
+// เริ่มการทำความสะอาดจากโฟลเดอร์ src
 const srcDir = path.join(__dirname, '..');
-console.log('Cleaning up .d.ts files from:', srcDir);
+console.log('กำลังทำความสะอาดไฟล์ .d.ts จาก:', srcDir);
 deleteDtsFiles(srcDir);
-console.log('Cleanup complete!');
+console.log('ทำความสะอาดเสร็จสมบูรณ์!');
