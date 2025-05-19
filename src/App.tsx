@@ -17,6 +17,9 @@ import UploadDocuments from "./pages/UploadDocuments";
 import PostJob from "./pages/PostJob";
 import FindJob from "./pages/FindJob";
 import MyJobs from "./pages/MyJobs";
+import MyJobsPage from "./pages/MyJobsPage";
+import AIMatchingPage from "./pages/AIMatchingPage";
+import StatusMatchingPage from "./pages/StatusMatchingPage";
 
 // คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
 /*
@@ -50,6 +53,10 @@ const App = () => (
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/find-job" element={<FindJob />} />
             <Route path="/my-jobs" element={<MyJobs />} />
+            {/* New routes for the job matching system */}
+            <Route path="/my-jobs-page" element={<MyJobsPage />} />
+            <Route path="/matching/:jobId" element={<AIMatchingPage />} />
+            <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
