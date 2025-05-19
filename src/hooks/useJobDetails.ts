@@ -8,6 +8,7 @@ export const useJobDetails = (jobId?: string) => {
   const [jobDetails, setJobDetails] = useState<JobDetail | null>(null);
   const [employer, setEmployer] = useState<Employer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     const fetchData = async () => {
@@ -17,6 +18,8 @@ export const useJobDetails = (jobId?: string) => {
       }
       
       setLoading(true);
+      setError(null);
+      
       try {
         console.log(`Fetching details for job ID: ${jobId}`);
         
@@ -31,6 +34,7 @@ export const useJobDetails = (jobId?: string) => {
         setEmployer(employerInfo);
       } catch (error) {
         console.error("Error fetching job details:", error);
+        setError("ไม่สามารถโหลดข้อมูลได้");
         toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
       } finally {
         setLoading(false);
@@ -40,5 +44,5 @@ export const useJobDetails = (jobId?: string) => {
     fetchData();
   }, [jobId]);
   
-  return { jobDetails, employer, loading };
+  return { jobDetails, employer, loading, error };
 };

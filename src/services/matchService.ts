@@ -27,8 +27,7 @@ const mockMatches: FindMatch[] = [
     province: "กรุงเทพฯ",
     district: "จตุจักร",
     subdistrict: "จตุจักร",
-    salary: 750,
-    job_address: "เลขที่ 999 ถนนพระราม 1 แขวงปทุมวัน เขตปทุมวัน กรุงเทพฯ 10330"
+    salary: 750
   },
   {
     findjob_id: "FJ3",
@@ -113,7 +112,6 @@ const mockEmployers: Record<string, Employer> = {
 // Fetch user's job matches
 export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> => {
   // In a real implementation, you would fetch from an API
-  // return axios.get(`/api/my-matches?email=${userEmail}`);
   console.log(`Fetching matches for user: ${userEmail}`);
   return Promise.resolve(mockMatches);
 };
@@ -121,7 +119,6 @@ export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> =>
 // Accept a job match
 export const acceptJobMatch = async (findjobId: string): Promise<void> => {
   // In a real implementation, you would call an API
-  // return axios.post(`/api/matches/${findjobId}/accept`);
   console.log(`Accepting job match: ${findjobId}`);
   return Promise.resolve();
 };
@@ -129,7 +126,6 @@ export const acceptJobMatch = async (findjobId: string): Promise<void> => {
 // Decline a job match
 export const declineJobMatch = async (findjobId: string): Promise<void> => {
   // In a real implementation, you would call an API
-  // return axios.post(`/api/matches/${findjobId}/decline`);
   console.log(`Declining job match: ${findjobId}`);
   return Promise.resolve();
 };
@@ -137,7 +133,6 @@ export const declineJobMatch = async (findjobId: string): Promise<void> => {
 // Fetch job details
 export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
   // In a real implementation, you would fetch from an API
-  // return axios.get(`/api/jobs/${jobId}`);
   console.log(`Fetching job details for job: ${jobId}`);
   
   // Return specific job details if found, otherwise return default
@@ -145,14 +140,13 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
     return Promise.resolve(mockJobDetails[jobId]);
   }
   
-  // Fallback to first job in case the job ID is not found
-  return Promise.resolve(mockJobDetails["PJ6"]);
+  // Fallback with error message if job not found
+  throw new Error(`Job details not found for job ID: ${jobId}`);
 };
 
 // Fetch employer details
 export const getEmployerDetails = async (jobId: string): Promise<Employer> => {
   // In a real implementation, you would fetch from an API
-  // return axios.get(`/api/jobs/${jobId}/employer`);
   console.log(`Fetching employer details for job: ${jobId}`);
   
   // Return specific employer if found, otherwise return default
@@ -160,6 +154,6 @@ export const getEmployerDetails = async (jobId: string): Promise<Employer> => {
     return Promise.resolve(mockEmployers[jobId]);
   }
   
-  // Fallback to first employer in case the job ID is not found
-  return Promise.resolve(mockEmployers["PJ6"]);
+  // Fallback with error message if employer not found
+  throw new Error(`Employer details not found for job ID: ${jobId}`);
 };

@@ -16,7 +16,7 @@ const WorkerJobDetailPage: React.FC = () => {
   const navigate = useNavigate();
   
   // Custom hooks
-  const { jobDetails, employer, loading } = useJobDetails(jobId);
+  const { jobDetails, employer, loading, error } = useJobDetails(jobId);
   
   console.log("Worker Job Detail Page - Job ID:", jobId);
   console.log("Job Details:", jobDetails);
@@ -46,6 +46,17 @@ const WorkerJobDetailPage: React.FC = () => {
             <div className="text-center py-8">
               <p>กำลังโหลดข้อมูล...</p>
             </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
+              <Button 
+                onClick={() => navigate("/my-jobs/find")} 
+                variant="outline" 
+                className="mt-4"
+              >
+                กลับไปยังรายการงาน
+              </Button>
+            </div>
           ) : jobDetails ? (
             <>
               <JobDetailsCard jobDetails={jobDetails} />
@@ -65,6 +76,13 @@ const WorkerJobDetailPage: React.FC = () => {
           ) : (
             <div className="text-center py-8">
               <p>ไม่พบข้อมูลงาน</p>
+              <Button 
+                onClick={() => navigate("/my-jobs/find")} 
+                variant="outline" 
+                className="mt-4"
+              >
+                กลับไปยังรายการงาน
+              </Button>
             </div>
           )}
         </div>
