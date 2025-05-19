@@ -1,8 +1,9 @@
-
 import React from 'react';
 import { PostJob } from '@/data/postJobs';
 import { FindJob } from '@/data/findJobs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface PostJobListProps {
   jobs: PostJob[];
@@ -27,6 +28,7 @@ export const PostJobList: React.FC<PostJobListProps> = ({ jobs }) => {
             <TableHead>วันที่</TableHead>
             <TableHead>เวลาเริ่ม-สิ้นสุด</TableHead>
             <TableHead>จังหวัด</TableHead>
+            <TableHead>การจัดการ</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -41,6 +43,26 @@ export const PostJobList: React.FC<PostJobListProps> = ({ jobs }) => {
               <TableCell>{job.job_date}</TableCell>
               <TableCell>{job.start_time} - {job.end_time}</TableCell>
               <TableCell>{job.province}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    asChild
+                    className="text-xs"
+                  >
+                    <Link to={`/matching/${job.job_id}`}>ดูการจับคู่</Link>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    asChild
+                    className="text-xs"
+                  >
+                    <Link to={`/status/${job.job_id}`}>ดูสถานะ</Link>
+                  </Button>
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
