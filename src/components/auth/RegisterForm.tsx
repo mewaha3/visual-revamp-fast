@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -141,9 +140,22 @@ const RegisterForm = () => {
         return;
       }
       
-      // Create the new user object
+      // Create the new user object with all required fields explicitly set
+      // All fields that are marked as required in the User interface must be included
       const newUser = {
-        ...values,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        password: values.password,
+        national_id: values.national_id,
+        dob: values.dob,
+        gender: values.gender,
+        nationality: values.nationality,
+        address: values.address,
+        province: values.province,
+        district: values.district,
+        subdistrict: values.subdistrict,
+        zip_code: values.zip_code,
         certificate: documents.certificate ? documents.certificate.name : "No",
         passport: documents.passport ? "Yes" : "No",
         visa: documents.visa ? "Yes" : "No",
