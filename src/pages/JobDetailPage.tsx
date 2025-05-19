@@ -1,22 +1,31 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getJobDetails, getEmployerDetails } from '@/services/matchService';
 import { JobDetail, Employer } from '@/types/types';
-import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User, Phone, Mail, CreditCard } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
+import PaymentModal from '@/components/payment/PaymentModal';
+import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
 
 const JobDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const workerId = new URLSearchParams(location.search).get('workerId');
   
   const [jobDetails, setJobDetails] = useState<JobDetail | null>(null);
   const [employer, setEmployer] = useState<Employer | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Payment states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("");
   
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +54,21 @@ const JobDetailPage: React.FC = () => {
     
     fetchData();
   }, [jobId]);
+
+  const handleOpenPaymentModal = () => {
+    setShowPaymentModal(true);
+  };
+
+  const handleConfirmPayment = (selectedPaymentMethod: string) => {
+    setPaymentMethod(selectedPaymentMethod);
+    setShowPaymentModal(false);
+    setShowSuccessModal(true);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    // Here you could navigate to another page or show a review form
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -125,7 +149,7 @@ const JobDetailPage: React.FC = () => {
               </Card>
               
               {employer && (
-                <Card>
+                <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="text-2xl">ข้อมูลนายจ้าง</CardTitle>
                   </CardHeader>
@@ -155,6 +179,19 @@ const JobDetailPage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
+              
+              {/* Payment Button */}
+              {workerId && (
+                <div className="mt-6">
+                  <Button 
+                    onClick={handleOpenPaymentModal}
+                    className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
+                  >
+                    <CreditCard className="mr-2" size={18} />
+                    ชำระเงินค่าบริการ
+                  </Button>
+                </div>
+              )}
             </>
           ) : (
             <div className="text-center py-8">
@@ -163,6 +200,20 @@ const JobDetailPage: React.FC = () => {
           )}
         </div>
       </main>
+      
+      {/* Payment Modals */}
+      <PaymentModal 
+        isOpen={showPaymentModal} 
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handleConfirmPayment}
+      />
+      
+      <PaymentSuccessModal 
+        isOpen={showSuccessModal} 
+        onClose={handleCloseSuccessModal}
+        paymentMethod={paymentMethod}
+      />
+      
       <Footer />
     </div>
   );

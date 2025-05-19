@@ -3,6 +3,8 @@ import { MatchResult, StatusResult } from "@/types/types";
 import { getJobById, getUserJobs } from "./jobService";
 import { getWorkerById, matchedWorkers } from "./workerService";
 import { matchJobWithWorkers } from "./matchingService";
+// Import findJobs directly to avoid the require statement
+import { findJobs } from "@/data/findJobs";
 
 // Store confirmed matches by jobId
 const confirmedMatches: Record<string, boolean> = {};
@@ -19,8 +21,7 @@ export const confirmMatches = (jobId: string): Promise<{ success: boolean }> => 
         // Map corresponding worker ID from findJobs based on index+1
         const workerId = `FJ${index + 1}`;
         
-        // Import the findJobs data directly here to avoid circular dependencies
-        const { findJobs } = require("@/data/findJobs");
+        // Find the worker in the findJobs data using ES6 import
         const worker = findJobs.find(w => w.findjob_id === workerId);
         
         if (worker) {
