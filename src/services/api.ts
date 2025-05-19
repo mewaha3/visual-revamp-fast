@@ -1,4 +1,3 @@
-
 import { MatchResult, StatusResult } from "@/types/types";
 import { postJobs } from "@/data/postJobs";
 import { findJobs } from "@/data/findJobs";
@@ -158,6 +157,24 @@ const calculateMatchingScore = (job: any, worker: any): number => {
   return finalScore;
 };
 
+// Store confirmed matches by jobId
+const confirmedMatches: Record<string, boolean> = {};
+
+// Function to confirm matches for a job
+export const confirmMatches = (jobId: string): Promise<{ success: boolean }> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      confirmedMatches[jobId] = true;
+      resolve({ success: true });
+    }, 300);
+  });
+};
+
+// Function to check if matches are confirmed for a job
+export const isMatchesConfirmed = (jobId: string): boolean => {
+  return !!confirmedMatches[jobId];
+};
+
 // ฟังก์ชันสำหรับการจับคู่งานและพนักงาน
 const matchJobWithWorkers = (jobId: string): MatchResult[] => {
   // หางานจาก ID
@@ -182,8 +199,8 @@ const matchJobWithWorkers = (jobId: string): MatchResult[] => {
     };
   });
   
-  // เรียงลำดับตามคะแนน (มากไปน้อย)
-  return matchedWorkers.sort((a, b) => b.aiScore - a.aiScore);
+  // เรียงลำดับตามคะแนน (มากไปน้อย) และจำกัดให้แสดงเพียง 5 อันดับแรก
+  return matchedWorkers.sort((a, b) => b.aiScore - a.aiScore).slice(0, 5);
 };
 
 export const getMatchingResults = (jobId: string): Promise<{ matches: MatchResult[] }> => {
@@ -198,12 +215,17 @@ export const getMatchingResults = (jobId: string): Promise<{ matches: MatchResul
 export const getStatusResults = (jobId: string): Promise<{ status: StatusResult[] }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
+      // If matches aren't confirmed yet, return an empty array
+      if (!confirmedMatches[jobId]) {
+        resolve({ status: [] });
+        return;
+      }
+      
       // ใช้ผลลัพธ์จากการจับคู่ AI แล้วเพิ่มสถานะ
       const matches = matchJobWithWorkers(jobId);
-      const topMatches = matches.slice(0, 2); // เลือกแค่ 2 อันดับแรก
       
-      // กำหนดสถานะจำลอง
-      const statusResults: StatusResult[] = topMatches.map((match, index) => ({
+      // กำหนดสถานะจำลอง - แค่ 5 อันดับแรก
+      const statusResults: StatusResult[] = matches.map((match, index) => ({
         ...match,
         status: index === 0 ? "on_queue" : "job_done"
       }));

@@ -6,9 +6,9 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getJobById, getStatusResults } from '@/services/api';
+import { getJobById, getStatusResults, isMatchesConfirmed } from '@/services/api';
 import { Job, StatusResult } from '@/types/types';
-import { BarChart, ArrowLeft } from 'lucide-react';
+import { BarChart, ArrowLeft, Info } from 'lucide-react';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -16,6 +16,7 @@ const StatusMatchingPage: React.FC = () => {
   const [job, setJob] = useState<Job | null>(null);
   const [statusResults, setStatusResults] = useState<StatusResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isConfirmed, setIsConfirmed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -24,6 +25,10 @@ const StatusMatchingPage: React.FC = () => {
       // Get job details
       const jobDetails = getJobById(jobId);
       setJob(jobDetails);
+      
+      // Check if matches are confirmed
+      const confirmed = isMatchesConfirmed(jobId);
+      setIsConfirmed(confirmed);
       
       // Get status results
       try {
@@ -60,16 +65,32 @@ const StatusMatchingPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-6">
               <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">Status Matching</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Status Matching (5 อันดับแรก)</h1>
             </div>
             
             <div className="mb-6">
-              <h2 className="text-xl font-semibold">Job ID: {jobId} — Top {statusResults.length} Matches</h2>
+              <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
             </div>
             
             {loading ? (
               <div className="text-center py-8">
                 <p>กำลังโหลดข้อมูล...</p>
+              </div>
+            ) : !isConfirmed ? (
+              <div className="text-center py-8 bg-yellow-50 rounded-lg p-6 border border-yellow-200">
+                <Info className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">ยังไม่ได้ยืนยันผลการจับคู่</h3>
+                <p className="text-gray-600 mb-4">กรุณายืนยันผลการจับคู่ที่หน้า AI Matching ก่อน</p>
+                <Button 
+                  onClick={() => navigate(`/matching/${jobId}`)}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                >
+                  ไปยังหน้า AI Matching
+                </Button>
+              </div>
+            ) : statusResults.length === 0 ? (
+              <div className="text-center py-8">
+                <p>ไม่พบข้อมูลสถานะการจับคู่</p>
               </div>
             ) : (
               <div className="space-y-8">

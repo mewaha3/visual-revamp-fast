@@ -6,16 +6,19 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { getJobById, getMatchingResults } from '@/services/api';
+import { getJobById, getMatchingResults, confirmMatches } from '@/services/api';
 import { Job, MatchResult } from '@/types/types';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, CheckCircle } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
 
 const AIMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [job, setJob] = useState<Job | null>(null);
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +42,30 @@ const AIMatchingPage: React.FC = () => {
     fetchData();
   }, [jobId]);
   
+  const handleConfirmMatches = async () => {
+    if (!jobId) return;
+    
+    setConfirming(true);
+    try {
+      await confirmMatches(jobId);
+      toast({
+        title: "สำเร็จ",
+        description: "ยืนยันผลการจับคู่เรียบร้อย",
+        variant: "success"
+      });
+      navigate(`/status/${jobId}`);
+    } catch (error) {
+      console.error("Error confirming matches:", error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถยืนยันผลการจับคู่ได้",
+        variant: "destructive"
+      });
+    } finally {
+      setConfirming(false);
+    }
+  };
+  
   if (!jobId) {
     return <div>Invalid job ID</div>;
   }
@@ -60,12 +87,16 @@ const AIMatchingPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-6">
               <Search className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">AI Matching – ผลการจับคู่</h1>
+              <h1 className="text-2xl font-bold text-gray-800">AI Matching – ผลการจับคู่ (5 อันดับแรก)</h1>
             </div>
             
             {loading ? (
               <div className="text-center py-8">
                 <p>กำลังโหลดข้อมูล...</p>
+              </div>
+            ) : matches.length === 0 ? (
+              <div className="text-center py-8">
+                <p>ไม่พบผลการจับคู่</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -121,8 +152,21 @@ const AIMatchingPage: React.FC = () => {
                 ))}
                 
                 <div className="mt-6 text-center">
-                  <Button className="bg-green-600 hover:bg-green-700 text-white w-full max-w-md">
-                    Confirm AI Matches
+                  <Button 
+                    className="bg-green-600 hover:bg-green-700 text-white w-full max-w-md"
+                    onClick={handleConfirmMatches}
+                    disabled={confirming}
+                  >
+                    {confirming ? (
+                      <span className="flex items-center">
+                        <span className="mr-2">กำลังยืนยัน...</span>
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Confirm AI Matches
+                      </span>
+                    )}
                   </Button>
                 </div>
               </div>
