@@ -50,14 +50,6 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
           <p className="text-lg mb-8">
             คุณเลือกวิธีชำระเงิน: <span className="font-semibold">{paymentMethod}</span>
           </p>
-          
-          <Button 
-            onClick={handleGoToJobSummary}
-            className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full"
-          >
-            ไปสรุปผลการจ้างงาน
-            <ArrowRight className="ml-2" size={18} />
-          </Button>
         </div>
       </DialogContent>
     </Dialog>
