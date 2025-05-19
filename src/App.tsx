@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -53,12 +54,15 @@ const App = () => (
             <Route path="/upload-documents" element={<UploadDocuments />} />
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/find-job" element={<FindJob />} />
-            <Route path="/my-jobs" element={<MyJobs />} />
+            <Route path="/my-jobs" element={<MyJobsPage />} />
+            {/* New route for the find tab */}
+            <Route path="/my-jobs/find" element={<MyJobsPage />} />
             {/* Job matching system routes */}
             <Route path="/my-jobs-page" element={<MyJobsPage />} />
             <Route path="/matching/:jobId" element={<AIMatchingPage />} />
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
+            <Route path="/jobs/:jobId" element={<JobDetailPage />} />
             {/* Review route */}
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
