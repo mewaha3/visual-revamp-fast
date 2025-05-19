@@ -38,12 +38,13 @@ router.get('/', async (req, res) => {
     const rows = response.data.values || [];
     console.log("API: Retrieved rows from sheet:", rows);
     
-    // สมมติว่าข้อมูลในชีต มีการจัดเรียงดังนี้: email (คอลัมน์ 0), password (คอลัมน์ 1)
+    // สมมติว่าข้อมูลในชีต มีการจัดเรียงดังนี้: email (คอลัมน์ 0), password (คอลัมน์ 1), fullName (คอลัมน์ 2)
     // Skip header row if it exists
     const dataRows = rows.length > 0 ? rows.slice(1) : [];
     const users = dataRows.map(row => ({
       email: row[0] || '',
-      password: row[1] || ''
+      password: row[1] || '',
+      fullName: row[2] || '' // เพิ่มฟิลด์ fullName
     }));
 
     console.log(`API: Formatted ${users.length} users for response`);

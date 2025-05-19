@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { userEmail, logout } = useAuth();
+  const { userEmail, userFullName, logout } = useAuth();
   const location = useLocation();
   
   // Close mobile menu when changing routes
@@ -19,14 +19,44 @@ const Header = () => {
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
     { text: "ค้นหาแรงงาน", path: "/find-worker" },
-    { text: "ประกาศหางาน", path: "/post-job", icon: <Briefcase size={16} /> },
-    { text: "สมัครเป็นแรงงาน", path: "/find-job", icon: <Search size={16} /> },
+    { text: "ประกาศหางาน", path: "/post-job", icon: <Briefcase size={16} />, requireAuth: true },
+    { text: "สมัครเป็นแรงงาน", path: "/find-job", icon: <Search size={16} />, requireAuth: true },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
   ];
 
   const handleLogout = () => {
     logout();
+  };
+
+  // Create links with conditional redirects to login page
+  const renderNavLink = (link, index) => {
+    if (link.requireAuth && !userEmail) {
+      // If auth required but user not logged in, link to login
+      return (
+        <Link 
+          key={index} 
+          to="/login" 
+          state={{ from: link.path }} // Pass intended destination
+          className="text-gray-600 hover:text-fastlabor-600 font-medium flex items-center gap-1.5"
+        >
+          {link.icon && link.icon}
+          {link.text}
+        </Link>
+      );
+    } else {
+      // Regular link
+      return (
+        <Link 
+          key={index} 
+          to={link.path} 
+          className="text-gray-600 hover:text-fastlabor-600 font-medium flex items-center gap-1.5"
+        >
+          {link.icon && link.icon}
+          {link.text}
+        </Link>
+      );
+    }
   };
 
   return (
@@ -43,16 +73,7 @@ const Header = () => {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          {navLinks.map((link, index) => (
-            <Link 
-              key={index} 
-              to={link.path} 
-              className="text-gray-600 hover:text-fastlabor-600 font-medium flex items-center gap-1.5"
-            >
-              {link.icon && link.icon}
-              {link.text}
-            </Link>
-          ))}
+          {navLinks.map((link, index) => renderNavLink(link, index))}
         </nav>
         
         <div className="hidden md:flex items-center space-x-4">
@@ -60,7 +81,7 @@ const Header = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-fastlabor-700">
                 <User size={18} />
-                <span className="font-medium">{userEmail}</span>
+                <span className="font-medium">{userFullName || userEmail}</span>
               </div>
               <Button 
                 variant="outline" 
@@ -97,22 +118,35 @@ const Header = () => {
         <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-100 py-4 shadow-lg animate-fade-in">
           <div className="container flex flex-col space-y-4">
             {navLinks.map((link, index) => (
-              <Link 
-                key={index} 
-                to={link.path} 
-                className="text-gray-700 hover:text-fastlabor-600 font-medium py-2 flex items-center gap-2"
-                onClick={() => setIsOpen(false)}
-              >
-                {link.icon && link.icon}
-                {link.text}
-              </Link>
+              <div key={index} className="py-2">
+                {link.requireAuth && !userEmail ? (
+                  <Link 
+                    to="/login" 
+                    state={{ from: link.path }}
+                    className="text-gray-700 hover:text-fastlabor-600 font-medium flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.icon && link.icon}
+                    {link.text}
+                  </Link>
+                ) : (
+                  <Link 
+                    to={link.path} 
+                    className="text-gray-700 hover:text-fastlabor-600 font-medium flex items-center gap-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.icon && link.icon}
+                    {link.text}
+                  </Link>
+                )}
+              </div>
             ))}
             <div className="flex flex-col space-y-3 pt-3 border-t border-gray-100">
               {userEmail ? (
                 <>
                   <div className="flex items-center gap-2 text-fastlabor-700 py-2">
                     <User size={18} />
-                    <span className="font-medium">{userEmail}</span>
+                    <span className="font-medium">{userFullName || userEmail}</span>
                   </div>
                   <Button 
                     variant="outline" 

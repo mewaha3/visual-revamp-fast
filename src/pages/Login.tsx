@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -31,11 +31,15 @@ const formSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get the intended destination from location state (if any)
+  const from = location.state?.from || "/upload-documents";
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,7 +61,7 @@ const Login = () => {
           title: "เข้าสู่ระบบสำเร็จ",
           description: "ยินดีต้อนรับกลับมา!",
         });
-        navigate("/upload-documents");
+        navigate(from); // Navigate to the intended destination
       } else {
         setErrorMsg("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }

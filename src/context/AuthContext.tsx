@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
   userEmail: string | null;
+  userFullName: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -16,11 +17,15 @@ const API_URL = import.meta.env.PROD
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userFullName, setUserFullName] = useState<string | null>(null);
 
   // restore from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("fastlabor_user");
-    if (saved) setUserEmail(saved);
+    const savedEmail = localStorage.getItem("fastlabor_user");
+    const savedFullName = localStorage.getItem("fastlabor_user_fullname");
+    
+    if (savedEmail) setUserEmail(savedEmail);
+    if (savedFullName) setUserFullName(savedFullName);
   }, []);
 
   async function login(email: string, password: string) {
@@ -53,7 +58,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (match) {
         setUserEmail(email);
+        
+        // Get the full name from the user data
+        const fullName = match.fullName || email;
+        setUserFullName(fullName);
+        
         localStorage.setItem("fastlabor_user", email);
+        localStorage.setItem("fastlabor_user_fullname", fullName);
         return true;
       }
       return false;
@@ -65,13 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   function logout() {
     setUserEmail(null);
+    setUserFullName(null);
     localStorage.removeItem("fastlabor_user");
+    localStorage.removeItem("fastlabor_user_fullname");
     // Redirect to homepage after logout
     window.location.href = '/';
   }
 
   return (
-    <AuthContext.Provider value={{ userEmail, login, logout }}>
+    <AuthContext.Provider value={{ userEmail, userFullName, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
