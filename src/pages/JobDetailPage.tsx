@@ -1,14 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { getJobById, getWorkerById } from '@/services/api';
 import { Job } from '@/types/types';
 import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User } from 'lucide-react';
+import PaymentModal from '@/components/payment/PaymentModal';
 
 interface Worker {
   name: string;
@@ -22,10 +22,30 @@ const JobDetailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const workerId = searchParams.get('workerId');
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [job, setJob] = useState<Job | null>(null);
   const [worker, setWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  
+  // Check if payment has been completed (from URL state or localStorage)
+  const [isPaymentCompleted, setIsPaymentCompleted] = useState(() => {
+    if (location.state?.paymentCompleted) {
+      return true;
+    }
+    
+    // Check localStorage for persistent state
+    const storedPayment = localStorage.getItem(`payment-completed-${jobId}`);
+    return storedPayment === 'true';
+  });
+
+  useEffect(() => {
+    // Persist payment status to localStorage when it changes
+    if (isPaymentCompleted && jobId) {
+      localStorage.setItem(`payment-completed-${jobId}`, 'true');
+    }
+  }, [isPaymentCompleted, jobId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +68,36 @@ const JobDetailPage: React.FC = () => {
     
     fetchData();
   }, [jobId, workerId]);
+
+  const handlePaymentClick = () => {
+    setIsPaymentModalOpen(true);
+  };
+
+  const handlePaymentConfirm = (paymentMethod: string) => {
+    // Close the modal
+    setIsPaymentModalOpen(false);
+    
+    // Navigate to payment success page with the selected payment method
+    navigate(`/jobs/${jobId}/payment-success`, {
+      state: { 
+        paymentMethod,
+        jobId,
+        workerId
+      }
+    });
+  };
+
+  const handleJobDone = () => {
+    // Navigate to review page when job is done
+    navigate(`/jobs/${jobId}/review`, {
+      state: {
+        jobId,
+        workerId,
+        jobType: job?.job_type,
+        workerName: worker?.name
+      }
+    });
+  };
 
   if (!jobId || !workerId) {
     return <div className="container mx-auto p-4">Invalid job or worker ID</div>;
@@ -127,7 +177,7 @@ const JobDetailPage: React.FC = () => {
               </Card>
               
               {worker && (
-                <Card>
+                <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="text-2xl">ข้อมูลแรงงานที่จับคู่</CardTitle>
                   </CardHeader>
@@ -164,6 +214,25 @@ const JobDetailPage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
+
+              <div className="flex justify-center mt-6">
+                {/* Show different buttons based on payment status */}
+                {isPaymentCompleted ? (
+                  <Button 
+                    onClick={handleJobDone}
+                    className="bg-green-600 hover:bg-green-700 text-white w-full md:w-1/2"
+                  >
+                    งานสำเร็จ (Job Done)
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handlePaymentClick} 
+                    className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full md:w-1/2"
+                  >
+                    ชำระเงิน
+                  </Button>
+                )}
+              </div>
             </>
           ) : (
             <div className="text-center py-8">
@@ -173,6 +242,13 @@ const JobDetailPage: React.FC = () => {
         </div>
       </main>
       <Footer />
+      
+      {/* Payment Modal */}
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        onConfirm={handlePaymentConfirm}
+      />
     </div>
   );
 };
