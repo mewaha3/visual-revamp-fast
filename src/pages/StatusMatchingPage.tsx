@@ -6,9 +6,10 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { getJobById, getStatusResults, isMatchesConfirmed } from '@/services/api';
 import { Job, StatusResult } from '@/types/types';
-import { BarChart, ArrowLeft, Info } from 'lucide-react';
+import { BarChart, ArrowLeft, Info, Check, X, ArrowRight } from 'lucide-react';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -43,6 +44,26 @@ const StatusMatchingPage: React.FC = () => {
     
     fetchData();
   }, [jobId]);
+  
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'on_queue':
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600">On Queue</Badge>;
+      case 'accepted':
+        return <Badge className="bg-green-500 hover:bg-green-600 flex items-center gap-1"><Check size={14} /> Accepted</Badge>;
+      case 'declined':
+        return <Badge className="bg-red-500 hover:bg-red-600 flex items-center gap-1"><X size={14} /> Declined</Badge>;
+      case 'job_done':
+        return <Badge className="bg-blue-500 hover:bg-blue-600">Job Done</Badge>;
+      default:
+        return <Badge>Unknown</Badge>;
+    }
+  };
+  
+  const handleViewJobDetail = (workerId: string) => {
+    // Navigate to job detail page with jobId and workerId
+    navigate(`/job-detail/${jobId}?workerId=${workerId}`);
+  };
   
   if (!jobId) {
     return <div>Invalid job ID</div>;
@@ -131,11 +152,16 @@ const StatusMatchingPage: React.FC = () => {
                         <span>AI Score: {status.aiScore.toFixed(2)}</span>
                       </div>
                     </div>
-                    <div className="mt-4 ml-6">
-                      {status.status === 'on_queue' ? (
-                        <Button className="bg-yellow-500 hover:bg-yellow-600 text-white">On Queue</Button>
-                      ) : (
-                        <Button className="bg-green-600 hover:bg-green-700 text-white">Job Done</Button>
+                    <div className="mt-4 ml-6 flex items-center gap-3">
+                      {getStatusBadge(status.status)}
+                      
+                      {status.status === 'accepted' && status.workerId && (
+                        <Button 
+                          onClick={() => handleViewJobDetail(status.workerId || '')}
+                          className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white flex items-center gap-1"
+                        >
+                          รายละเอียดงาน <ArrowRight size={16} />
+                        </Button>
                       )}
                     </div>
                   </div>

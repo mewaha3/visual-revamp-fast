@@ -20,6 +20,7 @@ import MyJobs from "./pages/MyJobs";
 import MyJobsPage from "./pages/MyJobsPage";
 import AIMatchingPage from "./pages/AIMatchingPage";
 import StatusMatchingPage from "./pages/StatusMatchingPage";
+import JobDetailPage from "./pages/JobDetailPage";
 
 // คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
 /*
@@ -57,6 +58,7 @@ const App = () => (
             <Route path="/my-jobs-page" element={<MyJobsPage />} />
             <Route path="/matching/:jobId" element={<AIMatchingPage />} />
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
+            <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

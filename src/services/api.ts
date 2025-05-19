@@ -160,6 +160,42 @@ const calculateMatchingScore = (job: any, worker: any): number => {
 // Store confirmed matches by jobId
 const confirmedMatches: Record<string, boolean> = {};
 
+// Mock worker data for job details
+const matchedWorkers: Record<string, { 
+  name: string;
+  gender: string;
+  skills: string;
+  jobType: string;
+  workerId: string;
+}> = {};
+
+// Function to get worker by ID
+export const getWorkerById = (workerId: string): Promise<any> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      // Find worker in findJobs data based on workerId
+      const worker = findJobs.find(w => w.findjob_id === workerId);
+      
+      if (worker) {
+        resolve({
+          name: `${worker.first_name} ${worker.last_name}`,
+          gender: worker.gender,
+          skills: worker.skills,
+          jobType: worker.job_type
+        });
+      } else {
+        // Mock data if worker not found
+        resolve({
+          name: "สมชาย ใจดี",
+          gender: "Male",
+          skills: "ทำความสะอาด, ซักผ้า",
+          jobType: "แม่บ้าน"
+        });
+      }
+    }, 300);
+  });
+};
+
 // Function to confirm matches for a job
 export const confirmMatches = (jobId: string): Promise<{ success: boolean }> => {
   return new Promise((resolve) => {
@@ -175,7 +211,7 @@ export const isMatchesConfirmed = (jobId: string): boolean => {
   return !!confirmedMatches[jobId];
 };
 
-// ฟังก์ชันสำหรับการจับคู่งานและพนักงาน
+// ฟังก์ชันสำหรับการจับค��่งานและพนักงาน
 const matchJobWithWorkers = (jobId: string): MatchResult[] => {
   // หางานจาก ID
   const job = postJobs.find(job => job.job_id === jobId);
@@ -225,10 +261,26 @@ export const getStatusResults = (jobId: string): Promise<{ status: StatusResult[
       const matches = matchJobWithWorkers(jobId);
       
       // กำหนดสถานะจำลอง - แค่ 5 อันดับแรก
-      const statusResults: StatusResult[] = matches.map((match, index) => ({
-        ...match,
-        status: index === 0 ? "on_queue" : "job_done"
-      }));
+      const statusResults: StatusResult[] = matches.map((match, index) => {
+        // Determine worker ID from name for linking to job detail
+        const workerId = `FJ${index + 1}`;
+        
+        // Assign status based on index
+        let status: 'on_queue' | 'accepted' | 'declined' | 'job_done' = 'job_done';
+        if (index === 0) {
+          status = 'on_queue';
+        } else if (index === 1) {
+          status = 'accepted';
+        } else if (index === 2) {
+          status = 'declined';
+        }
+        
+        return {
+          ...match,
+          status,
+          workerId
+        };
+      });
       
       resolve({ status: statusResults });
     }, 500);

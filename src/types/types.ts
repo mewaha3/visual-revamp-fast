@@ -25,5 +25,6 @@ export interface MatchResult {
 }
 
 export interface StatusResult extends MatchResult {
-  status: 'on_queue' | 'job_done';
+  status: 'on_queue' | 'accepted' | 'declined' | 'job_done';
+  workerId?: string;
 }
