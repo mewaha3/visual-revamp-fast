@@ -1,4 +1,5 @@
 
+
 export interface PostJob {
   job_id: string;
   first_name: string;
@@ -180,7 +181,7 @@ export const postJobs: PostJob[] = [
     district: "เมืองนนทบุรี",
     subdistrict: "บางกระสอ",
     zip_code: "11000"
-  
+  },
   {
     job_id: "PJ10",
     first_name: "สมชาย",
@@ -198,6 +199,6 @@ export const postJobs: PostJob[] = [
     district: "เมืองนนทบุรี",
     subdistrict: "บางกระสอ",
     zip_code: "11000"
-  },
-
+  }
 ];
+
