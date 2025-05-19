@@ -16,7 +16,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { users } from "@/data/users";
 import PasswordInput from "./PasswordInput";
+import { useToast } from "@/hooks/use-toast";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -33,6 +35,7 @@ const RegisterForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,28 +52,22 @@ const RegisterForm = () => {
     setErrorMessage(null);
     
     try {
-      // prepare row data for Google Sheet
-      const row = [
-        values.fullName,
-        values.email,
-        values.password,
-      ];
-
-      // send form data to sheets API
-      const resp = await fetch("http://localhost:4000/sheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(row),
+      // Check if email already exists
+      const emailExists = users.some(user => user.email === values.email);
+      
+      if (emailExists) {
+        setErrorMessage("อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // In a real application, we would add the new user to the database
+      // but for our demo, we'll just show a success message
+      
+      toast({
+        title: "ลงทะเบียนสำเร็จ",
+        description: "กรุณาเข้าสู่ระบบด้วยบัญชีที่สร้างขึ้น",
       });
-      
-      if (!resp.ok) {
-        throw new Error(await resp.text());
-      }
-      
-      const json = await resp.json();
-      if (!json.ok) {
-        throw new Error(json.error);
-      }
 
       // Redirect to login page after successful registration
       navigate("/login");
