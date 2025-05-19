@@ -31,6 +31,7 @@ const PaymentSuccessPage: React.FC = () => {
   const handleGoToJobDetails = () => {
     if (state?.jobId) {
       // Navigate back to job details with payment completed info
+      // Fix: Use the correct job detail path with the jobId parameter
       navigate(`/job-detail/${state.jobId}`, { 
         replace: true,
         state: { 
