@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import UploadDocuments from "./pages/UploadDocuments";
 import PostJob from "./pages/PostJob";
 import FindJob from "./pages/FindJob";
+import MyJobs from "./pages/MyJobs";
 
 // คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
 /*
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/upload-documents" element={<UploadDocuments />} />
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/find-job" element={<FindJob />} />
+            <Route path="/my-jobs" element={<MyJobs />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
