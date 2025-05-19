@@ -58,7 +58,9 @@ const LoginForm = ({ redirectPath = "/upload-documents" }: LoginFormProps) => {
     setErrorMsg("");
     
     try {
+      console.log("Attempting login with:", values.email);
       const ok = await login(values.email, values.password);
+      
       if (ok) {
         toast({
           title: "เข้าสู่ระบบสำเร็จ",
