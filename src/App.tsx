@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,7 +20,6 @@ import MyJobsPage from "./pages/MyJobsPage";
 import AIMatchingPage from "./pages/AIMatchingPage";
 import StatusMatchingPage from "./pages/StatusMatchingPage";
 import JobDetailPage from "./pages/JobDetailPage";
-import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import ReviewPage from "./pages/ReviewPage";
 
 // คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
@@ -61,8 +59,7 @@ const App = () => (
             <Route path="/matching/:jobId" element={<AIMatchingPage />} />
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
-            {/* New routes for payment and review */}
-            <Route path="/jobs/:jobId/payment-success" element={<PaymentSuccessPage />} />
+            {/* Review route */}
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -9,6 +9,7 @@ import { getJobById, getWorkerById } from '@/services/api';
 import { Job } from '@/types/types';
 import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User } from 'lucide-react';
 import PaymentModal from '@/components/payment/PaymentModal';
+import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
 
 interface Worker {
   name: string;
@@ -28,6 +29,8 @@ const JobDetailPage: React.FC = () => {
   const [worker, setWorker] = useState<Worker | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isPaymentSuccessModalOpen, setIsPaymentSuccessModalOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("");
   
   // Check if payment has been completed (from URL state or localStorage)
   const [isPaymentCompleted, setIsPaymentCompleted] = useState(() => {
@@ -74,17 +77,26 @@ const JobDetailPage: React.FC = () => {
   };
 
   const handlePaymentConfirm = (paymentMethod: string) => {
-    // Close the modal
+    // Close the payment modal
     setIsPaymentModalOpen(false);
     
-    // Navigate to payment success page with the selected payment method
-    navigate(`/jobs/${jobId}/payment-success`, {
-      state: { 
-        paymentMethod,
-        jobId,
-        workerId
-      }
-    });
+    // Set the selected payment method
+    setSelectedPaymentMethod(paymentMethod);
+    
+    // Save payment completion status
+    setIsPaymentCompleted(true);
+    
+    // Open the success modal
+    setIsPaymentSuccessModalOpen(true);
+    
+    // Store payment info in localStorage
+    if (jobId) {
+      localStorage.setItem(`payment-completed-${jobId}`, 'true');
+    }
+  };
+
+  const handlePaymentSuccessClose = () => {
+    setIsPaymentSuccessModalOpen(false);
   };
 
   const handleJobDone = () => {
@@ -248,6 +260,13 @@ const JobDetailPage: React.FC = () => {
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         onConfirm={handlePaymentConfirm}
+      />
+      
+      {/* Payment Success Modal */}
+      <PaymentSuccessModal
+        isOpen={isPaymentSuccessModalOpen}
+        onClose={handlePaymentSuccessClose}
+        paymentMethod={selectedPaymentMethod}
       />
     </div>
   );
