@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Check, ArrowRight } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface PaymentSuccessModalProps {
   isOpen: boolean;
@@ -15,25 +13,8 @@ interface PaymentSuccessModalProps {
 const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({ 
   isOpen, 
   onClose, 
-  paymentMethod,
-  jobId
+  paymentMethod
 }) => {
-  const navigate = useNavigate();
-  
-  const handleGoToJobSummary = () => {
-    if (jobId) {
-      // Close the modal first
-      onClose();
-      
-      // Then navigate with fromPayment state
-      navigate(`/job-detail/${jobId}`, { 
-        state: { 
-          fromPayment: true 
-        } 
-      });
-    }
-  };
-  
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="sm:max-w-md">

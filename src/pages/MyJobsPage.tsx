@@ -57,8 +57,8 @@ const MyJobsPage: React.FC = () => {
         title: "รับงานสำเร็จ",
         description: "คุณได้รับงานนี้แล้ว กำลังไปยังหน้ารายละเอียด",
       });
-      // Navigate to job detail page
-      navigate(`/jobs/${jobId}`);
+      // Navigate to new worker job detail page
+      navigate(`/worker/jobs/${jobId}`);
     } catch (error) {
       console.error("Error accepting job:", error);
       toast({

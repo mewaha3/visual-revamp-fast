@@ -22,6 +22,8 @@ import AIMatchingPage from "./pages/AIMatchingPage";
 import StatusMatchingPage from "./pages/StatusMatchingPage";
 import JobDetailPage from "./pages/JobDetailPage";
 import ReviewPage from "./pages/ReviewPage";
+import WorkerJobDetailPage from "./pages/WorkerJobDetailPage";
+import EmployerReviewPage from "./pages/EmployerReviewPage";
 
 // คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
 /*
@@ -31,7 +33,7 @@ import ReviewPage from "./pages/ReviewPage";
  * สามารถรันด้วยคำสั่ง:
  * npm run cleanup && npm run build
  * หรือตั้งค่าสคริปต์ prebuild ใน package.json:
- * "prebuild": "node src/scripts/cleanup.js"
+ * "prebuild": "node src/scripts/cleanup-declarations.js"
  */
 
 const queryClient = new QueryClient();
@@ -65,6 +67,9 @@ const App = () => (
             <Route path="/jobs/:jobId" element={<JobDetailPage />} />
             {/* Review route */}
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
+            {/* New worker job detail and employer review routes */}
+            <Route path="/worker/jobs/:jobId" element={<WorkerJobDetailPage />} />
+            <Route path="/employer-review/:jobId" element={<EmployerReviewPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
