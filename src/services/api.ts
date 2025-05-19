@@ -1,3 +1,4 @@
+
 import { MatchResult, StatusResult } from "@/types/types";
 import { postJobs } from "@/data/postJobs";
 import { findJobs } from "@/data/findJobs";
@@ -160,31 +161,35 @@ const calculateMatchingScore = (job: any, worker: any): number => {
 // Store confirmed matches by jobId
 const confirmedMatches: Record<string, boolean> = {};
 
-// Mock worker data for job details
-const matchedWorkers: Record<string, { 
-  name: string;
-  gender: string;
-  skills: string;
-  jobType: string;
-  workerId: string;
-}> = {};
+// Store matched worker data for reference
+const matchedWorkers: Record<string, any> = {};
 
 // Function to get worker by ID
 export const getWorkerById = (workerId: string): Promise<any> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      // Find worker in findJobs data based on workerId
+      // Find worker in matchedWorkers data based on workerId
+      if (matchedWorkers[workerId]) {
+        resolve(matchedWorkers[workerId]);
+        return;
+      }
+      
+      // If not found in our cache, find worker in findJobs data based on workerId
       const worker = findJobs.find(w => w.findjob_id === workerId);
       
       if (worker) {
-        resolve({
+        const workerData = {
           name: `${worker.first_name} ${worker.last_name}`,
           gender: worker.gender,
           skills: worker.skills,
           jobType: worker.job_type
-        });
+        };
+        
+        // Cache the worker data for future reference
+        matchedWorkers[workerId] = workerData;
+        resolve(workerData);
       } else {
-        // Mock data if worker not found
+        // Mock data if worker not found (fallback)
         resolve({
           name: "สมชาย ใจดี",
           gender: "Male",
@@ -201,6 +206,24 @@ export const confirmMatches = (jobId: string): Promise<{ success: boolean }> => 
   return new Promise((resolve) => {
     setTimeout(() => {
       confirmedMatches[jobId] = true;
+      
+      // Once confirmed, save the matches to our matchedWorkers cache
+      const matches = matchJobWithWorkers(jobId);
+      matches.forEach((match, index) => {
+        // Find the corresponding worker in findJobs
+        const workerId = `FJ${index + 1}`;
+        const worker = findJobs.find(w => w.findjob_id === workerId);
+        
+        if (worker) {
+          matchedWorkers[workerId] = {
+            name: `${worker.first_name} ${worker.last_name}`,
+            gender: worker.gender,
+            skills: worker.skills,
+            jobType: worker.job_type
+          };
+        }
+      });
+      
       resolve({ success: true });
     }, 300);
   });
@@ -211,7 +234,7 @@ export const isMatchesConfirmed = (jobId: string): boolean => {
   return !!confirmedMatches[jobId];
 };
 
-// ฟังก์ชันสำหรับการจับค��่งานและพนักงาน
+// ฟังก์ชันสำหรับการจับคู่งานและพนักงาน
 const matchJobWithWorkers = (jobId: string): MatchResult[] => {
   // หางานจาก ID
   const job = postJobs.find(job => job.job_id === jobId);
@@ -262,7 +285,7 @@ export const getStatusResults = (jobId: string): Promise<{ status: StatusResult[
       
       // กำหนดสถานะจำลอง - แค่ 5 อันดับแรก
       const statusResults: StatusResult[] = matches.map((match, index) => {
-        // Determine worker ID from name for linking to job detail
+        // Map corresponding worker ID from findJobs based on index+1
         const workerId = `FJ${index + 1}`;
         
         // Assign status based on index

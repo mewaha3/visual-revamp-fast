@@ -5,7 +5,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { getJobById, getWorkerById } from '@/services/api';
 import { Job } from '@/types/types';
@@ -36,7 +35,7 @@ const JobDetailPage: React.FC = () => {
       const jobDetails = getJobById(jobId);
       setJob(jobDetails);
       
-      // Get worker details (mock function - needs to be implemented in api.ts)
+      // Get worker details based on the workerId from the matching
       try {
         const workerDetails = await getWorkerById(workerId);
         setWorker(workerDetails);
