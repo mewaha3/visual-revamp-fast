@@ -178,3 +178,14 @@ export const users: User[] = [
 export function findUserByCredentials(email: string, password: string): User | undefined {
   return users.find(user => user.email === email && user.password === password);
 }
+
+// Helper function to add a new user to the array
+export function addUser(user: User): void {
+  // In a real application, we would save this to a database
+  // For this demo, we'll just log it, but in a real app, we would push to the array
+  users.push({
+    ...user,
+    fullName: `${user.first_name} ${user.last_name}`
+  });
+  console.log("New user added:", user);
+}
