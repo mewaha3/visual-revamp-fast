@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { users } from "@/data/users";
+import { users, addUser } from "@/data/users";
 import {
   Select,
   SelectContent,
@@ -141,8 +141,7 @@ const RegisterForm = () => {
         return;
       }
       
-      // In a real application, we would add the new user to the database
-      // but for our demo, we'll just show a success message
+      // Create the new user object
       const newUser = {
         ...values,
         certificate: documents.certificate ? documents.certificate.name : "No",
@@ -152,8 +151,11 @@ const RegisterForm = () => {
         fullName: `${values.first_name} ${values.last_name}`
       };
       
-      // This would normally update the database
-      console.log("New user to be registered:", newUser);
+      // Add the new user to the users array using the addUser function
+      addUser(newUser);
+      
+      // Log the new user for debugging purposes
+      console.log("New user registered:", newUser);
       
       toast({
         title: "ลงทะเบียนสำเร็จ",
