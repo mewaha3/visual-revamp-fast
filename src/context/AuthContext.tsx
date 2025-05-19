@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (savedFullName) setUserFullName(savedFullName);
   }, []);
 
-  async function login(email: string, password: string) {
+  async function login(email: string, password: string): Promise<boolean> {
     try {
       console.log("Attempting to login with:", email);
       
@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // ตรวจสอบว่ามี user ที่ตรงกับ email และ password หรือไม่
       const match = data.users.find(
-        (user) => user.email === email && user.password === password
+        (user: { email: string; password: string }) => 
+          user.email === email && user.password === password
       );
 
       console.log("Login match found:", match ? "Yes" : "No");
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  function logout() {
+  function logout(): void {
     setUserEmail(null);
     setUserFullName(null);
     localStorage.removeItem("fastlabor_user");
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be inside AuthProvider");
   return ctx;
