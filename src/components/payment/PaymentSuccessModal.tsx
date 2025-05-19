@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, ArrowRight } from "lucide-react";
@@ -8,13 +9,28 @@ interface PaymentSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   paymentMethod: string;
+  jobId?: string;
 }
 
 const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({ 
   isOpen, 
   onClose, 
-  paymentMethod 
+  paymentMethod,
+  jobId
 }) => {
+  const navigate = useNavigate();
+  
+  const handleGoToJobSummary = () => {
+    if (jobId) {
+      navigate(`/job-detail/${jobId}`, { 
+        state: { 
+          fromPayment: true 
+        } 
+      });
+    }
+    onClose();
+  };
+  
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
@@ -33,7 +49,7 @@ const PaymentSuccessModal: React.FC<PaymentSuccessModalProps> = ({
           </p>
           
           <Button 
-            onClick={onClose}
+            onClick={handleGoToJobSummary}
             className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full"
           >
             ไปสรุปผลการจ้างงาน

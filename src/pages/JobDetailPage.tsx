@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getJobDetails, getEmployerDetails } from '@/services/matchService';
 import { JobDetail, Employer } from '@/types/types';
-import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User, Phone, Mail, CreditCard } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User, Phone, Mail, CreditCard, CheckCircle } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import PaymentModal from '@/components/payment/PaymentModal';
 import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
@@ -26,6 +26,10 @@ const JobDetailPage: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
+  
+  // Check if we're coming from payment success
+  const { state } = location;
+  const fromPayment = state?.fromPayment || false;
   
   useEffect(() => {
     const fetchData = async () => {
@@ -67,7 +71,19 @@ const JobDetailPage: React.FC = () => {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
-    // Here you could navigate to another page or show a review form
+  };
+  
+  const handleJobDone = () => {
+    if (jobDetails) {
+      navigate(`/jobs/${jobId}/review`, {
+        state: {
+          jobId,
+          workerId,
+          jobType: jobDetails.job_type,
+          workerName: employer?.name
+        }
+      });
+    }
   };
 
   return (
@@ -180,9 +196,10 @@ const JobDetailPage: React.FC = () => {
                 </Card>
               )}
               
-              {/* Payment Button */}
-              {workerId && (
-                <div className="mt-6">
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-4">
+                {/* Payment Button - Show only if workerId exists and not coming from payment */}
+                {workerId && !fromPayment && (
                   <Button 
                     onClick={handleOpenPaymentModal}
                     className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
@@ -190,8 +207,19 @@ const JobDetailPage: React.FC = () => {
                     <CreditCard className="mr-2" size={18} />
                     ชำระเงินค่าบริการ
                   </Button>
-                </div>
-              )}
+                )}
+                
+                {/* Job Done Button - Show when coming from payment or workerId exists */}
+                {(fromPayment || workerId) && (
+                  <Button 
+                    onClick={handleJobDone}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle className="mr-2" size={18} />
+                    Job Done
+                  </Button>
+                )}
+              </div>
             </>
           ) : (
             <div className="text-center py-8">
@@ -212,6 +240,7 @@ const JobDetailPage: React.FC = () => {
         isOpen={showSuccessModal} 
         onClose={handleCloseSuccessModal}
         paymentMethod={paymentMethod}
+        jobId={jobId}
       />
       
       <Footer />

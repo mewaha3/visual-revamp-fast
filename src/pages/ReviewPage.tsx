@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
@@ -72,12 +72,12 @@ const ReviewPage: React.FC = () => {
               <div className="flex justify-center mb-2">
                 <Star className="text-yellow-400" size={32} />
               </div>
-              <CardTitle className="text-2xl">Review Employee</CardTitle>
+              <CardTitle className="text-2xl">Review Employer</CardTitle>
               <CardDescription>
                 ให้คะแนนและแสดงความคิดเห็น
                 {state?.workerName && (
                   <div className="mt-2 font-medium">
-                    คนงาน: {state.workerName}
+                    นายจ้าง: {state.workerName}
                   </div>
                 )}
                 {state?.jobType && (
