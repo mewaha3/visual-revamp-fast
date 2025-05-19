@@ -1,4 +1,3 @@
-
 export interface FindJob {
   findjob_id: string;
   first_name: string;
@@ -114,47 +113,25 @@ export const findJobs: FindJob[] = [
     start_salary: 3800,
     range_salary: 5500,
     gender: "Male"
-  }
-  {
-    findjob_id: "FJ2", first_name: "สมหญิง", last_name: "มีแก้ว", email: "somying@example.com",
-    job_type: "ครูสอน", skills: "สอนฝึกป,ฟุตบอล",
-    job_date: "2025-05-02", start_time: "09:00:00", end_time: "17:00:00",
-    job_address: "200 ถ.พาหุรัด 9 เชียงใหม่", province: "เชียงใหม่",
-    district: "เมืองเชียงใหม่", subdistrict: "สุเทพ", zip_code: "50200",
-    start_salary: 3200, range_salary: 5200, gender: "Female"
   },
   {
-    findjob_id: "FJ3", first_name: "วิเชษฐ์", last_name: "ไพบูลย์", email: "wattana@example.com",
-    job_type: "พ่อบ้าน", skills: "ทำความสะอาด,ซ่อม",
-    job_date: "2025-05-03", start_time: "10:00:00", end_time: "18:00:00",
-    job_address: "300 ถ.เพชรบุรี พะเยา", province: "เชียงใหม่",
-    district: "สันทราย", subdistrict: "ต้นเปา", zip_code: "40000",
-    start_salary: 3400, range_salary: 5400, gender: "Male"
-  },
-  {
-    findjob_id: "FJ4", first_name: "จันทร์พร", last_name: "สะอาดตา", email: "jinda@example.com",
-    job_type: "พนักงาน", skills: "เสิร์ฟ,แคชเชียร์",
-    job_date: "2025-05-04", start_time: "11:00:00", end_time: "19:00:00",
-    job_address: "400 ถ.เจริญกรุง ระนอง", province: "เชียงราย",
-    district: "เชียงแสน", subdistrict: "ตำบล3", zip_code: "20000",
-    start_salary: 3600, range_salary: 5600, gender: "Female"
-  },
-  {
-    findjob_id: "FJ5", first_name: "สุเทพ", last_name: "ประเสริฐ", email: "thanapol@example.com",
-    job_type: "พนักงาน", skills: "จัดส่ง,สต็อค",
-    job_date: "2025-05-05", start_time: "12:00:00", end_time: "20:00:00",
-    job_address: "500 ถ.พระราม 9 นครราชสีมา", province: "เชียงเหนือ",
-    district: "เชียงเหนือพัฒนา", subdistrict: "ตำบล4", zip_code: "30000",
-    start_salary: 3800, range_salary: 5500, gender: "Male"
-  },
-  // เพิ่มอีก 20 รายการ
-  {
-    findjob_id: "FJ6", first_name: "กัญญา", last_name: "จันทร์หอม", email: "kanya@example.com",
-    job_type: "แม่บ้าน", skills: "ซักผ้า,ล้างจาน",
-    job_date: "2025-05-06", start_time: "08:30:00", end_time: "16:30:00",
-    job_address: "600 ถ.สุขุมวิท หัวหิน", province: "ประจวบคีรีขันธ์",
-    district: "หัวหิน", subdistrict: "หัวหินใน", zip_code: "77110",
-    start_salary: 2900, range_salary: 4500, gender: "Female"
+    findjob_id: "FJ6", 
+    first_name: "กัญญา", 
+    last_name: "จันทร์หอม", 
+    email: "kanya@example.com",
+    job_type: "แม่บ้าน", 
+    skills: "ซักผ้า,ล้างจาน",
+    job_date: "2025-05-06", 
+    start_time: "08:30:00", 
+    end_time: "16:30:00",
+    job_address: "600 ถ.สุขุมวิท หัวหิน", 
+    province: "ประจวบคีรีขันธ์",
+    district: "หัวหิน", 
+    subdistrict: "หัวหินใน", 
+    zip_code: "77110",
+    start_salary: 2900, 
+    range_salary: 4500, 
+    gender: "Female"
   },
   {
     findjob_id: "FJ7", first_name: "จิราภรณ์", last_name: "สำราญ", email: "jiraporn@example.com",
