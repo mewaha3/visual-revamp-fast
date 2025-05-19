@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import TabMenu from '@/components/TabMenu';
 import { PostJobList, FindJobList } from '@/components/JobList';
@@ -10,7 +10,20 @@ import Footer from '@/components/Footer';
 
 const MyJobs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'post' | 'find'>('post');
-  const { userFullName } = useAuth();
+  const { userEmail, userFullName } = useAuth();
+  const [filteredPostJobs, setFilteredPostJobs] = useState([]);
+  const [filteredFindJobs, setFilteredFindJobs] = useState([]);
+  
+  useEffect(() => {
+    // Filter jobs by the logged-in user's email
+    if (userEmail) {
+      const userPostJobs = postJobs.filter(job => job.email === userEmail);
+      const userFindJobs = findJobs.filter(job => job.email === userEmail);
+      
+      setFilteredPostJobs(userPostJobs);
+      setFilteredFindJobs(userFindJobs);
+    }
+  }, [userEmail]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,8 +39,8 @@ const MyJobs: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">My Jobs</h1>
-                <p className="text-gray-600">สวัสดี, {userFullName || 'ผู้ใช้งาน'}</p>
+                <h1 className="text-2xl font-bold text-gray-800">งานของฉัน</h1>
+                <p className="text-gray-600">สวัสดี, {userFullName || userEmail || 'ผู้ใช้งาน'}</p>
               </div>
             </div>
 
@@ -36,12 +49,34 @@ const MyJobs: React.FC = () => {
             {activeTab === 'post' ? (
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🚀 รายการที่ลงโพสต์งาน</h2>
-                <PostJobList jobs={postJobs} />
+                {filteredPostJobs.length > 0 ? (
+                  <PostJobList jobs={filteredPostJobs} />
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>คุณยังไม่มีรายการประกาศงาน</p>
+                    <p className="mt-2">
+                      <a href="/post-job" className="text-fastlabor-600 hover:underline">
+                        ลงประกาศงานใหม่
+                      </a>
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🔍 รายการงานที่ค้นหา</h2>
-                <FindJobList jobs={findJobs} />
+                {filteredFindJobs.length > 0 ? (
+                  <FindJobList jobs={filteredFindJobs} />
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>คุณยังไม่มีรายการหางาน</p>
+                    <p className="mt-2">
+                      <a href="/find-job" className="text-fastlabor-600 hover:underline">
+                        สมัครเป็นแรงงาน
+                      </a>
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
