@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Briefcase, Search } from "lucide-react";
+import { Menu, X, User, LogOut, Briefcase, Search, ClipboardList } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
@@ -21,6 +20,7 @@ const Header = () => {
     { text: "ค้นหาแรงงาน", path: "/find-worker" },
     { text: "ประกาศหางาน", path: "/post-job", icon: <Briefcase size={16} />, requireAuth: true },
     { text: "สมัครเป็นแรงงาน", path: "/find-job", icon: <Search size={16} />, requireAuth: true },
+    { text: "งานของฉัน", path: "/my-jobs", icon: <ClipboardList size={16} />, requireAuth: true },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
   ];
