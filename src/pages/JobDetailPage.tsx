@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getJobDetails, getEmployerDetails } from '@/services/matchService';
 import { JobDetail, Employer } from '@/types/types';
 import { ArrowLeft, Calendar, Clock, MapPin, Banknote, FileText, User, Phone, Mail, CreditCard, CheckCircle } from 'lucide-react';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import PaymentModal from '@/components/payment/PaymentModal';
 import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
 
@@ -26,12 +26,18 @@ const JobDetailPage: React.FC = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [hasPaid, setHasPaid] = useState(false);
   
   // Check if we're coming from payment success
   const { state } = location;
   const fromPayment = state?.fromPayment || false;
   
   useEffect(() => {
+    // If coming from payment success, set hasPaid to true
+    if (fromPayment) {
+      setHasPaid(true);
+    }
+    
     const fetchData = async () => {
       if (!jobId) return;
       
@@ -57,7 +63,7 @@ const JobDetailPage: React.FC = () => {
     };
     
     fetchData();
-  }, [jobId]);
+  }, [jobId, fromPayment]);
 
   const handleOpenPaymentModal = () => {
     setShowPaymentModal(true);
@@ -67,6 +73,7 @@ const JobDetailPage: React.FC = () => {
     setPaymentMethod(selectedPaymentMethod);
     setShowPaymentModal(false);
     setShowSuccessModal(true);
+    setHasPaid(true); // Mark as paid when payment is confirmed
   };
 
   const handleCloseSuccessModal = () => {
@@ -198,8 +205,8 @@ const JobDetailPage: React.FC = () => {
               
               {/* Action Buttons */}
               <div className="mt-6 space-y-4">
-                {/* Payment Button - Show only if workerId exists and not coming from payment */}
-                {workerId && !fromPayment && (
+                {/* Payment Button - Show only if workerId exists and not paid yet */}
+                {workerId && !hasPaid && !fromPayment && (
                   <Button 
                     onClick={handleOpenPaymentModal}
                     className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
@@ -209,8 +216,8 @@ const JobDetailPage: React.FC = () => {
                   </Button>
                 )}
                 
-                {/* Job Done Button - Show when coming from payment or workerId exists */}
-                {(fromPayment || workerId) && (
+                {/* Job Done Button - Show only after payment */}
+                {(hasPaid || fromPayment) && workerId && (
                   <Button 
                     onClick={handleJobDone}
                     className="w-full bg-green-600 hover:bg-green-700 text-white"

@@ -72,12 +72,12 @@ const ReviewPage: React.FC = () => {
               <div className="flex justify-center mb-2">
                 <Star className="text-yellow-400" size={32} />
               </div>
-              <CardTitle className="text-2xl">Review Employer</CardTitle>
+              <CardTitle className="text-2xl">Review Employee</CardTitle>
               <CardDescription>
                 ให้คะแนนและแสดงความคิดเห็น
                 {state?.workerName && (
                   <div className="mt-2 font-medium">
-                    นายจ้าง: {state.workerName}
+                    ช่าง: {state.workerName}
                   </div>
                 )}
                 {state?.jobType && (
