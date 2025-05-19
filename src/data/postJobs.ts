@@ -164,12 +164,12 @@ export const postJobs: PostJob[] = [
     zip_code: "11000"
   },
   {
-    job_id: "PJ8",
+    job_id: "PJ9",
     first_name: "สมชาย",
     last_name: "สุขใจดี",
     gender: "Female",
     email: "somchai@example.com",
-    job_type: "พ่อบ้าน",
+    job_type: "คนขับรถ",
     job_detail: "จัดแสดงสินค้า",
     salary: 3600,
     job_date: "2025-06-05",
