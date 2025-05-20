@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -10,10 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserJobs } from '@/services/jobService';
 import { getUserFindJobs } from '@/services/findJobService';
 import { getUserMatches, acceptJobMatch, declineJobMatch } from '@/services/matchService';
-import { Job } from '@/types/types';
-import { FindJob } from '@/data/findJobs';
-import { FindMatch } from '@/types/types';
-import { Clipboard, BarChart, Check, X, RefreshCw } from 'lucide-react';
+import { Job, FindJob, FindMatch } from '@/types/types';
+import { Clipboard, Check, X, RefreshCw } from 'lucide-react';
 import { toast } from "sonner";
 
 const MyJobsPage: React.FC = () => {
@@ -27,36 +24,8 @@ const MyJobsPage: React.FC = () => {
   const activeTab = location.pathname.includes('/my-jobs/find') ? 'find' : 'post';
   
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Fetch posted jobs
-        const userJobs = getUserJobs(userEmail);
-        setJobs(userJobs);
-        
-        // Fetch find jobs
-        const userFindJobs = getUserFindJobs(userEmail);
-        setFindJobs(userFindJobs);
-        
-        // Fetch job matches
-        if (userEmail) {
-          const userMatches = await getUserMatches(userEmail);
-          setMatches(userMatches);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchData();
   }, [userEmail]);
-  
-  const handleRefresh = () => {
-    fetchData();
-  };
   
   const fetchData = async () => {
     setLoading(true);
@@ -67,7 +36,7 @@ const MyJobsPage: React.FC = () => {
       
       // Fetch find jobs
       const userFindJobs = getUserFindJobs(userEmail);
-      setFindJobs(userFindJobs);
+      setFindJobs(userFindJobs as FindJob[]);
       
       // Fetch job matches
       if (userEmail) {
@@ -82,6 +51,10 @@ const MyJobsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const handleRefresh = () => {
+    fetchData();
   };
   
   const handleAcceptJob = async (findjobId: string, jobId: string) => {
@@ -168,7 +141,7 @@ const MyJobsPage: React.FC = () => {
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">ชนิด:</span>
+                              <span className="font-medium">ช��ิด:</span>
                               <span className="col-span-2">{job.job_type}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">

@@ -1,12 +1,11 @@
 import React from 'react';
-import { PostJob } from '@/data/postJobs';
-import { FindJob } from '@/data/findJobs';
+import { Job, FindJob } from '@/types/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 interface PostJobListProps {
-  jobs: PostJob[];
+  jobs: Job[];
 }
 
 interface FindJobListProps {

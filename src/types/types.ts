@@ -1,4 +1,3 @@
-
 export interface Job {
   job_id: string;
   job_type: string;
@@ -40,7 +39,7 @@ export interface StatusResult extends MatchResult {
 
 export interface FindJob {
   findjob_id: string;
-  job_type: string;
+  job_type: string;  // Keep job_type as string without modification
   skills: string;
   job_date: string;
   start_time: string;
@@ -55,7 +54,7 @@ export interface FindJob {
   last_name: string;
   job_address: string;
   zip_code: string;
-  gender: string;
+  gender: string;  // Changed from enum type to string to match implementation
 }
 
 export interface FindMatch {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +8,7 @@ import Footer from '@/components/Footer';
 import { getUserJobs } from '@/services/jobService';
 import { getUserFindJobs } from '@/services/findJobService';
 import { Button } from "@/components/ui/button";
-import { Job } from '@/types/types';
-import { FindJob } from '@/data/findJobs';
+import { Job, FindJob } from '@/types/types';
 import { RefreshCw } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -35,7 +33,7 @@ const MyJobs: React.FC = () => {
         const userFindJobs = getUserFindJobs(userEmail);
         
         setFilteredPostJobs(userPostJobs);
-        setFilteredFindJobs(userFindJobs);
+        setFilteredFindJobs(userFindJobs as FindJob[]);
       }
     } catch (error) {
       console.error("Error fetching jobs:", error);
