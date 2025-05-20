@@ -24,29 +24,6 @@ const Hero = () => {
             แพลตฟอร์มที่เชื่อมโยงผู้ว่าจ้างกับแรงงานฝีมือที่เชื่อถือได้ ผ่านระบบที่สะดวกและรวดเร็ว
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button 
-              size="lg" 
-              className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white px-8 py-6 text-lg font-medium"
-              asChild
-            >
-              <Link to="/post-job">
-                ประกาศหางาน
-              </Link>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 px-8 py-6 text-lg font-medium"
-              asChild
-            >
-              <Link to="/register">
-                สมัครเป็นแรงงาน
-                <ArrowRight size={18} className="ml-2" />
-              </Link>
-            </Button>
-          </div>
-          
           <div className="pt-8 grid grid-cols-3 gap-8 max-w-lg mx-auto lg:mx-0">
             <div className="text-center">
               <p className="text-3xl font-bold text-fastlabor-600">1000+</p>
