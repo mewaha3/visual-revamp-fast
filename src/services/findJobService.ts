@@ -1,6 +1,6 @@
 
 import { findJobs } from "@/data/findJobs";
-import { FindJob } from "@/data/findJobs";
+import { FindJob } from "@/types/types";
 
 // Get all find jobs from a specific user
 export const getUserFindJobs = (email: string | null): FindJob[] => {
@@ -28,6 +28,9 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
     email: jobData.email || "",
     first_name: jobData.first_name || "",
     last_name: jobData.last_name || "",
+    job_address: jobData.job_address || "", // Added field
+    zip_code: jobData.zip_code || "", // Added field
+    gender: jobData.gender || "", // Added field
   };
   
   // Add the new find job to the array - in a real app this would save to a database

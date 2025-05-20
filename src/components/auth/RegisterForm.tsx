@@ -27,13 +27,17 @@ import {
 import PasswordInput from "./PasswordInput";
 import { useToast } from "@/hooks/use-toast";
 import DocumentUpload from "../upload/DocumentUpload";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 // Define form validation schema
 const formSchema = z.object({
   first_name: z.string().min(1, { message: "กรุณากรอกชื่อ" }),
   last_name: z.string().min(1, { message: "กรุณากรอกนามสกุล" }),
   national_id: z.string().min(13, { message: "กรุณากรอกเลขบัตรประชาชน 13 หลัก" }).max(13),
-  dob: z.string().min(1, { message: "กรุณาเลือกวันเกิด" }),
+  dob: z.date({ required_error: "กรุณาเลือกวันเกิด" }),
   gender: z.string().min(1, { message: "กรุณาเลือกเพศ" }),
   nationality: z.string().min(1, { message: "กรุณากรอกสัญชาติ" }),
   address: z.string().min(1, { message: "กรุณากรอกที่อยู่" }),
@@ -88,13 +92,16 @@ const RegisterForm = () => {
     work_permit: null as File | null,
   });
 
+  // Calculate date 18 years ago for minimum age limit (allowing up to 2007 as requested)
+  const eighteenYearsAgo = new Date();
+  eighteenYearsAgo.setFullYear(2007);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       first_name: "",
       last_name: "",
       national_id: "",
-      dob: "",
       gender: "",
       nationality: "",
       address: "",
@@ -140,15 +147,17 @@ const RegisterForm = () => {
         return;
       }
       
+      // Format the date to string for storing
+      const formattedDate = format(values.dob, "yyyy-MM-dd");
+      
       // Create the new user object with all required fields explicitly set
-      // All fields that are marked as required in the User interface must be included
       const newUser = {
         first_name: values.first_name,
         last_name: values.last_name,
         email: values.email,
         password: values.password,
         national_id: values.national_id,
-        dob: values.dob,
+        dob: formattedDate,
         gender: values.gender,
         nationality: values.nationality,
         address: values.address,
@@ -178,7 +187,7 @@ const RegisterForm = () => {
       navigate("/login");
     } catch (err: any) {
       console.error("Registration error:", err);
-      setErrorMessage(err.message || "เกิดข้อผิดพลาดในการลงทะเบียน โปรดลองอีกครั้ง");
+      setErrorMessage(err.message || "เกิดข้อผิด��ลาดในการลงทะเบียน โปรดลองอีกครั้ง");
     } finally {
       setIsSubmitting(false);
     }
@@ -247,22 +256,51 @@ const RegisterForm = () => {
           )}
         />
 
-        {/* Date of Birth */}
+        {/* Date of Birth - Updated to use Calendar component */}
         <FormField
           control={form.control}
           name="dob"
           render={({ field }) => (
             <FormItem>
               <FormLabel>วันเกิด <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input type="date" className="pl-10" {...field} />
-                  <Calendar
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    size={16}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full pl-10 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "dd/MM/yyyy")
+                      ) : (
+                        <span>เลือกวันเกิด</span>
+                      )}
+                      <Calendar
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                        size={16}
+                      />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    defaultMonth={eighteenYearsAgo}
+                    fromYear={1900}
+                    toYear={2007}
+                    captionLayout="dropdown-buttons"
+                    className="pointer-events-auto"
                   />
-                </div>
-              </FormControl>
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

@@ -35,6 +35,7 @@ import EmployerReviewPage from "./pages/EmployerReviewPage";
  * 3. Setting "noEmit": true in tsconfig.json
  *
  * Since we can't modify tsconfig.json directly, we're addressing this with the cleanup script.
+ * For now, we can safely ignore these errors as they don't affect the functionality of the app.
  */
 
 const queryClient = new QueryClient({

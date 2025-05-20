@@ -1,11 +1,10 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Lock } from "lucide-react";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Mail } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
-
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,155 +15,129 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import PasswordInput from "./PasswordInput";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email({ message: "รูปแบบอีเมลไม่ถูกต้อง" }),
-  password: z.string().min(1, { message: "กรุณากรอกรหัสผ่าน" }),
-  rememberMe: z.boolean().optional(),
+  email: z.string().email({
+    message: "กรุณากรอกอีเมลให้ถูกต้อง",
+  }),
+  password: z.string().min(1, {
+    message: "กรุณากรอกรหัสผ่าน",
+  }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
-
-interface LoginFormProps {
-  redirectPath?: string;
-}
-
-const LoginForm = ({ redirectPath = "/upload-documents" }: LoginFormProps) => {
-  const navigate = useNavigate();
-  const location = useLocation();
+const LoginForm = () => {
   const { login } = useAuth();
-  const { toast } = useToast();
-  const [errorMsg, setErrorMsg] = useState("");
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  // Get the intended destination from location state (if any)
-  const from = location.state?.from || redirectPath;
-
-  const form = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
-      rememberMe: false,
     },
   });
 
-  async function onSubmit(values: FormValues) {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
-    setErrorMsg("");
-    
+    setError(null);
+
     try {
-      console.log("Attempting login with:", values.email);
-      const ok = await login(values.email, values.password);
-      
-      if (ok) {
+      const success = await login(values.email, values.password);
+
+      if (success) {
         toast({
           title: "เข้าสู่ระบบสำเร็จ",
-          description: "ยินดีต้อนรับกลับมา!",
+          description: "ยินดีต้อนรับกลับมาอีกครั้ง",
         });
-        navigate(from); // Navigate to the intended destination
+        // Changed this line to navigate to the home page instead of upload-documents
+        navigate("/");
       } else {
-        setErrorMsg("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+        setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }
-    } catch (error) {
-      console.error("Login error:", error);
-      setErrorMsg("เกิดข้อผิดพลาด โปรดลองอีกครั้งในภายหลัง");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("เกิดข้อผิดพลาดในการเข้าสู่ระบบ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <>
-      {errorMsg && (
-        <p className="mb-4 text-center text-red-600">{errorMsg}</p>
-      )}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>อีเมล</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="email"
-                      placeholder="อีเมล"
-                      className="pl-10"
-                      {...field}
-                    />
-                    <Mail
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                      size={16}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <PasswordInput
-            name="password"
-            label="รหัสผ่าน"
-            placeholder="รหัสผ่าน"
-          />
-
-          <div className="flex items-center justify-between">
-            <FormField
-              control={form.control}
-              name="rememberMe"
-              render={({ field }) => (
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="rememberMe"
-                    checked={field.value}
-                    onCheckedChange={(v) => field.onChange(v)}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>อีเมล</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    placeholder="อีเมล"
+                    {...field}
+                    className="pl-10"
+                    type="email"
                   />
-                  <label
-                    htmlFor="rememberMe"
-                    className="text-sm font-medium leading-none"
-                  >
-                    จดจำฉัน
-                  </label>
+                  <Mail
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    size={16}
+                  />
                 </div>
-              )}
-            />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <a
-              href="#"
-              className="text-sm text-fastlabor-600 hover:underline"
-            >
-              ลืมรหัสผ่าน?
-            </a>
-          </div>
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>รหัสผ่าน</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    type="password"
+                    placeholder="รหัสผ่าน"
+                    {...field}
+                    className="pl-10"
+                  />
+                  <Lock
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    size={16}
+                  />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Button
-            type="submit"
-            className="w-full bg-fastlabor-600 hover:bg-fastlabor-700"
-            disabled={isLoading}
-          >
-            {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-          </Button>
+        {error && <div className="text-sm font-medium text-destructive">{error}</div>}
 
-          <p className="text-center mt-4 text-sm text-gray-600">
-            ยังไม่มีบัญชี?{" "}
-            <a
-              href="/register"
-              className="text-fastlabor-600 hover:underline"
-            >
-              สมัครสมาชิกใหม่
-            </a>
-          </p>
-        </form>
-      </Form>
-    </>
+        <Button
+          type="submit"
+          className="w-full bg-fastlabor-600 hover:bg-fastlabor-700"
+          disabled={isLoading}
+        >
+          {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+        </Button>
+
+        <div className="text-center text-sm">
+          ยังไม่มีบัญชี?{" "}
+          <a href="/register" className="text-fastlabor-600 hover:underline">
+            สมัครสมาชิก
+          </a>
+        </div>
+      </form>
+    </Form>
   );
 };
 
