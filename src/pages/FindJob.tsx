@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { addNewFindJob } from "@/services/findJobService";
 import { JOB_TYPES } from "@/types/types";
 import { getJobIcon } from "@/utils/jobIcons";
+import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 
 const FindJob: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ const FindJob: React.FC = () => {
     subdistrict: "",
     startSalary: "",
     rangeSalary: "",
+    address: "", // Added address field
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -55,7 +57,7 @@ const FindJob: React.FC = () => {
       // Validate form
       if (!formData.jobType || !formData.skills || !formData.jobDate || 
           !formData.startTime || !formData.endTime || !formData.province || 
-          !formData.startSalary) {
+          !formData.startSalary || !formData.address) {  // Added address to validation
         toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
         return;
       }
@@ -75,9 +77,9 @@ const FindJob: React.FC = () => {
         email: userEmail || "",
         first_name: userFullName?.split(" ")[0] || "",
         last_name: userFullName?.split(" ")[1] || "",
-        job_address: "", // Added required field
-        zip_code: "", // Added required field
-        gender: "", // Added required field
+        job_address: formData.address, // Using the address field
+        zip_code: "", // Required field but not collected in this form
+        gender: "", // Required field but not collected in this form
       };
 
       // Add the new find job
@@ -203,6 +205,19 @@ const FindJob: React.FC = () => {
               
               <div className="space-y-4">
                 <h2 className="font-medium text-gray-700">Address Information</h2>
+                
+                {/* Added address field */}
+                <div>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address (House No, Street, Area) *</label>
+                  <Textarea
+                    id="address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    placeholder="Enter your address"
+                    required
+                  />
+                </div>
                 
                 <div>
                   <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
