@@ -17,9 +17,6 @@ const Header = () => {
   const navLinks = [
     { text: "หน้าหลัก", path: "/" },
     { text: "บริการ", path: "/services" },
-    { text: "ค้นหาแรงงาน", path: "/find-worker" },
-    { text: "ประกาศหางาน", path: "/post-job", icon: <Briefcase size={16} />, requireAuth: true },
-    { text: "สมัครเป็นแรงงาน", path: "/find-job", icon: <Search size={16} />, requireAuth: true },
     { text: "งานของฉัน", path: "/my-jobs", icon: <ClipboardList size={16} />, requireAuth: true },
     { text: "เกี่ยวกับเรา", path: "/about" },
     { text: "ติดต่อ", path: "/contact" },
