@@ -25,15 +25,16 @@ import ReviewPage from "./pages/ReviewPage";
 import WorkerJobDetailPage from "./pages/WorkerJobDetailPage";
 import EmployerReviewPage from "./pages/EmployerReviewPage";
 
-// คำอธิบายการแก้ปัญหาโดยไม่ต้องแก้ไข tsconfig.json:
-/*
- * เนื่องจากเราไม่สามารถแก้ไข tsconfig.json เพื่อตั้งค่า `"declaration": false` หรือ `"noEmit": true` ได้
- * เราจึงใช้สคริปต์ pre-build เพื่อลบไฟล์ .d.ts ทั้งหมดในโฟลเดอร์ src/
- * วิธีนี้แก้ไขปัญหา TS6305 โดยการทำให้แน่ใจว่าไม่มีไฟล์ declaration เก่าที่ไม่ตรงกับไฟล์ต้นฉบับ
- * สามารถรันด้วยคำสั่ง:
- * npm run cleanup && npm run build
- * หรือตั้งค่าสคริปต์ prebuild ใน package.json:
- * "prebuild": "node src/scripts/cleanup-declarations.js"
+/* 
+ * Note about the TS6305 errors:
+ * These errors appear because TypeScript is trying to generate declaration files (.d.ts) 
+ * but some source files have not been properly built yet.
+ * This is typically fixed by:
+ * 1. Setting "declaration": false in tsconfig.json
+ * 2. Using a prebuild script to clean up old declaration files
+ * 3. Setting "noEmit": true in tsconfig.json
+ *
+ * Since we can't modify tsconfig.json directly, we're addressing this with the cleanup script.
  */
 
 const queryClient = new QueryClient();

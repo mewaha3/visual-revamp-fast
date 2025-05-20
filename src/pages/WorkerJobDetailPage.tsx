@@ -8,7 +8,7 @@ import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, RefreshCcw } from 'lucide-react';
 import { toast } from "sonner";
 
 const WorkerJobDetailPage: React.FC = () => {
@@ -35,6 +35,10 @@ const WorkerJobDetailPage: React.FC = () => {
     }
   };
 
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -49,13 +53,24 @@ const WorkerJobDetailPage: React.FC = () => {
           ) : error ? (
             <div className="text-center py-8">
               <p className="text-red-500">{error}</p>
-              <Button 
-                onClick={() => navigate("/my-jobs/find")} 
-                variant="outline" 
-                className="mt-4"
-              >
-                กลับไปยังรายการงาน
-              </Button>
+              <div className="mt-4 flex flex-col gap-3">
+                <Button 
+                  onClick={handleRetry} 
+                  variant="outline" 
+                  className="mx-auto"
+                >
+                  <RefreshCcw className="mr-2" size={18} />
+                  ลองใหม่อีกครั้ง
+                </Button>
+                
+                <Button 
+                  onClick={() => navigate("/my-jobs/find")} 
+                  variant="outline" 
+                  className="mx-auto"
+                >
+                  กลับไปยังรายการงาน
+                </Button>
+              </div>
             </div>
           ) : jobDetails ? (
             <>

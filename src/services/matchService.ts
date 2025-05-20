@@ -41,6 +41,20 @@ const mockMatches: FindMatch[] = [
     district: "ปากเกร็ด",
     subdistrict: "บางตลาด",
     salary: 600
+  },
+  // Adding PJ8 to mock data
+  {
+    findjob_id: "FJ4",
+    job_id: "PJ8",
+    job_type: "พนักงานบริการ",
+    detail: "งานบริการลูกค้าในร้านอาหาร",
+    job_date: "2025-06-25",
+    start_time: "11:00:00",
+    end_time: "20:00:00",
+    province: "กรุงเทพฯ",
+    district: "บางนา",
+    subdistrict: "บางนา",
+    salary: 700
   }
 ];
 
@@ -87,6 +101,21 @@ const mockJobDetails: Record<string, JobDetail> = {
     subdistrict: "บางตลาด",
     salary: 600,
     job_address: "เลขที่ 123 หมู่ 4 ถนนแจ้งวัฒนะ ตำบลบางตลาด อำเภอปากเกร็ด จังหวัดนนทบุรี 11120"
+  },
+  // Add PJ8 job details
+  "PJ8": {
+    findjob_id: "FJ4",
+    job_id: "PJ8",
+    job_type: "พนักงานบริการ",
+    detail: "งานบริการลูกค้าในร้านอาหาร The Garden หน้าที่รับผิดชอบ: ต้อนรับลูกค้า, แนะนำเมนู, เสิร์ฟอาหาร",
+    job_date: "2025-06-25",
+    start_time: "11:00:00",
+    end_time: "20:00:00",
+    province: "กรุงเทพฯ",
+    district: "บางนา",
+    subdistrict: "บางนา",
+    salary: 700,
+    job_address: "เลขที่ 88 ซอยบางนา-ตราด 30 แขวงบางนา เขตบางนา กรุงเทพฯ 10260"
   }
 };
 
@@ -106,6 +135,12 @@ const mockEmployers: Record<string, Employer> = {
     name: "คุณมานะ ใจดี",
     phone: "089-876-5432",
     email: "mana@example.com"
+  },
+  // Add PJ8 employer
+  "PJ8": {
+    name: "คุณวิชัย อาหารอร่อย",
+    phone: "065-789-1234",
+    email: "wichai@example.com"
   }
 };
 

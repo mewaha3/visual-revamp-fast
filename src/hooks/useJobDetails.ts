@@ -36,6 +36,10 @@ export const useJobDetails = (jobId?: string) => {
         console.error("Error fetching job details:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");
         toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+        
+        // Reset job and employer data to ensure we don't show stale data
+        setJobDetails(null);
+        setEmployer(null);
       } finally {
         setLoading(false);
       }
