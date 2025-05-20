@@ -22,11 +22,15 @@ function Calendar({
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-base font-medium", // Increased size for better readability
+        caption_label: "hidden", // Hide the default caption label that shows month and year together
+        caption_dropdowns: "flex justify-center gap-1 items-center", // Better spacing for dropdowns
+        dropdown: "appearance-none bg-white border rounded-md px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary", // Improved dropdown styling
+        dropdown_month: "mr-1", // Add spacing between month dropdown and year dropdown 
+        dropdown_year: "ml-1", // Add spacing between dropdowns
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
-          "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100" // Larger buttons and improved visibility
+          "h-9 w-9 bg-transparent p-0 opacity-70 hover:opacity-100" // Larger buttons and improved visibility
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
@@ -55,7 +59,21 @@ function Calendar({
       components={{
         IconLeft: ({ ..._props }) => <ChevronLeft className="h-5 w-5" />, // Larger navigation icons
         IconRight: ({ ..._props }) => <ChevronRight className="h-5 w-5" />, // Larger navigation icons
+        Dropdown: ({ value, onChange, children, ...props }) => {
+          // Custom dropdown styling to ensure clear separation
+          return (
+            <select
+              value={value}
+              onChange={onChange}
+              className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1 text-base focus:outline-none focus:ring-1 focus:ring-primary"
+              {...props}
+            >
+              {children}
+            </select>
+          );
+        }
       }}
+      captionLayout="dropdown-buttons"
       {...props}
     />
   );
