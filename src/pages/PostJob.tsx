@@ -20,7 +20,7 @@ const PostJob = () => {
   const navigate = useNavigate();
   const { userEmail, userFullName } = useAuth();
   const [formData, setFormData] = useState({
-    jobTitle: "",
+    JobType: "",
     jobDetail: "",
     startDate: "",
     endDate: "",
@@ -52,7 +52,7 @@ const PostJob = () => {
     e.preventDefault();
     try {
       // Validate form (simple validation)
-      if (!formData.jobTitle || !formData.jobDetail || !formData.startDate || 
+      if (!formData.JobType || !formData.jobDetail || !formData.startDate || 
           !formData.startTime || !formData.endTime || !formData.address || 
           !formData.province || !formData.salary) {
         toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
@@ -61,7 +61,7 @@ const PostJob = () => {
 
       // Create job data
       const jobData = {
-        job_type: formData.jobTitle,
+        job_type: formData.JobType,
         job_detail: formData.jobDetail,
         job_date: formData.startDate,
         start_time: formData.startTime,
@@ -111,11 +111,11 @@ const PostJob = () => {
                 <h2 className="font-medium text-gray-700">Job Information</h2>
                 
                 <div>
-                  <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+                  <label htmlFor="JobType" className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
                   <Input
-                    id="jobTitle"
-                    name="jobTitle"
-                    value={formData.jobTitle}
+                    id="JobType"
+                    name="JobType"
+                    value={formData.JobType}
                     onChange={handleChange}
                     placeholder="Enter job title"
                     required
