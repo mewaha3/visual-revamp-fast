@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Mail, User, Calendar, MapPin, Flag } from "lucide-react";
+import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import DocumentUpload from "../upload/DocumentUpload";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 // Define form validation schema
@@ -91,10 +91,11 @@ const RegisterForm = () => {
     visa: null as File | null,
     work_permit: null as File | null,
   });
-
-  // Calculate date 18 years ago for minimum age limit (allowing up to 2007 as requested)
-  const eighteenYearsAgo = new Date();
-  eighteenYearsAgo.setFullYear(2007);
+  
+  // Calculate a reasonable year range for birthdate selection
+  const currentYear = new Date().getFullYear();
+  const minYear = currentYear - 80; // Allow birth years up to 80 years ago
+  const maxYear = 2007; // As per your requirement
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -187,7 +188,7 @@ const RegisterForm = () => {
       navigate("/login");
     } catch (err: any) {
       console.error("Registration error:", err);
-      setErrorMessage(err.message || "เกิดข้อผิด��ลาดในการลงทะเบียน โปรดลองอีกครั้ง");
+      setErrorMessage(err.message || "เกิดข้อผิดพลาดในการลงทะเบียน โปรดลองอีกครั้ง");
     } finally {
       setIsSubmitting(false);
     }
@@ -256,12 +257,12 @@ const RegisterForm = () => {
           )}
         />
 
-        {/* Date of Birth - Updated to use Calendar component */}
+        {/* Enhanced Date of Birth - with better accessibility and user experience */}
         <FormField
           control={form.control}
           name="dob"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col space-y-1">
               <FormLabel>วันเกิด <span className="text-red-500">*</span></FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
@@ -269,35 +270,46 @@ const RegisterForm = () => {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full pl-10 text-left font-normal",
+                        "w-full pl-10 text-left font-normal flex justify-between items-center",
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "dd/MM/yyyy")
-                      ) : (
-                        <span>เลือกวันเกิด</span>
-                      )}
-                      <Calendar
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                        size={16}
-                      />
+                      <div className="flex items-center">
+                        <Calendar
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                          size={16}
+                        />
+                        <span>
+                          {field.value ? (
+                            format(field.value, "dd/MM/yyyy")
+                          ) : (
+                            "เลือกวันเกิด"
+                          )}
+                        </span>
+                      </div>
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
+                  <div className="p-3 border-b border-gray-100">
+                    <div className="text-sm font-medium">เลือกวันเกิด</div>
+                    <div className="text-xs text-gray-500">
+                      กรุณาเลือกวันเดือนปีเกิดของคุณ
+                    </div>
+                  </div>
                   <CalendarComponent
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
                     disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
+                      date > new Date() || date < new Date(`${minYear}-01-01`)
                     }
-                    defaultMonth={eighteenYearsAgo}
-                    fromYear={1900}
-                    toYear={2007}
+                    initialFocus
+                    defaultMonth={field.value || new Date(2000, 0)}
+                    fromYear={minYear}
+                    toYear={maxYear}
                     captionLayout="dropdown-buttons"
-                    className="pointer-events-auto"
+                    className="rounded-md border-none shadow-none"
                   />
                 </PopoverContent>
               </Popover>
