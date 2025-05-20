@@ -57,7 +57,7 @@ const LocationDetailsForm = ({
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
-              <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
+              <SelectItem value="loading-province" disabled>กำลังโหลดข้อมูล...</SelectItem>
             ) : provinces.length > 0 ? (
               provinces.map((prov) => (
                 <SelectItem key={prov.id} value={prov.name_th}>
@@ -89,7 +89,7 @@ const LocationDetailsForm = ({
           </SelectTrigger>
           <SelectContent>
             {!province ? (
-              <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
+              <SelectItem value="select-province-first" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
             ) : districts.length > 0 ? (
               districts.map((dist) => (
                 <SelectItem key={dist.id} value={dist.name_th}>
@@ -120,7 +120,7 @@ const LocationDetailsForm = ({
           </SelectTrigger>
           <SelectContent>
             {!district ? (
-              <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
+              <SelectItem value="select-district-first" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
             ) : subdistricts.length > 0 ? (
               subdistricts.map((tambon) => (
                 <SelectItem key={tambon.id} value={tambon.name_th}>

@@ -134,7 +134,7 @@ const FindJob = () => {
                   <SelectValue placeholder="Job Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Job Types</SelectItem>
+                  <SelectItem value="all-types">All Job Types</SelectItem>
                   <SelectItem value="Driver">Driver</SelectItem>
                   <SelectItem value="Housekeeping">Housekeeping</SelectItem>
                   <SelectItem value="Service">Service</SelectItem>
@@ -153,7 +153,7 @@ const FindJob = () => {
                   <SelectValue placeholder="Province" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Provinces</SelectItem>
+                  <SelectItem value="all-provinces">All Provinces</SelectItem>
                   {isLoading ? (
                     <SelectItem value="loading" disabled>
                       กำลังโหลดข้อมูล...
@@ -178,7 +178,7 @@ const FindJob = () => {
                   <SelectValue placeholder="District" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Districts</SelectItem>
+                  <SelectItem value="all-districts">All Districts</SelectItem>
                   {!provinceFilter ? (
                     <SelectItem value="select-province" disabled>
                       โปรดเลือกจังหวัดก่อน
@@ -203,7 +203,7 @@ const FindJob = () => {
                   <SelectValue placeholder="Subdistrict" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Subdistricts</SelectItem>
+                  <SelectItem value="all-subdistricts">All Subdistricts</SelectItem>
                   {!districtFilter ? (
                     <SelectItem value="select-district" disabled>
                       โปรดเลือกอำเภอ/เขตก่อน
