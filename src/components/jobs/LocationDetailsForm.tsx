@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Province, Amphure, Tambon } from "@/types/locationTypes";
 
 interface LocationDetailsFormProps {
   province: string;
@@ -17,6 +18,12 @@ interface LocationDetailsFormProps {
   onDistrictChange: (value: string) => void;
   onSubdistrictChange: (value: string) => void;
   onPostalCodeChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  provinces?: Province[];
+  districts?: Amphure[];
+  subdistricts?: Tambon[];
+  isLoading?: boolean;
+  error?: string | null;
+  zipCodeReadOnly?: boolean;
 }
 
 const LocationDetailsForm = ({
@@ -27,7 +34,13 @@ const LocationDetailsForm = ({
   onProvinceChange,
   onDistrictChange,
   onSubdistrictChange,
-  onPostalCodeChange
+  onPostalCodeChange,
+  provinces = [],
+  districts = [],
+  subdistricts = [],
+  isLoading = false,
+  error = null,
+  zipCodeReadOnly = false
 }: LocationDetailsFormProps) => {
   return (
     <div className="space-y-4">
@@ -43,12 +56,25 @@ const LocationDetailsForm = ({
             <SelectValue placeholder="Select Province" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
-            <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
-            <SelectItem value="phuket">ภูเก็ต</SelectItem>
-            <SelectItem value="chonburi">ชลบุรี</SelectItem>
+            {isLoading ? (
+              <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
+            ) : provinces.length > 0 ? (
+              provinces.map((prov) => (
+                <SelectItem key={prov.id} value={prov.name_th}>
+                  {prov.name_th}
+                </SelectItem>
+              ))
+            ) : (
+              <>
+                <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
+                <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
+                <SelectItem value="phuket">ภูเก็ต</SelectItem>
+                <SelectItem value="chonburi">ชลบุรี</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
+        {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
       </div>
       
       <div>
@@ -56,15 +82,28 @@ const LocationDetailsForm = ({
         <Select
           value={district}
           onValueChange={onDistrictChange}
+          disabled={!province}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select District" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="district1">เขตพระนคร</SelectItem>
-            <SelectItem value="district2">เขตดุสิต</SelectItem>
-            <SelectItem value="district3">เขตหนองจอก</SelectItem>
-            <SelectItem value="district4">เขตบางรัก</SelectItem>
+            {!province ? (
+              <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
+            ) : districts.length > 0 ? (
+              districts.map((dist) => (
+                <SelectItem key={dist.id} value={dist.name_th}>
+                  {dist.name_th}
+                </SelectItem>
+              ))
+            ) : (
+              <>
+                <SelectItem value="district1">เขตพระนคร</SelectItem>
+                <SelectItem value="district2">เขตดุสิต</SelectItem>
+                <SelectItem value="district3">เขตหนองจอก</SelectItem>
+                <SelectItem value="district4">เขตบางรัก</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -74,15 +113,28 @@ const LocationDetailsForm = ({
         <Select
           value={subdistrict}
           onValueChange={onSubdistrictChange}
+          disabled={!district}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select Subdistrict" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
-            <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
-            <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
-            <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
+            {!district ? (
+              <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
+            ) : subdistricts.length > 0 ? (
+              subdistricts.map((tambon) => (
+                <SelectItem key={tambon.id} value={tambon.name_th}>
+                  {tambon.name_th}
+                </SelectItem>
+              ))
+            ) : (
+              <>
+                <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
+                <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
+                <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
+                <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
+              </>
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -95,6 +147,8 @@ const LocationDetailsForm = ({
           value={postalCode}
           onChange={onPostalCodeChange}
           placeholder="Enter postal code"
+          readOnly={zipCodeReadOnly}
+          className={zipCodeReadOnly ? "bg-gray-100" : ""}
         />
       </div>
     </div>

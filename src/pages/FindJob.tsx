@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -19,6 +18,7 @@ import { addNewFindJob } from "@/services/findJobService";
 import { JOB_TYPES } from "@/types/types";
 import { getJobIcon } from "@/utils/jobIcons";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
+import useThailandLocations from "@/hooks/useThailandLocations";
 
 const FindJob: React.FC = () => {
   const navigate = useNavigate();
@@ -34,8 +34,21 @@ const FindJob: React.FC = () => {
     subdistrict: "",
     startSalary: "",
     rangeSalary: "",
-    address: "", // Added address field
+    address: "", 
   });
+
+  // Use the Thailand locations hook
+  const {
+    provinces,
+    filteredAmphures,
+    filteredTambons,
+    isLoading,
+    error,
+    zipCode,
+    handleProvinceChange,
+    handleAmphureChange,
+    handleTambonChange,
+  } = useThailandLocations();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -45,10 +58,33 @@ const FindJob: React.FC = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    if (name === "province") {
+      handleProvinceChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+        district: "",
+        subdistrict: "",
+      });
+    } else if (name === "district") {
+      handleAmphureChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+        subdistrict: "",
+      });
+    } else if (name === "subdistrict") {
+      handleTambonChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -206,7 +242,7 @@ const FindJob: React.FC = () => {
               <div className="space-y-4">
                 <h2 className="font-medium text-gray-700">Address Information</h2>
                 
-                {/* Added address field */}
+                {/* Address field */}
                 <div>
                   <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address (House No, Street, Area) *</label>
                   <Textarea
@@ -219,6 +255,7 @@ const FindJob: React.FC = () => {
                   />
                 </div>
                 
+                {/* Province */}
                 <div>
                   <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
                   <Select
@@ -229,46 +266,64 @@ const FindJob: React.FC = () => {
                       <SelectValue placeholder="Select Province" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
-                      <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
-                      <SelectItem value="phuket">ภูเก็ต</SelectItem>
-                      <SelectItem value="chonburi">ชลบุรี</SelectItem>
+                      {isLoading ? (
+                        <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
+                      ) : provinces.map((province) => (
+                        <SelectItem key={province.id} value={province.name_th}>
+                          {province.name_th}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
                 </div>
                 
+                {/* District */}
                 <div>
                   <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District *</label>
                   <Select
                     value={formData.district}
                     onValueChange={(value) => handleSelectChange("district", value)}
+                    disabled={!formData.province}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select District" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="district1">เขตพระนคร</SelectItem>
-                      <SelectItem value="district2">เขตดุสิต</SelectItem>
-                      <SelectItem value="district3">เขตหนองจอก</SelectItem>
-                      <SelectItem value="district4">เขตบางรัก</SelectItem>
+                      {!formData.province ? (
+                        <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
+                      ) : filteredAmphures.length === 0 ? (
+                        <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                      ) : filteredAmphures.map((amphure) => (
+                        <SelectItem key={amphure.id} value={amphure.name_th}>
+                          {amphure.name_th}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 
+                {/* Subdistrict */}
                 <div>
                   <label htmlFor="subdistrict" className="block text-sm font-medium text-gray-700 mb-1">Subdistrict *</label>
                   <Select
                     value={formData.subdistrict}
                     onValueChange={(value) => handleSelectChange("subdistrict", value)}
+                    disabled={!formData.district}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Subdistrict" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
-                      <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
-                      <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
-                      <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
+                      {!formData.district ? (
+                        <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
+                      ) : filteredTambons.length === 0 ? (
+                        <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                      ) : filteredTambons.map((tambon) => (
+                        <SelectItem key={tambon.id} value={tambon.name_th}>
+                          {tambon.name_th}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

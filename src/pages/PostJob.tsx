@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +9,7 @@ import { addNewJob } from "@/services/jobService";
 import JobInformationForm from "@/components/jobs/JobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
+import useThailandLocations from "@/hooks/useThailandLocations";
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -29,6 +29,19 @@ const PostJob = () => {
     salary: "",
   });
 
+  // Use the Thailand locations hook
+  const {
+    provinces,
+    filteredAmphures,
+    filteredTambons,
+    isLoading,
+    error,
+    zipCode,
+    handleProvinceChange,
+    handleAmphureChange,
+    handleTambonChange,
+  } = useThailandLocations();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -37,10 +50,36 @@ const PostJob = () => {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    if (name === "province") {
+      handleProvinceChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+        district: "",
+        subdistrict: "",
+        postalCode: "",
+      });
+    } else if (name === "district") {
+      handleAmphureChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+        subdistrict: "",
+        postalCode: "",
+      });
+    } else if (name === "subdistrict") {
+      handleTambonChange(value);
+      setFormData({
+        ...formData,
+        [name]: value,
+        postalCode: zipCode,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +177,12 @@ const PostJob = () => {
                 onDistrictChange={(value) => handleSelectChange("district", value)}
                 onSubdistrictChange={(value) => handleSelectChange("subdistrict", value)}
                 onPostalCodeChange={handleChange}
+                provinces={provinces}
+                districts={filteredAmphures}
+                subdistricts={filteredTambons}
+                isLoading={isLoading}
+                error={error}
+                zipCodeReadOnly={!!zipCode}
               />
               
               <Button 

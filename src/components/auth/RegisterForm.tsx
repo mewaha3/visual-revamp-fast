@@ -31,6 +31,7 @@ import DocumentUpload from "../upload/DocumentUpload";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import useThailandLocations from "@/hooks/useThailandLocations";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -53,44 +54,30 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
-// Sample data for dropdowns
-const provinces = [
-  "กรุงเทพ", "เชียงใหม่", "ขอนแก่น", "ลำปาง", "นครราชสีมา", "ชลบุรี", "ลำพูน"
-];
-
-const districts = {
-  "กรุงเทพ": ["เขต1", "เขต2", "เขตลาดพร้าว", "เขตจตุจักร"],
-  "เชียงใหม่": ["เมืองเชียงใหม่", "แม่ริม", "สันทราย"],
-  "ขอนแก่น": ["เมืองขอนแก่น", "พล", "ชุมแพ"],
-  "ลำปาง": ["เมืองลำปาง", "เกาะคา", "เสริมงาม"],
-  "นครราชสีมา": ["เมืองนครราชสีมา", "ปากช่อง", "พิมาย"],
-  "ชลบุรี": ["เมืองชลบุรี", "พัทยา", "ศรีราชา"],
-  "ลำพูน": ["เมืองลำพูน", "ป่าซาง", "บ้านโฮ่ง"]
-};
-
-const subdistricts = {
-  "เขต1": ["แขวง1", "แขวง2"],
-  "เมืองเชียงใหม่": ["ศรีภูมิ", "พระสิงห์", "ช้างม่อย"],
-  "เมืองขอนแก่น": ["ตำบล1", "ตำบล2", "ตำบล3"],
-  "เมืองลำปาง": ["ตำบล1", "ตำบล2", "ตำบล3"],
-  "เมืองนครราชสีมา": ["ตำบล4", "ตำบล5", "ตำบล6"],
-  "เมืองชลบุรี": ["ตำบล5", "ตำบล6", "ตำบล7"],
-  "เมืองลำพูน": ["ลำพูน", "ต้นธง", "เวียงยอง"]
-};
-
 const RegisterForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
   const [documents, setDocuments] = useState({
     certificate: null as File | null,
     passport: null as File | null,
     visa: null as File | null,
     work_permit: null as File | null,
   });
+  
+  // Use the Thailand locations hook
+  const {
+    provinces,
+    filteredAmphures,
+    filteredTambons,
+    isLoading,
+    error,
+    zipCode,
+    handleProvinceChange,
+    handleAmphureChange,
+    handleTambonChange,
+  } = useThailandLocations();
   
   // Calculate a reasonable year range for birthdate selection
   const currentYear = new Date().getFullYear();
@@ -116,18 +103,13 @@ const RegisterForm = () => {
     },
   });
 
-  const handleProvinceChange = (value: string) => {
-    setSelectedProvince(value);
-    setSelectedDistrict("");
-    form.setValue("province", value);
-    form.setValue("district", "");
-    form.setValue("subdistrict", "");
-  };
-
-  const handleDistrictChange = (value: string) => {
-    setSelectedDistrict(value);
-    form.setValue("district", value);
-    form.setValue("subdistrict", "");
+  // Update zip_code when tambon changes
+  const handleTambonSelect = (value: string) => {
+    handleTambonChange(value);
+    form.setValue("subdistrict", value);
+    if (zipCode) {
+      form.setValue("zip_code", zipCode);
+    }
   };
 
   const handleDocumentUpload = (type: keyof typeof documents, file: File | null) => {
@@ -388,20 +370,33 @@ const RegisterForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>จังหวัด <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={handleProvinceChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  handleProvinceChange(value);
+                  // Clear dependent fields
+                  form.setValue("district", "");
+                  form.setValue("subdistrict", "");
+                  form.setValue("zip_code", "");
+                }}
+                value={field.value}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกจังหวัด" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {provinces.map((province) => (
-                    <SelectItem key={province} value={province}>
-                      {province}
+                  {isLoading ? (
+                    <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
+                  ) : provinces.map((province) => (
+                    <SelectItem key={province.id} value={province.name_th}>
+                      {province.name_th}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
               <FormMessage />
             </FormItem>
           )}
@@ -415,9 +410,15 @@ const RegisterForm = () => {
             <FormItem>
               <FormLabel>อำเภอ/เขต <span className="text-red-500">*</span></FormLabel>
               <Select 
-                onValueChange={handleDistrictChange} 
-                defaultValue={field.value}
-                disabled={!selectedProvince}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  handleAmphureChange(value);
+                  // Clear dependent fields
+                  form.setValue("subdistrict", "");
+                  form.setValue("zip_code", "");
+                }}
+                value={field.value}
+                disabled={!form.getValues("province")}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -425,9 +426,13 @@ const RegisterForm = () => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {selectedProvince && districts[selectedProvince as keyof typeof districts]?.map((district) => (
-                    <SelectItem key={district} value={district}>
-                      {district}
+                  {!form.getValues("province") ? (
+                    <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
+                  ) : filteredAmphures.length === 0 ? (
+                    <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                  ) : filteredAmphures.map((amphure) => (
+                    <SelectItem key={amphure.id} value={amphure.name_th}>
+                      {amphure.name_th}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -445,9 +450,9 @@ const RegisterForm = () => {
             <FormItem>
               <FormLabel>ตำบล/แขวง <span className="text-red-500">*</span></FormLabel>
               <Select 
-                onValueChange={field.onChange} 
-                defaultValue={field.value}
-                disabled={!selectedDistrict}
+                onValueChange={handleTambonSelect}
+                value={field.value}
+                disabled={!form.getValues("district")}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -455,9 +460,13 @@ const RegisterForm = () => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {selectedDistrict && subdistricts[selectedDistrict as keyof typeof subdistricts]?.map((subdistrict) => (
-                    <SelectItem key={subdistrict} value={subdistrict}>
-                      {subdistrict}
+                  {!form.getValues("district") ? (
+                    <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
+                  ) : filteredTambons.length === 0 ? (
+                    <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                  ) : filteredTambons.map((tambon) => (
+                    <SelectItem key={tambon.id} value={tambon.name_th}>
+                      {tambon.name_th}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -476,7 +485,13 @@ const RegisterForm = () => {
               <FormLabel>รหัสไปรษณีย์ <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input className="pl-10" {...field} placeholder="รหัสไปรษณีย์" />
+                  <Input 
+                    className="pl-10" 
+                    {...field} 
+                    placeholder="รหัสไปรษณีย์" 
+                    readOnly={!!zipCode} // Make it readonly if zipCode is derived from tambon selection
+                    style={zipCode ? { backgroundColor: "#f3f4f6" } : {}}
+                  />
                   <MapPin
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                     size={16}
