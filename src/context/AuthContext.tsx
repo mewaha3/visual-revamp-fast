@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { findUserByCredentials, User } from "../data/users";
+import { getUsersFromSheet } from "@/services/sheetsService";
 
 interface AuthContextType {
   userEmail: string | null;
@@ -14,6 +15,25 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [sheetUsers, setSheetUsers] = useState<User[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  // Fetch users from Google Sheets on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsLoadingUsers(true);
+      try {
+        const users = await getUsersFromSheet();
+        setSheetUsers(users);
+      } catch (error) {
+        console.error("Failed to fetch users from sheet:", error);
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+    
+    fetchUsers();
+  }, []);
 
   // restore from localStorage on mount
   useEffect(() => {
@@ -28,15 +48,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to login with:", email);
       
-      // ค้นหาผู้ใช้จากข้อมูลในไฟล์ users.ts แทนการดึงจาก Google Sheets
-      const user = findUserByCredentials(email, password);
+      // First try to find user in sheet data
+      let user: User | undefined;
+      
+      if (sheetUsers.length > 0) {
+        user = sheetUsers.find(u => u.email === email && u.password === password);
+      }
+      
+      // If not found in sheets, try local user data as fallback
+      if (!user) {
+        console.log("User not found in sheets, trying local data");
+        user = findUserByCredentials(email, password);
+      }
       
       console.log("Login match found:", user ? "Yes" : "No");
       
       if (user) {
         setUserEmail(email);
         
-        // ดึงชื่อเต็มจากข้อมูลผู้ใช้
+        // Get full name from user data
         const fullName = user.fullName || `${user.first_name} ${user.last_name}` || email;
         setUserFullName(fullName);
         

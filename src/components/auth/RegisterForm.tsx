@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -18,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { users, addUser } from "@/data/users";
+import { addUser } from "@/data/users";
 import {
   Select,
   SelectContent,
@@ -34,6 +33,7 @@ import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import useThailandLocations from "@/hooks/useThailandLocations";
 import { nationalities } from "@/data/nationalities";
+import { addUserToSheet } from "@/services/sheetsService";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -136,15 +136,6 @@ const RegisterForm = () => {
     setErrorMessage(null);
     
     try {
-      // Check if email already exists
-      const emailExists = users.some(user => user.email === values.email);
-      
-      if (emailExists) {
-        setErrorMessage("อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น");
-        setIsSubmitting(false);
-        return;
-      }
-      
       // Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
       
@@ -170,11 +161,15 @@ const RegisterForm = () => {
         fullName: `${values.first_name} ${values.last_name}`
       };
       
-      // Add the new user to the users array using the addUser function
+      // Add user to local data store for immediate login capability
       addUser(newUser);
       
-      // Log the new user for debugging purposes
-      console.log("New user registered:", newUser);
+      // Add the user to Google Sheets
+      const sheetResult = await addUserToSheet(newUser);
+      
+      if (!sheetResult) {
+        console.warn("Failed to add user to Google Sheets but continuing with local registration");
+      }
       
       toast({
         title: "ลงทะเบียนสำเร็จ",

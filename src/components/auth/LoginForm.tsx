@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
 import { z } from "zod";
@@ -54,7 +53,6 @@ const LoginForm = () => {
           title: "เข้าสู่ระบบสำเร็จ",
           description: "ยินดีต้อนรับกลับมาอีกครั้ง",
         });
-        // Changed this line to navigate to the home page instead of upload-documents
         navigate("/");
       } else {
         setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
