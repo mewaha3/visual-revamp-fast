@@ -1,5 +1,5 @@
-
-import { FindMatch, JobDetail, Employer } from "@/types/types";
+import { JobDetail, Employer, FindMatch, MatchResult, Job } from "@/types/types";
+import { getJobById } from '@/services/jobService';
 
 // Mock data for development - expanded with more diverse job details
 const mockMatches: FindMatch[] = [
@@ -165,30 +165,62 @@ export const declineJobMatch = async (findjobId: string): Promise<void> => {
   return Promise.resolve();
 };
 
-// Fetch job details
+// Get job details for a specific job ID
 export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
-  // In a real implementation, you would fetch from an API
-  console.log(`Fetching job details for job: ${jobId}`);
-  
-  // Return specific job details if found, otherwise return default
-  if (mockJobDetails[jobId]) {
-    return Promise.resolve(mockJobDetails[jobId]);
+  try {
+    console.log("Fetching job details for job:", jobId);
+    
+    // First check if this is a job from postJobs array
+    const jobData = getJobById(jobId);
+    
+    if (!jobData) {
+      throw new Error(`Job details not found for job ID: ${jobId}`);
+    }
+    
+    // Convert Job to JobDetail format
+    const jobDetail: JobDetail = {
+      findjob_id: "", // Not applicable for posted jobs
+      job_id: jobData.job_id,
+      job_type: jobData.job_type,
+      detail: jobData.job_detail,
+      job_date: jobData.job_date,
+      start_time: jobData.start_time,
+      end_time: jobData.end_time,
+      province: jobData.province,
+      district: jobData.district,
+      subdistrict: jobData.subdistrict,
+      salary: jobData.salary,
+      job_address: jobData.job_address,
+    };
+    
+    console.log("Job details fetched:", jobDetail);
+    return jobDetail;
+  } catch (error) {
+    console.error("Error fetching job details:", error);
+    throw error;
   }
-  
-  // Fallback with error message if job not found
-  throw new Error(`Job details not found for job ID: ${jobId}`);
 };
 
-// Fetch employer details
+// Get employer details for a specific job ID
 export const getEmployerDetails = async (jobId: string): Promise<Employer> => {
-  // In a real implementation, you would fetch from an API
-  console.log(`Fetching employer details for job: ${jobId}`);
-  
-  // Return specific employer if found, otherwise return default
-  if (mockEmployers[jobId]) {
-    return Promise.resolve(mockEmployers[jobId]);
+  try {
+    // Get the job data first to access employer info
+    const jobData = getJobById(jobId);
+    
+    if (!jobData) {
+      throw new Error(`Employer details not found for job ID: ${jobId}`);
+    }
+    
+    // Construct employer information from job data
+    const employer: Employer = {
+      name: `${jobData.first_name} ${jobData.last_name}`,
+      phone: "099-999-9999", // Mock phone number as it's not in the Job interface
+      email: jobData.email,
+    };
+    
+    return employer;
+  } catch (error) {
+    console.error("Error fetching employer details:", error);
+    throw error;
   }
-  
-  // Fallback with error message if employer not found
-  throw new Error(`Employer details not found for job ID: ${jobId}`);
 };

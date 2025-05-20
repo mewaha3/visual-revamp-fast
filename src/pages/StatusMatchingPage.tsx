@@ -1,15 +1,14 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { getJobById, getStatusResults, isMatchesConfirmed } from '@/services/api';
 import { Job, StatusResult } from '@/types/types';
-import { BarChart, ArrowLeft, Info, Check, X, ArrowRight } from 'lucide-react';
+import { BarChart, ArrowLeft, Info, Check, X, ArrowRight, RefreshCw } from 'lucide-react';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -17,26 +16,36 @@ const StatusMatchingPage: React.FC = () => {
   const [job, setJob] = useState<Job | null>(null);
   const [statusResults, setStatusResults] = useState<StatusResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!jobId) return;
       
-      // Get job details
-      const jobDetails = getJobById(jobId);
-      setJob(jobDetails);
+      setLoading(true);
+      setError(null);
       
-      // Check if matches are confirmed
-      const confirmed = isMatchesConfirmed(jobId);
-      setIsConfirmed(confirmed);
-      
-      // Get status results
       try {
+        // Get job details
+        const jobDetails = getJobById(jobId);
+        if (!jobDetails) {
+          setError("ไม่พบข้อมูลงาน");
+          return;
+        }
+        
+        setJob(jobDetails);
+        
+        // Check if matches are confirmed
+        const confirmed = isMatchesConfirmed(jobId);
+        setIsConfirmed(confirmed);
+        
+        // Get status results
         const { status } = await getStatusResults(jobId);
         setStatusResults(status);
       } catch (error) {
         console.error("Error fetching status results:", error);
+        setError("ไม่สามารถโหลดข้อมูลได้");
       } finally {
         setLoading(false);
       }
@@ -44,6 +53,10 @@ const StatusMatchingPage: React.FC = () => {
     
     fetchData();
   }, [jobId]);
+  
+  const handleRefresh = () => {
+    window.location.reload();
+  };
   
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -96,6 +109,28 @@ const StatusMatchingPage: React.FC = () => {
             {loading ? (
               <div className="text-center py-8">
                 <p>กำลังโหลดข้อมูล...</p>
+              </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500">{error}</p>
+                <div className="mt-4 flex flex-col gap-3">
+                  <Button 
+                    onClick={handleRefresh} 
+                    variant="outline" 
+                    className="mx-auto"
+                  >
+                    <RefreshCw className="mr-2" size={18} />
+                    ลองใหม่อีกครั้ง
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => navigate("/my-jobs")} 
+                    variant="outline" 
+                    className="mx-auto"
+                  >
+                    กลับไปยังรายการงาน
+                  </Button>
+                </div>
               </div>
             ) : !isConfirmed ? (
               <div className="text-center py-8 bg-yellow-50 rounded-lg p-6 border border-yellow-200">
