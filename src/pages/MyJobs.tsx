@@ -7,10 +7,10 @@ import { PostJobList, FindJobList } from '@/components/JobList';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { getUserJobs } from '@/services/jobService';
-import { getUserFindJobs } from '@/services/findJobService';
+import { getUserFindJobs, findJobsUpdatedEvent } from '@/services/findJobService';
 import { Button } from "@/components/ui/button";
 import { Job, FindJob } from '@/types/types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 
 const MyJobs: React.FC = () => {
@@ -25,6 +25,17 @@ const MyJobs: React.FC = () => {
   
   useEffect(() => {
     fetchJobData();
+    
+    // Listen for find jobs updated event
+    const handleFindJobsUpdated = () => {
+      fetchFindJobs();
+    };
+    
+    document.addEventListener('findJobsUpdated', handleFindJobsUpdated);
+    
+    return () => {
+      document.removeEventListener('findJobsUpdated', handleFindJobsUpdated);
+    };
   }, [userEmail]);
 
   useEffect(() => {
@@ -41,19 +52,36 @@ const MyJobs: React.FC = () => {
   const fetchJobData = () => {
     setLoading(true);
     try {
+      fetchPostJobs();
+      fetchFindJobs();
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const fetchPostJobs = () => {
+    try {
       // Filter jobs by the logged-in user's email
       if (userEmail) {
         const userPostJobs = getUserJobs(userEmail);
-        const userFindJobs = getUserFindJobs(userEmail);
-        
         setFilteredPostJobs(userPostJobs);
+      }
+    } catch (error) {
+      console.error("Error fetching post jobs:", error);
+      toast.error("ไม่สามารถโหลดข้อมูลงานได้ กรุณาลองใหม่อีกครั้ง");
+    }
+  };
+  
+  const fetchFindJobs = () => {
+    try {
+      // Filter find jobs by the logged-in user's email
+      if (userEmail) {
+        const userFindJobs = getUserFindJobs(userEmail);
         setFilteredFindJobs(userFindJobs as FindJob[]);
       }
     } catch (error) {
-      console.error("Error fetching jobs:", error);
-      toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching find jobs:", error);
+      toast.error("ไม่สามารถโหลดข้อมูลหางานได้ กรุณาลองใหม่อีกครั้ง");
     }
   };
   
@@ -102,8 +130,9 @@ const MyJobs: React.FC = () => {
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🚀 รายการที่ลงโพสต์งาน</h2>
                 {loading ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>กำลังโหลดข้อมูล...</p>
+                  <div className="text-center py-8 flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                   </div>
                 ) : filteredPostJobs.length > 0 ? (
                   <PostJobList jobs={filteredPostJobs} />
@@ -122,8 +151,9 @@ const MyJobs: React.FC = () => {
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🔍 รายการงานที่ค้นหา</h2>
                 {loading ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>กำลังโหลดข้อมูล...</p>
+                  <div className="text-center py-8 flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                   </div>
                 ) : filteredFindJobs.length > 0 ? (
                   <FindJobList jobs={filteredFindJobs} />

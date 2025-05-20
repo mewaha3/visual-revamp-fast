@@ -1,10 +1,9 @@
 
-import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import useFindJobForm from "@/hooks/useFindJobForm";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import FindJobInformationForm from "@/components/jobs/FindJobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
@@ -41,6 +40,7 @@ const FindJob = () => {
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
+    isSubmitting,
   } = useFindJobForm();
 
   return (
@@ -110,8 +110,16 @@ const FindJob = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
+                disabled={isSubmitting}
               >
-                Find Job
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    Processing...
+                  </>
+                ) : (
+                  "Find Job"
+                )}
               </Button>
             </form>
           </div>

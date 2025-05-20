@@ -32,14 +32,17 @@ export const useFindJobForm = () => {
   const [address, setAddress] = useState<string>('');
   const [minSalary, setMinSalary] = useState<string>('');
   const [maxSalary, setMaxSalary] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     // Validation
     if (!jobType || !skills || !jobDate || !startTime || !endTime || !address || 
         !selectedProvince || !selectedAmphure || !selectedTambon || !minSalary) {
       toast.error("Please fill in all required fields");
+      setIsSubmitting(false);
       return;
     }
 
@@ -76,13 +79,13 @@ export const useFindJobForm = () => {
       
       // Navigate to the find tab of My Jobs
       setTimeout(() => {
-        navigate('/my-jobs');
-        // We use a small timeout to allow the toast to be visible before navigation
-        // The tab selection will be handled by the URL parameter
-      }, 1500);
+        navigate('/my-jobs/find');
+      }, 1000);
     } catch (error) {
       toast.error("Failed to submit job request");
       console.error("Error submitting job:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,6 +119,7 @@ export const useFindJobForm = () => {
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
+    isSubmitting,
   };
 };
 
