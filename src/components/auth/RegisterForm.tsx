@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import useThailandLocations from "@/hooks/useThailandLocations";
+import { nationalities } from "@/data/nationalities";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -40,7 +42,7 @@ const formSchema = z.object({
   national_id: z.string().min(1, { message: "กรุณากรอกเลขบัตรประชาชนหรือพาสปอร์ต" }),
   dob: z.date({ required_error: "กรุณาเลือกวันเกิด" }),
   gender: z.string().min(1, { message: "กรุณาเลือกเพศ" }),
-  nationality: z.string().min(1, { message: "กรุณากรอกสัญชาติ" }),
+  nationality: z.string().min(1, { message: "กรุณาเลือกสัญชาติ" }),
   address: z.string().min(1, { message: "กรุณากรอกที่อยู่" }),
   province: z.string().min(1, { message: "กรุณาเลือกจังหวัด" }),
   district: z.string().min(1, { message: "กรุณาเลือกอำเภอ/เขต" }),
@@ -65,6 +67,7 @@ const RegisterForm = () => {
     visa: null as File | null,
     work_permit: null as File | null,
   });
+  const [showForeignerDocs, setShowForeignerDocs] = useState(false);
   
   // Use the Thailand locations hook
   const {
@@ -102,6 +105,12 @@ const RegisterForm = () => {
       confirmPassword: "",
     },
   });
+
+  // Update document requirements when nationality changes
+  useEffect(() => {
+    const nationality = form.watch("nationality");
+    setShowForeignerDocs(nationality !== "Thai");
+  }, [form.watch("nationality")]);
 
   // Update zip_code when tambon changes
   const handleTambonSelect = (value: string) => {
@@ -155,9 +164,9 @@ const RegisterForm = () => {
         subdistrict: values.subdistrict,
         zip_code: values.zip_code,
         certificate: documents.certificate ? documents.certificate.name : "No",
-        passport: documents.passport ? "Yes" : "No",
-        visa: documents.visa ? "Yes" : "No",
-        work_permit: documents.work_permit ? "Yes" : "No",
+        passport: documents.passport ? documents.passport.name : "No",
+        visa: documents.visa ? documents.visa.name : "No",
+        work_permit: documents.work_permit ? documents.work_permit.name : "No",
         fullName: `${values.first_name} ${values.last_name}`
       };
       
@@ -240,19 +249,61 @@ const RegisterForm = () => {
           />
         </div>
 
+        {/* Nationality Dropdown */}
+        <FormField
+          control={form.control}
+          name="nationality"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>สัญชาติ <span className="text-red-500">*</span></FormLabel>
+              <Select 
+                onValueChange={field.onChange}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="pl-10">
+                    <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                    <SelectValue placeholder="เลือกสัญชาติ" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="max-h-[200px]">
+                  {nationalities.map((nationality) => (
+                    <SelectItem key={nationality} value={nationality}>
+                      {nationality}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* National ID */}
         <FormField
           control={form.control}
           name="national_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>เลขรหัสบัตรประชาชน/พาสปอร์ต <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>
+                {form.watch("nationality") === "Thai" 
+                  ? "เลขรหัสบัตรประชาชน" 
+                  : "เลขพาสปอร์ต"} 
+                <span className="text-red-500">*</span>
+              </FormLabel>
               <div className="text-xs text-gray-500 mb-1 flex items-center">
                 <Info className="h-3 w-3 mr-1" />
-                กรอกเลขประจำตัวประชาชนหรือเลขพาสปอร์ต สำหรับชาวต่างชาติ
+                {form.watch("nationality") === "Thai" 
+                  ? "กรอกเลขประจำตัวประชาชน 13 หลัก" 
+                  : "กรอกเลขพาสปอร์ตสำหรับชาวต่างชาติ"}
               </div>
               <FormControl>
-                <Input {...field} placeholder="เช่น 1234567890123 หรือ AA12345678" />
+                <Input 
+                  {...field} 
+                  placeholder={form.watch("nationality") === "Thai" 
+                    ? "เช่น 1234567890123" 
+                    : "เช่น AA12345678"} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -327,7 +378,7 @@ const RegisterForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>เพศ <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกเพศ" />
@@ -338,27 +389,6 @@ const RegisterForm = () => {
                   <SelectItem value="Female">หญิง</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Nationality */}
-        <FormField
-          control={form.control}
-          name="nationality"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>สัญชาติ <span className="text-red-500">*</span></FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input className="pl-10" {...field} placeholder="เช่น ไทย, Laos, Myanmar" />
-                  <Flag
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    size={16}
-                  />
-                </div>
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -527,22 +557,28 @@ const RegisterForm = () => {
 
         <h2 className="text-xl font-semibold pt-4">อัพโหลดเอกสาร</h2>
         <div className="space-y-4">
-          <DocumentUpload 
-            title="สำเนาบัตรประชาชน (ID Card)" 
-            onChange={(file) => handleDocumentUpload("certificate", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสือเดินทาง (Passport)" 
-            onChange={(file) => handleDocumentUpload("passport", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสือวีซ่า (Visa)" 
-            onChange={(file) => handleDocumentUpload("visa", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสืออนุญาตทำงาน (Work Permit)" 
-            onChange={(file) => handleDocumentUpload("work_permit", file)} 
-          />
+          {/* Show ID Card upload only for Thai nationals */}
+          {form.watch("nationality") === "Thai" ? (
+            <DocumentUpload 
+              title="สำเนาบัตรประชาชน (ID Card)" 
+              onChange={(file) => handleDocumentUpload("certificate", file)} 
+            />
+          ) : (
+            <>
+              <DocumentUpload 
+                title="หนังสือเดินทาง (Passport)" 
+                onChange={(file) => handleDocumentUpload("passport", file)} 
+              />
+              <DocumentUpload 
+                title="หนังสือวีซ่า (Visa)" 
+                onChange={(file) => handleDocumentUpload("visa", file)} 
+              />
+              <DocumentUpload 
+                title="หนังสืออนุญาตทำงาน (Work Permit)" 
+                onChange={(file) => handleDocumentUpload("work_permit", file)} 
+              />
+            </>
+          )}
         </div>
 
         <h2 className="text-xl font-semibold pt-4">ข้อมูลบัญชี</h2>
@@ -573,17 +609,31 @@ const RegisterForm = () => {
         />
 
         {/* Password */}
-        <PasswordInput
+        <FormField
+          control={form.control}
           name="password"
-          label="รหัสผ่าน"
-          placeholder="อย่างน้อย 6 ตัวอักษร"
+          render={({ field }) => (
+            <PasswordInput
+              {...field}
+              name="password"
+              label="รหัสผ่าน"
+              placeholder="อย่างน้อย 6 ตัวอักษร"
+            />
+          )}
         />
 
         {/* Confirm Password */}
-        <PasswordInput
+        <FormField
+          control={form.control}
           name="confirmPassword"
-          label="ยืนยันรหัสผ่าน"
-          placeholder="กรอกรหัสผ่านอีกครั้ง"
+          render={({ field }) => (
+            <PasswordInput
+              {...field}
+              name="confirmPassword"
+              label="ยืนยันรหัสผ่าน"
+              placeholder="กรอกรหัสผ่านอีกครั้ง"
+            />
+          )}
         />
 
         {/* Error message */}

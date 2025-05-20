@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, FileType, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface DocumentUploadProps {
@@ -27,6 +27,17 @@ const DocumentUpload = ({ title, onChange }: DocumentUploadProps) => {
     e.preventDefault();
     handleFileChange(e.dataTransfer.files);
   }
+
+  // Choose the appropriate icon based on title
+  const getDocumentIcon = () => {
+    if (title.includes("ID Card") || title.includes("บัตรประชาชน")) {
+      return <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />;
+    } else if (title.includes("Passport") || title.includes("หนังสือเดินทาง")) {
+      return <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />;
+    } else {
+      return <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />;
+    }
+  };
 
   return (
     <div className="border border-gray-200 rounded-lg p-4">
@@ -58,7 +69,7 @@ const DocumentUpload = ({ title, onChange }: DocumentUploadProps) => {
           </div>
         ) : (
           <>
-            <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+            {getDocumentIcon()}
             <p className="text-sm text-gray-500 mb-1">
               ลากแล้ววางไฟล์ที่นี่
             </p>
