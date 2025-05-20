@@ -1,3 +1,4 @@
+
 import { JobDetail, Employer, FindMatch, MatchResult, Job } from "@/types/types";
 import { getJobById } from '@/services/jobService';
 
@@ -146,8 +147,10 @@ const mockEmployers: Record<string, Employer> = {
 
 // Fetch user's job matches
 export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> => {
-  // In a real implementation, you would fetch from an API
+  // In a real implementation, you would fetch from an API with userEmail as parameter
   console.log(`Fetching matches for user: ${userEmail}`);
+  // In a real implementation, this would filter on the backend
+  // For now, we'll return all mock matches and let the component filter them
   return Promise.resolve(mockMatches);
 };
 

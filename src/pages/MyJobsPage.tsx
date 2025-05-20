@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -41,7 +42,10 @@ const MyJobsPage: React.FC = () => {
       // Fetch job matches
       if (userEmail) {
         const userMatches = await getUserMatches(userEmail);
-        setMatches(userMatches);
+        // Filter matches to only those associated with the user's find jobs
+        const userFindJobIds = userFindJobs.map(job => job.findjob_id);
+        const filteredMatches = userMatches.filter(match => userFindJobIds.includes(match.findjob_id));
+        setMatches(filteredMatches);
       }
       
       toast.success("อัปเดตข้อมูลล่าสุด");
