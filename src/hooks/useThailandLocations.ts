@@ -84,7 +84,7 @@ export const useThailandLocations = () => {
     setZipCode("");
     
     // Find the amphure by Thai name
-    const selectedAmpObj = amphures.find(a => a.name_th === amphureNameTh);
+    const selectedAmpObj = filteredAmphures.find(a => a.name_th === amphureNameTh);
     
     if (selectedAmpObj) {
       // Filter tambons by amphure_id
@@ -99,8 +99,8 @@ export const useThailandLocations = () => {
   const handleTambonChange = (tambonNameTh: string) => {
     setSelectedTambon(tambonNameTh);
     
-    // Find the tambon by Thai name
-    const selectedTmbObj = tambons.find(t => t.name_th === tambonNameTh);
+    // Find the tambon by Thai name within the filtered tambons
+    const selectedTmbObj = filteredTambons.find(t => t.name_th === tambonNameTh);
     
     if (selectedTmbObj) {
       // Set zip code
