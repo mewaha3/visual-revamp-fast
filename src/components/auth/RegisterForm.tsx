@@ -336,7 +336,6 @@ const RegisterForm = () => {
                 <SelectContent>
                   <SelectItem value="Male">ชาย</SelectItem>
                   <SelectItem value="Female">หญิง</SelectItem>
-                  <SelectItem value="Other">อื่นๆ</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
