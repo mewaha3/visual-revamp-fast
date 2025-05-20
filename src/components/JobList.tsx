@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Job, FindJob } from '@/types/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,10 +24,10 @@ export const PostJobList: React.FC<PostJobListProps> = ({ jobs }) => {
             <TableHead>อีเมล</TableHead>
             <TableHead>ประเภทงาน</TableHead>
             <TableHead>รายละเอียดงาน</TableHead>
-            <TableHead>เงินเดือน</TableHead>
+            <TableHead>ค่าจ้าง</TableHead>
             <TableHead>วันที่</TableHead>
-            <TableHead>เวลาเริ่ม-สิ้นสุด</TableHead>
-            <TableHead>จังหวัด</TableHead>
+            <TableHead>เวลาทำงาน</TableHead>
+            <TableHead>สถานที่</TableHead>
             <TableHead>การจัดการ</TableHead>
           </TableRow>
         </TableHeader>
@@ -82,9 +83,9 @@ export const FindJobList: React.FC<FindJobListProps> = ({ jobs }) => {
             <TableHead>ประเภทงาน</TableHead>
             <TableHead>ทักษะ</TableHead>
             <TableHead>วันที่</TableHead>
-            <TableHead>เวลาเริ่ม-สิ้นสุด</TableHead>
-            <TableHead>จังหวัด</TableHead>
-            <TableHead>เงินเดือน (บาท)</TableHead>
+            <TableHead>เวลาทำงาน</TableHead>
+            <TableHead>สถานที่</TableHead>
+            <TableHead>ค่าจ้าง (บาท)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

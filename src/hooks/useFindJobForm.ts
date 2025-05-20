@@ -41,7 +41,7 @@ export const useFindJobForm = () => {
     // Validation
     if (!jobType || !skills || !jobDate || !startTime || !endTime || !address || 
         !selectedProvince || !selectedAmphure || !selectedTambon || !minSalary) {
-      toast.error("Please fill in all required fields");
+      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
       setIsSubmitting(false);
       return;
     }
@@ -74,15 +74,15 @@ export const useFindJobForm = () => {
 
     // Add the new job
     try {
-      const newJob = addNewFindJob(jobData);
-      toast.success("Job request submitted successfully!");
+      await addNewFindJob(jobData);
+      toast.success("ค้นหางานสำเร็จ!");
       
       // Navigate to the find tab of My Jobs
       setTimeout(() => {
         navigate('/my-jobs/find');
       }, 1000);
     } catch (error) {
-      toast.error("Failed to submit job request");
+      toast.error("ไม่สามารถค้นหางานได้");
       console.error("Error submitting job:", error);
     } finally {
       setIsSubmitting(false);

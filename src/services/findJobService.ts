@@ -12,7 +12,7 @@ export const getUserFindJobs = (email: string | null): FindJob[] => {
 };
 
 // Add a new find job request
-export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
+export const addNewFindJob = (jobData: Partial<FindJob>): Promise<FindJob> => {
   return new Promise<FindJob>((resolve, reject) => {
     try {
       // Simulate API call with a small delay
@@ -41,7 +41,7 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
         };
         
         // Add the new find job to the array - in a real app this would save to a database
-        findJobs.unshift(newJob as any);
+        findJobs.unshift(newJob);
         
         // Dispatch event to notify components that find jobs data has changed
         document.dispatchEvent(findJobsUpdatedEvent);

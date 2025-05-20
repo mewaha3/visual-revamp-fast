@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +11,7 @@ import { getUserJobs } from '@/services/jobService';
 import { getUserFindJobs } from '@/services/findJobService';
 import { getUserMatches, acceptJobMatch, declineJobMatch } from '@/services/matchService';
 import { Job, FindJob, FindMatch } from '@/types/types';
-import { Clipboard, Check, X, RefreshCw } from 'lucide-react';
+import { Clipboard, Check, X, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 
 const MyJobsPage: React.FC = () => {
@@ -26,6 +26,17 @@ const MyJobsPage: React.FC = () => {
   
   useEffect(() => {
     fetchData();
+    
+    // Listen for find jobs updated event
+    const handleFindJobsUpdated = () => {
+      fetchData();
+    };
+    
+    document.addEventListener('findJobsUpdated', handleFindJobsUpdated);
+    
+    return () => {
+      document.removeEventListener('findJobsUpdated', handleFindJobsUpdated);
+    };
   }, [userEmail]);
   
   const fetchData = async () => {
@@ -42,10 +53,7 @@ const MyJobsPage: React.FC = () => {
       // Fetch job matches
       if (userEmail) {
         const userMatches = await getUserMatches(userEmail);
-        // Filter matches to only those associated with the user's find jobs
-        const userFindJobIds = userFindJobs.map(job => job.findjob_id);
-        const filteredMatches = userMatches.filter(match => userFindJobIds.includes(match.findjob_id));
-        setMatches(filteredMatches);
+        setMatches(userMatches);
       }
       
       toast.success("อัปเดตข้อมูลล่าสุด");
@@ -103,35 +111,36 @@ const MyJobsPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Clipboard className="h-8 w-8 text-fastlabor-600" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-800">My Jobs</h1>
+                  <h1 className="text-2xl font-bold text-gray-800">งานของฉัน</h1>
                   <p className="text-gray-600">สวัสดี, {userFullName || userEmail || 'ผู้ใช้งาน'}</p>
                 </div>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-2">
                   <RefreshCw className="h-4 w-4" />
-                  <span>Refresh</span>
+                  <span>รีเฟรช</span>
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/post-job')} className="flex items-center gap-2">
-                  <span>Post Job</span>
+                  <span>ลงประกาศงาน</span>
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/find-job')} className="flex items-center gap-2">
-                  <span>Find Job</span>
+                  <span>หางาน</span>
                 </Button>
               </div>
             </div>
 
             <Tabs defaultValue={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="post">🚀 Post Job</TabsTrigger>
-                <TabsTrigger value="find">🔍 Find Job</TabsTrigger>
+                <TabsTrigger value="post">🚀 ลงประกาศงาน</TabsTrigger>
+                <TabsTrigger value="find">🔍 หางาน</TabsTrigger>
               </TabsList>
               
               <TabsContent value="post">
                 <h2 className="text-xl font-semibold mb-4">🚀 รายการที่ลงโพสต์งาน</h2>
                 {loading ? (
-                  <div className="text-center py-8">
-                    <p>กำลังโหลดข้อมูล...</p>
+                  <div className="text-center py-8 flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                   </div>
                 ) : jobs.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -145,27 +154,27 @@ const MyJobsPage: React.FC = () => {
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">ช��ิด:</span>
+                              <span className="font-medium">ประเภทงาน:</span>
                               <span className="col-span-2">{job.job_type}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">Detail:</span>
+                              <span className="font-medium">รายละเอียด:</span>
                               <span className="col-span-2">{job.job_detail}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">Date:</span>
+                              <span className="font-medium">วันที่:</span>
                               <span className="col-span-2">{job.job_date}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">Time:</span>
+                              <span className="font-medium">เวลา:</span>
                               <span className="col-span-2">{job.start_time} - {job.end_time}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">Location:</span>
+                              <span className="font-medium">สถานที่:</span>
                               <span className="col-span-2">{job.job_address}</span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
-                              <span className="font-medium">Salary:</span>
+                              <span className="font-medium">ค่าจ้าง:</span>
                               <span className="col-span-2">{job.salary} บาท</span>
                             </div>
                           </div>
@@ -208,8 +217,9 @@ const MyJobsPage: React.FC = () => {
                   <div>
                     <h2 className="text-xl font-semibold mb-4">🔍 รายการค้นหางานของฉัน</h2>
                     {loading ? (
-                      <div className="text-center py-8">
-                        <p>กำลังโหลดข้อมูล...</p>
+                      <div className="text-center py-8 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                       </div>
                     ) : findJobs.length > 0 ? (
                       <div className="space-y-4">
@@ -266,8 +276,9 @@ const MyJobsPage: React.FC = () => {
                   <div>
                     <h2 className="text-xl font-semibold mb-4">🎯 งานที่จับคู่ให้คุณ</h2>
                     {loading ? (
-                      <div className="text-center py-8">
-                        <p>กำลังโหลดข้อมูล...</p>
+                      <div className="text-center py-8 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                       </div>
                     ) : matches.length > 0 ? (
                       <div className="space-y-4">
@@ -275,8 +286,8 @@ const MyJobsPage: React.FC = () => {
                           <Card key={match.findjob_id} className="border border-gray-200">
                             <CardHeader className="pb-2">
                               <CardTitle className="text-lg font-medium flex justify-between">
-                                <span>Find Job ID: {match.findjob_id}</span>
-                                <span className="text-sm text-gray-500 font-normal">Job ID: {match.job_id}</span>
+                                <span>Job ID: {match.job_id}</span>
+                                <span className="text-sm text-gray-500 font-normal">Find ID: {match.findjob_id}</span>
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="pb-2">
@@ -307,7 +318,7 @@ const MyJobsPage: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">ค่าจ้าง:</span>
-                                  <span className="col-span-2">{match.salary} THB/day</span>
+                                  <span className="col-span-2">{match.salary} บาท/วัน</span>
                                 </div>
                               </div>
                             </CardContent>
@@ -318,14 +329,14 @@ const MyJobsPage: React.FC = () => {
                                 onClick={() => handleDeclineJob(match.findjob_id)}
                                 className="text-xs flex items-center gap-1"
                               >
-                                <X size={16} /> Decline
+                                <X size={16} /> ปฏิเสธ
                               </Button>
                               <Button 
                                 className="text-xs bg-green-600 hover:bg-green-700 flex items-center gap-1"
                                 size="sm"
                                 onClick={() => handleAcceptJob(match.findjob_id, match.job_id)}
                               >
-                                <Check size={16} /> Accept
+                                <Check size={16} /> รับงาน
                               </Button>
                             </CardFooter>
                           </Card>

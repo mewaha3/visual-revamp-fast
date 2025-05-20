@@ -19,42 +19,70 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ2",
     job_id: "PJ6",
-    job_type: "พนักงานขาย",
-    detail: "งานขายเครื่องสำอางในห้าง Central World ชั้น 2 โซนบิวตี้",
-    job_date: "2025-06-15",
-    start_time: "10:00:00",
-    end_time: "19:00:00",
-    province: "กรุงเทพฯ",
-    district: "จตุจักร",
-    subdistrict: "จตุจักร",
-    salary: 750
+    job_type: "รักษาความปลอดภัย",
+    detail: "จัดแสดงสินค้า",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600
   },
   {
     findjob_id: "FJ3",
     job_id: "PJ7",
     job_type: "พนักงานทำความสะอาด",
-    detail: "งานทำความสะอาดสำนักงาน",
-    job_date: "2025-06-20",
-    start_time: "08:00:00",
-    end_time: "17:00:00",
+    detail: "ล้างจาน",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
     province: "นนทบุรี",
-    district: "ปากเกร็ด",
-    subdistrict: "บางตลาด",
-    salary: 600
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600
   },
   // Adding PJ8 to mock data
   {
     findjob_id: "FJ4",
     job_id: "PJ8",
-    job_type: "พนักงานบริการ",
-    detail: "งานบริการลูกค้าในร้านอาหาร",
-    job_date: "2025-06-25",
-    start_time: "11:00:00",
-    end_time: "20:00:00",
-    province: "กรุงเทพฯ",
-    district: "บางนา",
-    subdistrict: "บางนา",
-    salary: 700
+    job_type: "คนสวน",
+    detail: "จัดหญ้า",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600
+  },
+  // Adding PJ9 to mock data
+  {
+    findjob_id: "FJ5",
+    job_id: "PJ9",
+    job_type: "พนักงานขับรถ",
+    detail: "ขับรถบรรทุก",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600
+  },
+  // Adding PJ10 to mock data
+  {
+    findjob_id: "FJ6",
+    job_id: "PJ10",
+    job_type: "พนักงานขับรถ",
+    detail: "ขับรถให้จ่าย",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600
   }
 ];
 
@@ -77,45 +105,75 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ6": {
     findjob_id: "FJ2",
     job_id: "PJ6",
-    job_type: "พนักงานขาย",
-    detail: "งานขายเครื่องสำอางในห้าง Central World ชั้น 2 โซนบิวตี้",
-    job_date: "2025-06-15",
-    start_time: "10:00:00",
-    end_time: "19:00:00",
-    province: "กรุงเทพฯ",
-    district: "ปทุมวัน",
-    subdistrict: "ลุมพินี",
-    salary: 750,
-    job_address: "เลขที่ 999 ถนนพระราม 1 แขวงปทุมวัน เขตปทุมวัน กรุงเทพฯ 10330"
+    job_type: "รักษาความปลอดภัย",
+    detail: "จัดแสดงสินค้า",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600,
+    job_address: "50 ถ.พัฒนาการ นนทบุรี"
   },
   "PJ7": {
     findjob_id: "FJ3",
     job_id: "PJ7",
     job_type: "พนักงานทำความสะอาด",
-    detail: "งานทำความสะอาดสำนักงานบริษัท ABC ประจำวัน",
-    job_date: "2025-06-20",
-    start_time: "08:00:00",
-    end_time: "17:00:00",
+    detail: "ล้างจาน",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
     province: "นนทบุรี",
-    district: "ปากเกร็ด",
-    subdistrict: "บางตลาด",
-    salary: 600,
-    job_address: "เลขที่ 123 หมู่ 4 ถนนแจ้งวัฒนะ ตำบลบางตลาด อำเภอปากเกร็ด จังหวัดนนทบุรี 11120"
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600,
+    job_address: "50 ถ.พัฒนาการ นนทบุรี"
   },
   // Add PJ8 job details
   "PJ8": {
     findjob_id: "FJ4",
     job_id: "PJ8",
-    job_type: "พนักงานบริการ",
-    detail: "งานบริการลูกค้าในร้านอาหาร The Garden หน้าที่รับผิดชอบ: ต้อนรับลูกค้า, แนะนำเมนู, เสิร์ฟอาหาร",
-    job_date: "2025-06-25",
-    start_time: "11:00:00",
-    end_time: "20:00:00",
-    province: "กรุงเทพฯ",
-    district: "บางนา",
-    subdistrict: "บางนา",
-    salary: 700,
-    job_address: "เลขที่ 88 ซอยบางนา-ตราด 30 แขวงบางนา เขตบางนา กรุงเทพฯ 10260"
+    job_type: "คนสวน",
+    detail: "จัดหญ้า",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600,
+    job_address: "50 ถ.พัฒนาการ นนทบุรี"
+  },
+  // Add PJ9 job details
+  "PJ9": {
+    findjob_id: "FJ5",
+    job_id: "PJ9",
+    job_type: "พนักงานขับรถ",
+    detail: "ขับรถบรรทุก",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600,
+    job_address: "50 ถ.พัฒนาการ นนทบุรี"
+  },
+  // Add PJ10 job details
+  "PJ10": {
+    findjob_id: "FJ6",
+    job_id: "PJ10",
+    job_type: "พนักงานขับรถ",
+    detail: "ขับรถให้จ่าย",
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    salary: 3600,
+    job_address: "50 ถ.พัฒนาการ นนทบุรี"
   }
 };
 
@@ -127,19 +185,31 @@ export const mockEmployers: Record<string, Employer> = {
     email: "somchai@example.com"
   },
   "PJ6": {
-    name: "คุณรัชดา มีสุข",
-    phone: "062-123-4567",
-    email: "rachada@example.com"
+    name: "คุณสมชาย สมบัติดี",
+    phone: "082-123-4567",
+    email: "somchai@example.com"
   },
   "PJ7": {
-    name: "คุณมานะ ใจดี",
-    phone: "089-876-5432",
-    email: "mana@example.com"
+    name: "คุณสมชาย สมบัติดี",
+    phone: "082-123-4567",
+    email: "somchai@example.com"
   },
   // Add PJ8 employer
   "PJ8": {
-    name: "คุณวิชัย อาหารอร่อย",
-    phone: "065-789-1234",
-    email: "wichai@example.com"
+    name: "คุณสมชาย สมบัติดี",
+    phone: "082-123-4567",
+    email: "somchai@example.com"
+  },
+  // Add PJ9 employer
+  "PJ9": {
+    name: "คุณสมชาย สมบัติดี",
+    phone: "082-123-4567",
+    email: "somchai@example.com"
+  },
+  // Add PJ10 employer
+  "PJ10": {
+    name: "คุณสมชาย สมบัติดี",
+    phone: "082-123-4567",
+    email: "somchai@example.com"
   }
 };
