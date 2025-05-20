@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import JobList from "@/components/JobList";
+import { findJobs } from "@/data/findJobs";
+import useThailandLocations from "@/hooks/useThailandLocations";
+import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -13,31 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "sonner";
-import { addNewFindJob } from "@/services/findJobService";
-import { JOB_TYPES } from "@/types/types";
-import { getJobIcon } from "@/utils/jobIcons";
-import AddressInformationForm from "@/components/jobs/AddressInformationForm";
-import useThailandLocations from "@/hooks/useThailandLocations";
 
-const FindJob: React.FC = () => {
+const FindJob = () => {
   const navigate = useNavigate();
-  const { userEmail, userFullName } = useAuth();
-  const [formData, setFormData] = useState({
-    jobType: "",
-    skills: "",
-    jobDate: "",
-    startTime: "",
-    endTime: "",
-    province: "",
-    district: "",
-    subdistrict: "",
-    startSalary: "",
-    rangeSalary: "",
-    address: "", 
-  });
-
-  // Use the Thailand locations hook
   const {
     provinces,
     filteredAmphures,
@@ -45,329 +26,216 @@ const FindJob: React.FC = () => {
     isLoading,
     error,
     zipCode,
+    selectedProvince,
+    selectedAmphure,
+    selectedTambon,
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
   } = useThailandLocations();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [jobTypeFilter, setJobTypeFilter] = useState("");
+  const [provinceFilter, setProvinceFilter] = useState("");
+  const [districtFilter, setDistrictFilter] = useState("");
+  const [subdistrictFilter, setSubdistrictFilter] = useState("");
+
+  // Update filters when location selections change
+  useEffect(() => {
+    setProvinceFilter(selectedProvince);
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    setDistrictFilter(selectedAmphure);
+  }, [selectedAmphure]);
+
+  useEffect(() => {
+    setSubdistrictFilter(selectedTambon);
+  }, [selectedTambon]);
+
+  // Filter jobs based on search term and filters
+  const filteredJobs = findJobs.filter((job) => {
+    // Filter by search term
+    const matchesSearchTerm = searchTerm
+      ? job.job_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.job_detail.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    // Filter by job type
+    const matchesJobType = jobTypeFilter ? job.job_type === jobTypeFilter : true;
+
+    // Filter by location
+    const matchesProvince = provinceFilter ? job.province === provinceFilter : true;
+    const matchesDistrict = districtFilter ? job.district === districtFilter : true;
+    const matchesSubdistrict = subdistrictFilter ? job.subdistrict === subdistrictFilter : true;
+
+    return matchesSearchTerm && matchesJobType && matchesProvince && matchesDistrict && matchesSubdistrict;
+  });
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    if (name === "province") {
-      handleProvinceChange(value);
-      setFormData({
-        ...formData,
-        [name]: value,
-        district: "",
-        subdistrict: "",
-      });
-    } else if (name === "district") {
-      handleAmphureChange(value);
-      setFormData({
-        ...formData,
-        [name]: value,
-        subdistrict: "",
-      });
-    } else if (name === "subdistrict") {
-      handleTambonChange(value);
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value,
-      });
-    }
+  const handleJobTypeChange = (value: string) => {
+    setJobTypeFilter(value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      // Validate form
-      if (!formData.jobType || !formData.skills || !formData.jobDate || 
-          !formData.startTime || !formData.endTime || !formData.province || 
-          !formData.startSalary || !formData.address) {  // Added address to validation
-        toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
-        return;
-      }
+  const handleProvinceFilterChange = (value: string) => {
+    handleProvinceChange(value);
+  };
 
-      // Create find job data - use jobType value directly without modification
-      const jobData = {
-        job_type: formData.jobType, // Use the selected value directly
-        skills: formData.skills,
-        job_date: formData.jobDate,
-        start_time: formData.startTime,
-        end_time: formData.endTime,
-        province: formData.province,
-        district: formData.district,
-        subdistrict: formData.subdistrict,
-        start_salary: parseInt(formData.startSalary) || 0,
-        range_salary: parseInt(formData.rangeSalary) || 0,
-        email: userEmail || "",
-        first_name: userFullName?.split(" ")[0] || "",
-        last_name: userFullName?.split(" ")[1] || "",
-        job_address: formData.address, // Using the address field
-        zip_code: "", // Required field but not collected in this form
-        gender: "", // Required field but not collected in this form
-      };
+  const handleDistrictFilterChange = (value: string) => {
+    handleAmphureChange(value);
+  };
 
-      // Add the new find job
-      const newJob = addNewFindJob(jobData);
-      console.log("New find job added:", newJob);
-      
-      // Show success message
-      toast.success("สร้างการค้นหางานสำเร็จ");
-      
-      // Redirect to My Jobs page
-      setTimeout(() => {
-        navigate("/my-jobs/find");
-      }, 1500);
-    } catch (error) {
-      console.error("Error submitting find job:", error);
-      toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
-    }
+  const handleSubdistrictFilterChange = (value: string) => {
+    handleTambonChange(value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setJobTypeFilter("");
+    setProvinceFilter("");
+    setDistrictFilter("");
+    setSubdistrictFilter("");
+  };
+
+  const handleJobClick = (jobId: string) => {
+    navigate(`/jobs/${jobId}`);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow container py-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-            Find Job <span className="text-blue-500">🔍</span>
-          </h1>
-          
-          <div className="p-6 bg-white rounded-lg shadow">
-            <img 
-              src="/lovable-uploads/a.png"
-              alt="FastLabor Logo" 
-              className="w-24 h-24 mx-auto mb-6"
+        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          Find Job <Search />
+        </h1>
+
+        {/* Search and filters */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+          {/* Search */}
+          <div className="mb-4">
+            <Input
+              type="text"
+              placeholder="Search for jobs..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full"
             />
-            
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Job Information</h2>
-                
-                <div>
-                  <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                  <Select
-                    value={formData.jobType}
-                    onValueChange={(value) => handleSelectChange("jobType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {JOB_TYPES.map((jobType) => (
-                        <SelectItem key={jobType.value} value={jobType.value} className="flex items-center">
-                          <div className="flex items-center">
-                            {getJobIcon(jobType.icon)}
-                            {jobType.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">Skills *</label>
-                  <Textarea
-                    id="skills"
-                    name="skills"
-                    value={formData.skills}
-                    onChange={handleChange}
-                    placeholder="Enter your skills"
-                    className="min-h-[100px]"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="jobDate" className="block text-sm font-medium text-gray-700 mb-1">Available Date *</label>
-                  <Input
-                    id="jobDate"
-                    name="jobDate"
-                    type="date"
-                    value={formData.jobDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time *</label>
-                    <Select
-                      value={formData.startTime}
-                      onValueChange={(value) => handleSelectChange("startTime", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }).map((_, i) => (
-                          <SelectItem key={i} value={`${i}:00`}>{`${i}:00`}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time *</label>
-                    <Select
-                      value={formData.endTime}
-                      onValueChange={(value) => handleSelectChange("endTime", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }).map((_, i) => (
-                          <SelectItem key={i} value={`${i}:00`}>{`${i}:00`}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Address Information</h2>
-                
-                {/* Address field */}
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address (House No, Street, Area) *</label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Enter your address"
-                    required
-                  />
-                </div>
-                
-                {/* Province */}
-                <div>
-                  <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
-                  <Select
-                    value={formData.province}
-                    onValueChange={(value) => handleSelectChange("province", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {isLoading ? (
-                        <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
-                      ) : provinces.map((province) => (
-                        <SelectItem key={province.id} value={province.name_th}>
-                          {province.name_th}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
-                </div>
-                
-                {/* District */}
-                <div>
-                  <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District *</label>
-                  <Select
-                    value={formData.district}
-                    onValueChange={(value) => handleSelectChange("district", value)}
-                    disabled={!formData.province}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select District" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {!formData.province ? (
-                        <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-                      ) : filteredAmphures.length === 0 ? (
-                        <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                      ) : filteredAmphures.map((amphure) => (
-                        <SelectItem key={amphure.id} value={amphure.name_th}>
-                          {amphure.name_th}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {/* Subdistrict */}
-                <div>
-                  <label htmlFor="subdistrict" className="block text-sm font-medium text-gray-700 mb-1">Subdistrict *</label>
-                  <Select
-                    value={formData.subdistrict}
-                    onValueChange={(value) => handleSelectChange("subdistrict", value)}
-                    disabled={!formData.district}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Subdistrict" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {!formData.district ? (
-                        <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-                      ) : filteredTambons.length === 0 ? (
-                        <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                      ) : filteredTambons.map((tambon) => (
-                        <SelectItem key={tambon.id} value={tambon.name_th}>
-                          {tambon.name_th}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Salary Expectations</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startSalary" className="block text-sm font-medium text-gray-700 mb-1">Minimum Salary (THB) *</label>
-                    <Input
-                      id="startSalary"
-                      name="startSalary"
-                      type="number"
-                      value={formData.startSalary}
-                      onChange={handleChange}
-                      placeholder="Enter minimum salary"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="rangeSalary" className="block text-sm font-medium text-gray-700 mb-1">Maximum Salary (THB)</label>
-                    <Input
-                      id="rangeSalary"
-                      name="rangeSalary"
-                      type="number"
-                      value={formData.rangeSalary}
-                      onChange={handleChange}
-                      placeholder="Enter maximum salary"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
-              >
-                Find Job
-              </Button>
-            </form>
           </div>
+
+          {/* Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Job Type Filter */}
+            <div>
+              <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Job Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Job Types</SelectItem>
+                  <SelectItem value="Driver">Driver</SelectItem>
+                  <SelectItem value="Housekeeping">Housekeeping</SelectItem>
+                  <SelectItem value="Service">Service</SelectItem>
+                  <SelectItem value="Teaching">Teaching</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Province Filter */}
+            <div>
+              <Select
+                value={provinceFilter}
+                onValueChange={handleProvinceFilterChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Province" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Provinces</SelectItem>
+                  {isLoading ? (
+                    <SelectItem value="loading" disabled>
+                      กำลังโหลดข้อมูล...
+                    </SelectItem>
+                  ) : provinces.map((prov) => (
+                    <SelectItem key={prov.id} value={prov.name_th}>
+                      {prov.name_th}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* District Filter */}
+            <div>
+              <Select
+                value={districtFilter}
+                onValueChange={handleDistrictFilterChange}
+                disabled={!provinceFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="District" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Districts</SelectItem>
+                  {!provinceFilter ? (
+                    <SelectItem value="select-province" disabled>
+                      โปรดเลือกจังหวัดก่อน
+                    </SelectItem>
+                  ) : filteredAmphures.map((dist) => (
+                    <SelectItem key={dist.id} value={dist.name_th}>
+                      {dist.name_th}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Subdistrict Filter */}
+            <div>
+              <Select
+                value={subdistrictFilter}
+                onValueChange={handleSubdistrictFilterChange}
+                disabled={!districtFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Subdistrict" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Subdistricts</SelectItem>
+                  {!districtFilter ? (
+                    <SelectItem value="select-district" disabled>
+                      โปรดเลือกอำเภอ/เขตก่อน
+                    </SelectItem>
+                  ) : filteredTambons.map((tamb) => (
+                    <SelectItem key={tamb.id} value={tamb.name_th}>
+                      {tamb.name_th}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          <div className="mt-4 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={handleClearFilters}
+              className="text-sm"
+            >
+              Clear Filters
+            </Button>
+          </div>
+        </div>
+
+        {/* Job Results */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-xl font-semibold mb-4">
+            {filteredJobs.length} Jobs Found
+          </h2>
+          <JobList jobs={filteredJobs} onJobClick={handleJobClick} />
         </div>
       </main>
       <Footer />
