@@ -87,12 +87,12 @@ const AIMatchingPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-6">
               <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">AI Matching (5 อันดับแรก)</h1>
+              <h1 className="text-2xl font-bold text-gray-800">AI Matching</h1>
             </div>
             
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
-              <p className="text-gray-600">แสดง 5 อันดับแรงงานที่มีผลการจับคู่สูงสุด เรียงจากมากไปน้อย</p>
+              <p className="text-gray-600">แสดงแรงงานที่มีผลการจับคู่สูงสุด</p>
             </div>
             
             <div className="mb-6">
@@ -117,10 +117,10 @@ const AIMatchingPage: React.FC = () => {
                 <div className="space-y-8">
                   {matchingResults.map((match, index) => (
                     <div key={index} className="border-b border-gray-100 pb-8 last:border-b-0">
-                      <h3 className="font-medium text-lg mb-3">Match No.{index + 1}</h3>
+                      <h3 className="font-medium text-lg mb-3">แรงงาน {index + 1}</h3>
                       <div className="space-y-2 pl-6">
                         {Object.entries(match).map(([key, value]) => {
-                          // Skip aiScore as it will be shown separately
+                          // Skip aiScore as we don't want to show it
                           if (key === "aiScore") return null;
                           
                           return (
@@ -130,11 +130,6 @@ const AIMatchingPage: React.FC = () => {
                             </div>
                           );
                         })}
-                        
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>AI Score: {match.aiScore.toFixed(2)}</span>
-                        </div>
                       </div>
                     </div>
                   ))}

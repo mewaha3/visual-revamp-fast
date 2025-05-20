@@ -24,8 +24,17 @@ const MyJobsPage: React.FC = () => {
   const location = useLocation();
   const activeTab = location.pathname.includes('/my-jobs/find') ? 'find' : 'post';
   
+  // Redirect to login if user is not authenticated
   useEffect(() => {
-    fetchData();
+    if (!userEmail) {
+      navigate('/login', { state: { from: location.pathname } });
+    }
+  }, [userEmail, navigate, location.pathname]);
+  
+  useEffect(() => {
+    if (userEmail) {
+      fetchData();
+    }
     
     // Listen for find jobs updated event
     const handleFindJobsUpdated = () => {
@@ -40,6 +49,8 @@ const MyJobsPage: React.FC = () => {
   }, [userEmail]);
   
   const fetchData = async () => {
+    if (!userEmail) return;
+    
     setLoading(true);
     try {
       // Fetch posted jobs
@@ -50,11 +61,9 @@ const MyJobsPage: React.FC = () => {
       const userFindJobs = getUserFindJobs(userEmail);
       setFindJobs(userFindJobs as FindJob[]);
       
-      // Fetch job matches
-      if (userEmail) {
-        const userMatches = await getUserMatches(userEmail);
-        setMatches(userMatches);
-      }
+      // Fetch job matches filtered by current user's email
+      const userMatches = await getUserMatches(userEmail);
+      setMatches(userMatches);
       
       toast.success("อัปเดตข้อมูลล่าสุด");
     } catch (error) {
@@ -101,6 +110,11 @@ const MyJobsPage: React.FC = () => {
     }
   };
 
+  // If user is not authenticated, we return null (redirect happens in useEffect)
+  if (!userEmail) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -136,7 +150,7 @@ const MyJobsPage: React.FC = () => {
               </TabsList>
               
               <TabsContent value="post">
-                <h2 className="text-xl font-semibold mb-4">🚀 รายการที่ลงโพสต์งาน</h2>
+                <h2 className="text-xl font-semibold mb-4">🚀 รายการที่ลงประกาศงาน</h2>
                 {loading ? (
                   <div className="text-center py-8 flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
