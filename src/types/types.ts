@@ -1,3 +1,4 @@
+
 export interface Job {
   job_id: string;
   job_type: string;
@@ -94,5 +95,7 @@ export const JOB_TYPES = [
   { value: "car_wash", label: "คนล้างรถ", icon: "car" },
   { value: "house", label: "คนเฝ้าบ้าน", icon: "home" },
   { value: "window", label: "พนักงานเช็ดกระจกอาคารสูง", icon: "glasses" },
-  { value: "flyer", label: "พนักงานแจกใบปลิว", icon: "file-text" }
+  { value: "flyer", label: "พนักงานแจกใบปลิว", icon: "file-text" },
+  { value: "driver", label: "พนักงานขับรถ", icon: "car-front" },
+  { value: "gardener", label: "คนสวน", icon: "tree-deciduous" }
 ];

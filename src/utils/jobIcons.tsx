@@ -1,25 +1,69 @@
 
+import React from "react";
 import { 
-  Briefcase, Search, Pencil, Check, 
-  List, Edit, Plus 
+  Broom, 
+  Shield, 
+  Bath, 
+  Scissors, 
+  Factory, 
+  Package, 
+  Search, 
+  Dog, 
+  Car, 
+  Home, 
+  Glasses, 
+  FileText,
+  CarFront,
+  TreeDeciduous
 } from "lucide-react";
-import { ReactNode } from "react";
 
-// Function to get the icon component based on job type
-export const getJobIcon = (iconName: string): ReactNode => {
+type IconName = 
+  | "broom" 
+  | "shield" 
+  | "bath" 
+  | "scissors" 
+  | "factory" 
+  | "package" 
+  | "search" 
+  | "dog" 
+  | "car" 
+  | "home" 
+  | "glasses" 
+  | "file-text"
+  | "car-front"
+  | "tree-deciduous";
+
+export const getJobIcon = (iconName: IconName) => {
   switch (iconName) {
-    case "broom": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "shield": return <List className="h-4 w-4 mr-2" />;
-    case "bath": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "scissors": return <Edit className="h-4 w-4 mr-2" />;
-    case "factory": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "package": return <Plus className="h-4 w-4 mr-2" />;
-    case "search": return <Search className="h-4 w-4 mr-2" />;
-    case "dog": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "car": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "home": return <Briefcase className="h-4 w-4 mr-2" />;
-    case "glasses": return <Check className="h-4 w-4 mr-2" />;
-    case "file-text": return <Pencil className="h-4 w-4 mr-2" />;
-    default: return null;
+    case "broom":
+      return <Broom className="mr-2 h-4 w-4" />;
+    case "shield":
+      return <Shield className="mr-2 h-4 w-4" />;
+    case "bath":
+      return <Bath className="mr-2 h-4 w-4" />;
+    case "scissors":
+      return <Scissors className="mr-2 h-4 w-4" />;
+    case "factory":
+      return <Factory className="mr-2 h-4 w-4" />;
+    case "package":
+      return <Package className="mr-2 h-4 w-4" />;
+    case "search":
+      return <Search className="mr-2 h-4 w-4" />;
+    case "dog":
+      return <Dog className="mr-2 h-4 w-4" />;
+    case "car":
+      return <Car className="mr-2 h-4 w-4" />;
+    case "home":
+      return <Home className="mr-2 h-4 w-4" />;
+    case "glasses":
+      return <Glasses className="mr-2 h-4 w-4" />;
+    case "file-text":
+      return <FileText className="mr-2 h-4 w-4" />;
+    case "car-front":
+      return <CarFront className="mr-2 h-4 w-4" />;
+    case "tree-deciduous":
+      return <TreeDeciduous className="mr-2 h-4 w-4" />;
+    default:
+      return <Home className="mr-2 h-4 w-4" />;
   }
 };
