@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { addNewFindJob } from "@/services/findJobService";
+import { JOB_TYPES } from "@/types/types";
+import { Broom, Shield, Toilet, Scissors, Factory, Package, Search, Dog, Car, House, Window, FileText } from "lucide-react";
 
 const FindJob: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +49,25 @@ const FindJob: React.FC = () => {
     });
   };
 
+  // Function to get the icon component based on job type
+  const getJobIcon = (iconName: string) => {
+    switch (iconName) {
+      case "broom": return <Broom className="h-4 w-4 mr-2" />;
+      case "shield": return <Shield className="h-4 w-4 mr-2" />;
+      case "toilet": return <Toilet className="h-4 w-4 mr-2" />;
+      case "scissors": return <Scissors className="h-4 w-4 mr-2" />;
+      case "factory": return <Factory className="h-4 w-4 mr-2" />;
+      case "package": return <Package className="h-4 w-4 mr-2" />;
+      case "search": return <Search className="h-4 w-4 mr-2" />;
+      case "dog": return <Dog className="h-4 w-4 mr-2" />;
+      case "car": return <Car className="h-4 w-4 mr-2" />;
+      case "house": return <House className="h-4 w-4 mr-2" />;
+      case "window": return <Window className="h-4 w-4 mr-2" />;
+      case "file-text": return <FileText className="h-4 w-4 mr-2" />;
+      default: return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -73,6 +94,9 @@ const FindJob: React.FC = () => {
         email: userEmail || "",
         first_name: userFullName?.split(" ")[0] || "",
         last_name: userFullName?.split(" ")[1] || "",
+        job_address: "", // Added required field
+        zip_code: "", // Added required field
+        gender: "", // Added required field
       };
 
       // Add the new find job
@@ -122,11 +146,14 @@ const FindJob: React.FC = () => {
                       <SelectValue placeholder="Select job type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="construction">งานก่อสร้าง</SelectItem>
-                      <SelectItem value="cleaning">งานทำความสะอาด</SelectItem>
-                      <SelectItem value="moving">งานขนย้าย</SelectItem>
-                      <SelectItem value="gardening">งานสวน</SelectItem>
-                      <SelectItem value="cooking">งานครัว</SelectItem>
+                      {JOB_TYPES.map((jobType) => (
+                        <SelectItem key={jobType.value} value={jobType.value} className="flex items-center">
+                          <div className="flex items-center">
+                            {getJobIcon(jobType.icon)}
+                            {jobType.label}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

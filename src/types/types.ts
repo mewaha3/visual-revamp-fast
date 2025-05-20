@@ -8,9 +8,9 @@ export interface Job {
   end_time: string;
   job_address: string;
   salary: number;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
+  email: string;
+  first_name: string;
+  last_name: string;
   // Added fields to match PostJob interface
   gender?: string;
   province?: string;
@@ -58,9 +58,9 @@ export interface FindJob {
   email: string;
   first_name: string;
   last_name: string;
-  job_address?: string; // Optional for backward compatibility
-  zip_code?: string; // Optional for backward compatibility
-  gender?: string; // Optional for backward compatibility
+  job_address: string; // Changed from optional to required
+  zip_code: string; // Changed from optional to required
+  gender: string; // Changed from optional to required
 }
 
 export interface FindMatch {
@@ -87,3 +87,18 @@ export interface Employer {
   phone: string;
   email: string;
 }
+
+export const JOB_TYPES = [
+  { value: "cleaning", label: "พนักงานทำความสะอาด (แม่บ้านออฟฟิศ, ห้าง ฯลฯ)", icon: "broom" },
+  { value: "security", label: "พนักงานรักษาความปลอดภัย (รปภ.)", icon: "shield" },
+  { value: "toilet", label: "พนักงานดูแลห้องน้ำสาธารณะ", icon: "toilet" },
+  { value: "tailor", label: "พนักงานเย็บผ้า", icon: "scissors" },
+  { value: "factory", label: "พนักงานสายพาน / โรงงานผลิต", icon: "factory" },
+  { value: "packer", label: "พนักงานแพ็คของ", icon: "package" },
+  { value: "qc", label: "พนักงาน QC / ตรวจสอบคุณภาพ", icon: "search" },
+  { value: "pet", label: "คนดูแลสัตว์เลี้ยง / จูงหมา", icon: "dog" },
+  { value: "car_wash", label: "คนล้างรถ", icon: "car" },
+  { value: "house", label: "คนเฝ้าบ้าน", icon: "house" },
+  { value: "window", label: "พนักงานเช็ดกระจกอาคารสูง", icon: "window" },
+  { value: "flyer", label: "พนักงานแจกใบปลิว", icon: "file-text" }
+];
