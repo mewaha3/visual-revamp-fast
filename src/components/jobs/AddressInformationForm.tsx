@@ -25,6 +25,7 @@ const AddressInformationForm = ({
         </div>
         <Textarea
           id="address"
+          name="address"
           value={address}
           onChange={onAddressChange}
           placeholder="ระบุบ้านเลขที่ ถนน ซอย อาคาร หมู่บ้าน เช่น 123/45 ถ.สุขุมวิท ซ.15"

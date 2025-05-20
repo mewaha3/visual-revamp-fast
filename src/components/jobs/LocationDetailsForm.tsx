@@ -54,10 +54,11 @@ const LocationDetailsForm = ({
       
       if (selectedTambon && selectedTambon.zip_code) {
         // Create a synthetic event to update the postal code
+        // Fix: Convert the zip_code number to string and cast the event to the correct type
         const event = {
           target: {
             name: 'postalCode',
-            value: selectedTambon.zip_code
+            value: String(selectedTambon.zip_code)
           }
         } as React.ChangeEvent<HTMLInputElement>;
         

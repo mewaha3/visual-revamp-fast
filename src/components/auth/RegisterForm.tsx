@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -113,7 +112,8 @@ const RegisterForm = () => {
     if (filteredTambons.length > 0) {
       const selectedTambon = filteredTambons.find(t => t.name_th === value);
       if (selectedTambon && selectedTambon.zip_code) {
-        form.setValue("zip_code", selectedTambon.zip_code);
+        // Fix: Convert zip_code to string explicitly
+        form.setValue("zip_code", String(selectedTambon.zip_code));
       }
     }
   };

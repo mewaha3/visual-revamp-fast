@@ -85,7 +85,8 @@ const PostJob = () => {
       setFormData({
         ...formData,
         [name]: value,
-        postalCode: selectedTambon?.zip_code || "",
+        // Fix: Convert zip_code to string explicitly
+        postalCode: selectedTambon?.zip_code ? String(selectedTambon.zip_code) : "",
       });
     } else {
       setFormData({
@@ -188,7 +189,13 @@ const PostJob = () => {
               
               <AddressInformationForm 
                 address={formData.address}
-                onAddressChange={handleChange}
+                onAddressChange={(e) => handleChange({
+                  ...e,
+                  target: {
+                    ...e.target,
+                    name: "address" // Ensure the name is set correctly
+                  }
+                })}
               />
               
               <LocationDetailsForm 
@@ -199,7 +206,13 @@ const PostJob = () => {
                 onProvinceChange={(value) => handleSelectChange("province", value)}
                 onDistrictChange={(value) => handleSelectChange("district", value)}
                 onSubdistrictChange={(value) => handleSelectChange("subdistrict", value)}
-                onPostalCodeChange={handleChange}
+                onPostalCodeChange={(e) => handleChange({
+                  ...e,
+                  target: {
+                    ...e.target,
+                    name: "postalCode"
+                  }
+                })}
                 provinces={provinces}
                 districts={filteredAmphures}
                 subdistricts={filteredTambons}
