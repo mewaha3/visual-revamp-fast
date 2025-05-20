@@ -15,6 +15,9 @@ export const getEmployerDetails = async (jobId: string): Promise<Employer> => {
     
     // Construct employer information from job data
     const employer: Employer = {
+      id: jobData.job_id || jobData.id, // Use job_id or id as employer id
+      first_name: jobData.first_name,
+      last_name: jobData.last_name,
       name: `${jobData.first_name} ${jobData.last_name}`,
       phone: "099-999-9999", // Mock phone number as it's not in the Job interface
       email: jobData.email,

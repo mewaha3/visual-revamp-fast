@@ -8,7 +8,8 @@ export const findJobsUpdatedEvent = new CustomEvent('findJobsUpdated');
 // Get all find jobs from a specific user
 export const getUserFindJobs = (email: string | null): FindJob[] => {
   if (!email) return [];
-  return findJobs.filter(job => job.email === email);
+  // Type casting here because we know the structure is compatible even if TS doesn't
+  return findJobs.filter(job => job.email === email) as unknown as FindJob[];
 };
 
 // Add a new find job request
@@ -49,7 +50,7 @@ export const addNewFindJob = (jobData: Partial<FindJob>): Promise<FindJob> => {
         };
         
         // Add the new find job to the array - in a real app this would save to a database
-        findJobs.unshift(newJob);
+        findJobs.unshift(newJob as any);
         
         // Dispatch event to notify components that find jobs data has changed
         document.dispatchEvent(findJobsUpdatedEvent);

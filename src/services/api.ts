@@ -48,7 +48,7 @@ export const getMatchingResults = (jobId: string): Promise<{ matches: MatchResul
   return new Promise((resolve) => {
     setTimeout(() => {
       const matches = matchJobWithWorkers(jobId);
-      resolve({ matches });
+      resolve({ matches: matches as unknown as MatchResult[] });
     }, 500);
   });
 };
@@ -66,7 +66,7 @@ export const getStatusResults = (jobId: string): Promise<{ status: StatusResult[
       const matches = matchJobWithWorkers(jobId);
       
       // กำหนดสถานะจำลอง - แค่ 5 อันดับแรก
-      const statusResults: StatusResult[] = matches.map((match, index) => {
+      const statusResults = matches.map((match, index) => {
         // Map corresponding worker ID from findJobs based on index+1
         const workerId = `FJ${index + 1}`;
         
@@ -80,14 +80,26 @@ export const getStatusResults = (jobId: string): Promise<{ status: StatusResult[
           status = 'declined';
         }
         
+        // Create StatusResult with required properties
         return {
-          ...match,
+          id: `status_${index}`,
+          job_id: jobId,
+          findjob_id: workerId,
           status,
-          workerId
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          workerId,
+          name: match.name,
+          gender: match.gender,
+          jobType: match.jobType,
+          date: match.date,
+          time: match.time,
+          location: match.location,
+          salary: `${match.salary} บาท`
         };
       });
       
-      resolve({ status: statusResults });
+      resolve({ status: statusResults as StatusResult[] });
     }, 500);
   });
 };

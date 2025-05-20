@@ -1,3 +1,4 @@
+
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -61,7 +62,7 @@ export const JOB_TYPES = [
   { value: "other", label: "อื่นๆ", icon: "file-text" },
 ];
 
-// Keep other interfaces
+// Update JobDetail interface to include job_id
 export interface JobDetail {
   id: string;
   job_type: string;
@@ -77,8 +78,10 @@ export interface JobDetail {
   status?: string;
   findjob_id?: string;
   detail?: string;
+  job_id?: string; // Add job_id to fix type errors
 }
 
+// Update Employer interface with required fields
 export interface Employer {
   id: string;
   first_name: string;

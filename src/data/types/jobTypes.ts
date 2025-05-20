@@ -28,9 +28,9 @@ export interface FindJob {
     zip_code?: string;
 }
 
-// Update PostJob interface with job_id property
+// Update PostJob interface with both id and job_id properties
 export interface PostJob {
-    id: string;
+    id: string; // Required property to fix TypeScript errors
     job_type: string;
     job_detail: string;
     job_date: string;
