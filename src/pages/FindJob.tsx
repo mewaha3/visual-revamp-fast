@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import JobList from "@/components/JobList";
+import { FindJobList } from "@/components/JobList";
 import { findJobs } from "@/data/findJobs";
 import useThailandLocations from "@/hooks/useThailandLocations";
 import { Search } from "lucide-react";
@@ -58,7 +58,7 @@ const FindJob = () => {
     // Filter by search term
     const matchesSearchTerm = searchTerm
       ? job.job_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.job_detail.toLowerCase().includes(searchTerm.toLowerCase())
+        job.skills.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
 
     // Filter by job type
@@ -235,7 +235,7 @@ const FindJob = () => {
           <h2 className="text-xl font-semibold mb-4">
             {filteredJobs.length} Jobs Found
           </h2>
-          <JobList jobs={filteredJobs} onJobClick={handleJobClick} />
+          <FindJobList jobs={filteredJobs} />
         </div>
       </main>
       <Footer />
