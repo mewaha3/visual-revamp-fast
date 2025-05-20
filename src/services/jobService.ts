@@ -30,15 +30,15 @@ export const addNewJob = (jobData: Partial<Job>): Job => {
     email: jobData.email || "",
     first_name: jobData.first_name || "",
     last_name: jobData.last_name || "",
-    gender: jobData.gender,
-    province: jobData.province,
-    district: jobData.district,
-    subdistrict: jobData.subdistrict,
-    zip_code: jobData.zip_code,
+    gender: jobData.gender || "",
+    province: jobData.province || "",
+    district: jobData.district || "",
+    subdistrict: jobData.subdistrict || "",
+    zip_code: jobData.zip_code || "",
   };
   
   // Add the new job to the array - in a real app this would save to a database
-  postJobs.unshift(newJob);
+  postJobs.unshift(newJob as any); // Type assertion to handle the array type
   
   return newJob;
 };

@@ -11,20 +11,15 @@ export interface Job {
   email: string;
   first_name: string;
   last_name: string;
-  // Added fields to match PostJob interface
-  gender?: string;
-  province?: string;
-  district?: string;
-  subdistrict?: string;
-  zip_code?: string;
-}
-
-export interface PostJob extends Job {
   gender: string;
   province: string;
   district: string;
   subdistrict: string;
   zip_code: string;
+}
+
+export interface PostJob extends Job {
+  // All required fields already in Job interface
 }
 
 export interface MatchResult {
@@ -58,9 +53,9 @@ export interface FindJob {
   email: string;
   first_name: string;
   last_name: string;
-  job_address: string; // Changed from optional to required
-  zip_code: string; // Changed from optional to required
-  gender: string; // Changed from optional to required
+  job_address: string;
+  zip_code: string;
+  gender: string;
 }
 
 export interface FindMatch {
@@ -89,16 +84,16 @@ export interface Employer {
 }
 
 export const JOB_TYPES = [
-  { value: "cleaning", label: "พนักงานทำความสะอาด (แม่บ้านออฟฟิศ, ห้าง ฯลฯ)", icon: "broom" },
+  { value: "cleaning", label: "พนักงานทำความสะอาด (แม่บ้านออฟฟิศ, ห้าง ฯลฯ)", icon: "mop" },
   { value: "security", label: "พนักงานรักษาความปลอดภัย (รปภ.)", icon: "shield" },
-  { value: "toilet", label: "พนักงานดูแลห้องน้ำสาธารณะ", icon: "toilet" },
+  { value: "toilet", label: "พนักงานดูแลห้องน้ำสาธารณะ", icon: "bath" },
   { value: "tailor", label: "พนักงานเย็บผ้า", icon: "scissors" },
   { value: "factory", label: "พนักงานสายพาน / โรงงานผลิต", icon: "factory" },
   { value: "packer", label: "พนักงานแพ็คของ", icon: "package" },
   { value: "qc", label: "พนักงาน QC / ตรวจสอบคุณภาพ", icon: "search" },
   { value: "pet", label: "คนดูแลสัตว์เลี้ยง / จูงหมา", icon: "dog" },
   { value: "car_wash", label: "คนล้างรถ", icon: "car" },
-  { value: "house", label: "คนเฝ้าบ้าน", icon: "house" },
-  { value: "window", label: "พนักงานเช็ดกระจกอาคารสูง", icon: "window" },
+  { value: "house", label: "คนเฝ้าบ้าน", icon: "home" },
+  { value: "window", label: "พนักงานเช็ดกระจกอาคารสูง", icon: "glasses" },
   { value: "flyer", label: "พนักงานแจกใบปลิว", icon: "file-text" }
 ];

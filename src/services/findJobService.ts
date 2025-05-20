@@ -28,13 +28,13 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
     email: jobData.email || "",
     first_name: jobData.first_name || "",
     last_name: jobData.last_name || "",
-    job_address: jobData.job_address || "", // Changed to required
-    zip_code: jobData.zip_code || "", // Changed to required
-    gender: jobData.gender || "", // Changed to required
+    job_address: jobData.job_address || "",
+    zip_code: jobData.zip_code || "",
+    gender: jobData.gender || "",
   };
   
   // Add the new find job to the array - in a real app this would save to a database
-  findJobs.unshift(newJob);
+  findJobs.unshift(newJob as any); // Type assertion to handle the array type
   
   return newJob;
 };
