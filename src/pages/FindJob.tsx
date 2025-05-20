@@ -107,7 +107,7 @@ const FindJob: React.FC = () => {
           
           <div className="p-6 bg-white rounded-lg shadow">
             <img 
-              src="/lovable-uploads/365674fc-1bea-4770-b4cb-f2f99ec0e841.png"
+              src="/lovable-uploads/a.png"
               alt="FastLabor Logo" 
               className="w-24 h-24 mx-auto mb-6"
             />
