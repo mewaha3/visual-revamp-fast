@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { JOB_TYPES } from "@/types/types";
 import { getJobIcon } from "@/utils/jobIcons";
 import {
@@ -11,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Info } from "lucide-react";
 
 interface JobInformationFormProps {
   jobType: string;
@@ -47,16 +47,16 @@ const JobInformationForm = ({
 }: JobInformationFormProps) => {
   return (
     <div className="space-y-4">
-      <h2 className="font-medium text-gray-700">Job Information</h2>
+      <h2 className="font-medium text-gray-700">รายละเอียดงาน</h2>
       
       <div>
-        <label htmlFor="JobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
+        <label htmlFor="JobType" className="block text-sm font-medium text-gray-700 mb-1">ประเภทงาน <span className="text-red-500">*</span></label>
         <Select
           value={jobType}
           onValueChange={onJobTypeChange}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select job type" />
+            <SelectValue placeholder="เลือกประเภทงาน" />
           </SelectTrigger>
           <SelectContent>
             {JOB_TYPES.map((jobType) => (
@@ -72,13 +72,17 @@ const JobInformationForm = ({
       </div>
       
       <div>
-        <label htmlFor="jobDetail" className="block text-sm font-medium text-gray-700 mb-1">Job Detail *</label>
+        <label htmlFor="jobDetail" className="block text-sm font-medium text-gray-700 mb-1">รายละเอียดงาน <span className="text-red-500">*</span></label>
+        <div className="text-xs text-gray-500 mb-1 flex items-center">
+          <Info className="h-3 w-3 mr-1" />
+          สามารถกรอกได้ทั้งภาษาไทยและภาษาอังกฤษ เช่น "ทำความสะอาดสำนักงาน, Office Cleaning"
+        </div>
         <Textarea
           id="jobDetail"
           name="jobDetail"
           value={jobDetail}
           onChange={onJobDetailChange}
-          placeholder="Enter job details"
+          placeholder="ระบุรายละเอียดงาน เช่น ทำความสะอาดสำนักงาน 5 ชั้น พื้นที่ 1,000 ตร.ม."
           className="min-h-[100px]"
           required
         />
@@ -86,7 +90,7 @@ const JobInformationForm = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่มงาน <span className="text-red-500">*</span></label>
           <Input
             id="startDate"
             name="startDate"
@@ -98,7 +102,7 @@ const JobInformationForm = ({
         </div>
         
         <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
+          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">วันที่สิ้นสุด <span className="text-red-500">*</span></label>
           <Input
             id="endDate"
             name="endDate"
@@ -112,13 +116,13 @@ const JobInformationForm = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time *</label>
+          <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">เวลาเริ่มงาน <span className="text-red-500">*</span></label>
           <Select
             value={startTime}
             onValueChange={onStartTimeChange}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select time" />
+              <SelectValue placeholder="เลือกเวลา" />
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: 24 }).map((_, i) => (
@@ -129,13 +133,13 @@ const JobInformationForm = ({
         </div>
         
         <div>
-          <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time *</label>
+          <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">เวลาสิ้นสุด <span className="text-red-500">*</span></label>
           <Select
             value={endTime}
             onValueChange={onEndTimeChange}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select time" />
+              <SelectValue placeholder="เลือกเวลา" />
             </SelectTrigger>
             <SelectContent>
               {Array.from({ length: 24 }).map((_, i) => (
@@ -147,14 +151,14 @@ const JobInformationForm = ({
       </div>
 
       <div>
-        <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">Salary (THB) *</label>
+        <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">ค่าจ้าง (บาท) <span className="text-red-500">*</span></label>
         <Input
           id="salary"
           name="salary"
           type="number"
           value={salary}
           onChange={onSalaryChange}
-          placeholder="Enter salary"
+          placeholder="เช่น 500"
           required
         />
       </div>

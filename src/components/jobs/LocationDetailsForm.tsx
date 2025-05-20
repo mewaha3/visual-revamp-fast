@@ -8,6 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Province, Amphure, Tambon } from "@/types/locationTypes";
+import { Info } from "lucide-react";
+import { useEffect } from 'react';
 
 interface LocationDetailsFormProps {
   province: string;
@@ -42,18 +44,40 @@ const LocationDetailsForm = ({
   error = null,
   zipCodeReadOnly = false
 }: LocationDetailsFormProps) => {
+  
+  // Find the selected tambon to get its zip code
+  useEffect(() => {
+    if (subdistrict && subdistricts.length > 0) {
+      const selectedTambon = subdistricts.find(
+        (t) => t.name_th === subdistrict
+      );
+      
+      if (selectedTambon && selectedTambon.zip_code) {
+        // Create a synthetic event to update the postal code
+        const event = {
+          target: {
+            name: 'postalCode',
+            value: selectedTambon.zip_code
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        onPostalCodeChange(event);
+      }
+    }
+  }, [subdistrict, subdistricts, onPostalCodeChange]);
+
   return (
     <div className="space-y-4">
-      <h2 className="font-medium text-gray-700">Location Details</h2>
+      <h2 className="font-medium text-gray-700">รายละเอียดสถานที่</h2>
       
       <div>
-        <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
+        <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">จังหวัด <span className="text-red-500">*</span></label>
         <Select
           value={province}
           onValueChange={onProvinceChange}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select Province" />
+            <SelectValue placeholder="เลือกจังหวัด" />
           </SelectTrigger>
           <SelectContent>
             {isLoading ? (
@@ -78,14 +102,14 @@ const LocationDetailsForm = ({
       </div>
       
       <div>
-        <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District *</label>
+        <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">อำเภอ/เขต <span className="text-red-500">*</span></label>
         <Select
           value={district}
           onValueChange={onDistrictChange}
           disabled={!province}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select District" />
+            <SelectValue placeholder="เลือกอำเภอ/เขต" />
           </SelectTrigger>
           <SelectContent>
             {!province ? (
@@ -109,14 +133,14 @@ const LocationDetailsForm = ({
       </div>
       
       <div>
-        <label htmlFor="subdistrict" className="block text-sm font-medium text-gray-700 mb-1">Subdistrict *</label>
+        <label htmlFor="subdistrict" className="block text-sm font-medium text-gray-700 mb-1">ตำบล/แขวง <span className="text-red-500">*</span></label>
         <Select
           value={subdistrict}
           onValueChange={onSubdistrictChange}
           disabled={!district}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select Subdistrict" />
+            <SelectValue placeholder="เลือกตำบล/แขวง" />
           </SelectTrigger>
           <SelectContent>
             {!district ? (
@@ -140,13 +164,13 @@ const LocationDetailsForm = ({
       </div>
       
       <div>
-        <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+        <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">รหัสไปรษณีย์</label>
         <Input
           id="postalCode"
           name="postalCode"
           value={postalCode}
           onChange={onPostalCodeChange}
-          placeholder="Enter postal code"
+          placeholder="ระบุรหัสไปรษณีย์"
           readOnly={zipCodeReadOnly}
           className={zipCodeReadOnly ? "bg-gray-100" : ""}
         />

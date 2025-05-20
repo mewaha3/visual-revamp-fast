@@ -1,40 +1,44 @@
 
-import { JobDetail, Job } from "@/types/types";
-import { mockJobDetails } from "@/data/mocks/matchMocks";
-import { getJobById } from './jobService';
+import { JobDetail } from "@/types/types";
+import { mockMatches } from "@/data/mocks/matchMocks";
 
-// Get job details for a specific job ID
+/**
+ * Get job details by job ID
+ * @param jobId The job ID to fetch details for
+ * @returns Promise with job details
+ */
 export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
-  try {
-    console.log("Fetching job details for job:", jobId);
-    
-    // First check if this is a job from postJobs array
-    const jobData = getJobById(jobId);
-    
-    if (!jobData) {
-      throw new Error(`Job details not found for job ID: ${jobId}`);
-    }
-    
-    // Convert Job to JobDetail format
-    const jobDetail: JobDetail = {
-      findjob_id: "", // Not applicable for posted jobs
-      job_id: jobData.job_id,
-      job_type: jobData.job_type,
-      detail: jobData.job_detail,
-      job_date: jobData.job_date,
-      start_time: jobData.start_time,
-      end_time: jobData.end_time,
-      province: jobData.province,
-      district: jobData.district,
-      subdistrict: jobData.subdistrict,
-      salary: jobData.salary,
-      job_address: jobData.job_address,
-    };
-    
-    console.log("Job details fetched:", jobDetail);
-    return jobDetail;
-  } catch (error) {
-    console.error("Error fetching job details:", error);
-    throw error;
-  }
+  // In a real app, this would be an API call
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        // Find the job in our mock data
+        const match = mockMatches.find(match => match.job_id === jobId);
+        
+        if (match) {
+          const jobDetail: JobDetail = {
+            findjob_id: match.findjob_id,
+            job_id: match.job_id,
+            name: match.name,  // Make sure this exists in the mock data
+            job_type: match.job_type,
+            detail: "รายละเอียดงาน: " + match.job_type,
+            job_date: match.job_date,
+            start_time: match.start_time,
+            end_time: match.end_time,
+            province: match.province,
+            district: match.district,
+            subdistrict: match.subdistrict,
+            salary: match.salary,
+            job_address: `${match.district}, ${match.province}`
+          };
+          
+          resolve(jobDetail);
+        } else {
+          reject(new Error("ไม่พบรายละเอียดงาน"));
+        }
+      } catch (error) {
+        reject(error);
+      }
+    }, 300);
+  });
 };

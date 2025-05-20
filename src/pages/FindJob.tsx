@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import useFindJobForm from "@/hooks/useFindJobForm";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Info } from "lucide-react";
 import FindJobInformationForm from "@/components/jobs/FindJobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
@@ -49,7 +49,7 @@ const FindJob = () => {
       <main className="flex-grow container py-8">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-            Find Job <Search className="h-5 w-5" />
+            ค้นหางาน <Search className="h-5 w-5" />
           </h1>
           
           <div className="p-6 bg-white rounded-lg shadow">
@@ -58,6 +58,16 @@ const FindJob = () => {
               alt="FastLabor Logo" 
               className="w-24 h-24 mx-auto mb-6"
             />
+            
+            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                <div>
+                  <p className="font-medium text-blue-700">คำแนะนำในการกรอกข้อมูล</p>
+                  <p className="text-sm text-blue-600">คุณสามารถกรอกข้อมูลได้ทั้งภาษาไทยและภาษาอังกฤษ โปรดระบุรายละเอียดให้ชัดเจนเพื่อให้ระบบช่วยค้นหางานที่เหมาะสมกับคุณได้ดียิ่งขึ้น</p>
+                </div>
+              </div>
+            </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Job Information Section */}
@@ -115,10 +125,10 @@ const FindJob = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                    Processing...
+                    กำลังค้นหางาน...
                   </>
                 ) : (
-                  "Find Job"
+                  "ค้นหางาน"
                 )}
               </Button>
             </form>

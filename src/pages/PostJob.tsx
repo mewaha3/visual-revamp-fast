@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -10,6 +11,8 @@ import JobInformationForm from "@/components/jobs/JobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
 import useThailandLocations from "@/hooks/useThailandLocations";
+import { Info } from "lucide-react";
+import { useEffect } from "react";
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -28,6 +31,14 @@ const PostJob = () => {
     postalCode: "",
     salary: "",
   });
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!userEmail) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนลงประกาศงาน");
+      navigate('/login', { state: { from: '/post-job' } });
+    }
+  }, [userEmail, navigate]);
 
   // Use the Thailand locations hook
   const {
@@ -69,10 +80,12 @@ const PostJob = () => {
       });
     } else if (name === "subdistrict") {
       handleTambonChange(value);
+      // Find selected tambon to get zip code
+      const selectedTambon = filteredTambons.find(t => t.name_th === value);
       setFormData({
         ...formData,
         [name]: value,
-        postalCode: zipCode,
+        postalCode: selectedTambon?.zip_code || "",
       });
     } else {
       setFormData({
@@ -135,7 +148,7 @@ const PostJob = () => {
       <main className="flex-grow container py-8">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold flex items-center gap-2 mb-6">
-            Post Job <span className="text-red-500">📢</span>
+            ลงประกาศงาน <span className="text-red-500">📢</span>
           </h1>
           
           <div className="p-6 bg-white rounded-lg shadow">
@@ -144,6 +157,16 @@ const PostJob = () => {
               alt="FastLabor Logo" 
               className="w-24 h-24 mx-auto mb-6"
             />
+            
+            <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <div className="flex items-start">
+                <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                <div>
+                  <p className="font-medium text-blue-700">คำแนะนำในการกรอกข้อมูล</p>
+                  <p className="text-sm text-blue-600">คุณสามารถกรอกข้อมูลได้ทั้งภาษาไทยและภาษาอังกฤษ โปรดระบุรายละเอียดให้ชัดเจนเพื่อให้ระบบช่วยจับคู่คนงานที่เหมาะสมกับงานของคุณได้ดียิ่งขึ้น</p>
+                </div>
+              </div>
+            </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <JobInformationForm 
@@ -182,14 +205,14 @@ const PostJob = () => {
                 subdistricts={filteredTambons}
                 isLoading={isLoading}
                 error={error}
-                zipCodeReadOnly={!!zipCode}
+                zipCodeReadOnly={false}
               />
               
               <Button 
                 type="submit" 
                 className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
               >
-                Post Job
+                ลงประกาศงาน
               </Button>
             </form>
           </div>

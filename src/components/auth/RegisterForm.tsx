@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Mail, User, Calendar, MapPin, Flag } from "lucide-react";
+import { Mail, User, Calendar, MapPin, Flag, Info } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ import useThailandLocations from "@/hooks/useThailandLocations";
 const formSchema = z.object({
   first_name: z.string().min(1, { message: "กรุณากรอกชื่อ" }),
   last_name: z.string().min(1, { message: "กรุณากรอกนามสกุล" }),
-  national_id: z.string().min(13, { message: "กรุณากรอกเลขบัตรประชาชน 13 หลัก" }).max(13),
+  national_id: z.string().min(1, { message: "กรุณากรอกเลขบัตรประชาชนหรือพาสปอร์ต" }),
   dob: z.date({ required_error: "กรุณาเลือกวันเกิด" }),
   gender: z.string().min(1, { message: "กรุณาเลือกเพศ" }),
   nationality: z.string().min(1, { message: "กรุณากรอกสัญชาติ" }),
@@ -45,7 +46,7 @@ const formSchema = z.object({
   province: z.string().min(1, { message: "กรุณาเลือกจังหวัด" }),
   district: z.string().min(1, { message: "กรุณาเลือกอำเภอ/เขต" }),
   subdistrict: z.string().min(1, { message: "กรุณาเลือกตำบล/แขวง" }),
-  zip_code: z.string().min(5, { message: "กรุณากรอกรหัสไปรษณีย์" }).max(5),
+  zip_code: z.string().min(1, { message: "กรุณากรอกรหัสไปรษณีย์" }),
   email: z.string().email({ message: "รูปแบบอีเมลไม่ถูกต้อง" }),
   password: z.string().min(6, { message: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร" }),
   confirmPassword: z.string().min(6, { message: "กรุณายืนยันรหัสผ่าน" }),
@@ -107,8 +108,13 @@ const RegisterForm = () => {
   const handleTambonSelect = (value: string) => {
     handleTambonChange(value);
     form.setValue("subdistrict", value);
-    if (zipCode) {
-      form.setValue("zip_code", zipCode);
+    
+    // Find the selected tambon to get its zip code
+    if (filteredTambons.length > 0) {
+      const selectedTambon = filteredTambons.find(t => t.name_th === value);
+      if (selectedTambon && selectedTambon.zip_code) {
+        form.setValue("zip_code", selectedTambon.zip_code);
+      }
     }
   };
 
@@ -179,6 +185,16 @@ const RegisterForm = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="bg-blue-50 p-4 rounded-lg mb-6">
+          <div className="flex items-start">
+            <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+            <div>
+              <p className="font-medium text-blue-700">คำแนะนำในการกรอกข้อมูล</p>
+              <p className="text-sm text-blue-600">คุณสามารถกรอกข้อมูลได้ทั้งภาษาไทยและภาษาอังกฤษ โปรดกรอกข้อมูลให้ครบถ้วนและถูกต้อง</p>
+            </div>
+          </div>
+        </div>
+        
         <h2 className="text-xl font-semibold">ข้อมูลส่วนบุคคล</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* First name */}
@@ -190,7 +206,7 @@ const RegisterForm = () => {
                 <FormLabel>ชื่อ <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input className="pl-10" {...field} placeholder="ชื่อ" />
+                    <Input className="pl-10" {...field} placeholder="เช่น สมชาย, John" />
                     <User
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                       size={16}
@@ -211,7 +227,7 @@ const RegisterForm = () => {
                 <FormLabel>นามสกุล <span className="text-red-500">*</span></FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Input className="pl-10" {...field} placeholder="นามสกุล" />
+                    <Input className="pl-10" {...field} placeholder="เช่น ใจดี, Smith" />
                     <User
                       className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                       size={16}
@@ -230,9 +246,13 @@ const RegisterForm = () => {
           name="national_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>เลขบัตรประชาชน <span className="text-red-500">*</span></FormLabel>
+              <FormLabel>เลขรหัสบัตรประชาชน/พาสปอร์ต <span className="text-red-500">*</span></FormLabel>
+              <div className="text-xs text-gray-500 mb-1 flex items-center">
+                <Info className="h-3 w-3 mr-1" />
+                กรอกเลขประจำตัวประชาชนหรือเลขพาสปอร์ต สำหรับชาวต่างชาติ
+              </div>
               <FormControl>
-                <Input {...field} placeholder="เลขบัตรประชาชน 13 หลัก" />
+                <Input {...field} placeholder="เช่น 1234567890123 หรือ AA12345678" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -333,7 +353,7 @@ const RegisterForm = () => {
               <FormLabel>สัญชาติ <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input className="pl-10" {...field} placeholder="สัญชาติ" />
+                  <Input className="pl-10" {...field} placeholder="เช่น ไทย, Laos, Myanmar" />
                   <Flag
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
                     size={16}
@@ -353,9 +373,13 @@ const RegisterForm = () => {
           render={({ field }) => (
             <FormItem>
               <FormLabel>ที่อยู่ <span className="text-red-500">*</span></FormLabel>
+              <div className="text-xs text-gray-500 mb-1 flex items-center">
+                <Info className="h-3 w-3 mr-1" />
+                สามารถกรอกได้ทั้งภาษาไทยและภาษาอังกฤษ
+              </div>
               <FormControl>
                 <div className="relative">
-                  <Textarea className="min-h-[80px]" {...field} placeholder="บ้านเลขที่ ถนน ซอย" />
+                  <Textarea className="min-h-[80px]" {...field} placeholder="บ้านเลขที่ ถนน ซอย เช่น 123/45 ถ.สุขุมวิท ซ.15" />
                 </div>
               </FormControl>
               <FormMessage />
@@ -488,8 +512,7 @@ const RegisterForm = () => {
                   <Input 
                     className="pl-10" 
                     {...field} 
-                    placeholder="รหัสไปรษณีย์" 
-                    readOnly={!!zipCode} // Make it readonly if zipCode is derived from tambon selection
+                    placeholder="เช่น 10110" 
                     style={zipCode ? { backgroundColor: "#f3f4f6" } : {}}
                   />
                   <MapPin
@@ -537,7 +560,7 @@ const RegisterForm = () => {
                     type="email"
                     className="pl-10"
                     {...field}
-                    placeholder="อีเมล"
+                    placeholder="เช่น example@email.com"
                   />
                   <Mail
                     className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
@@ -554,14 +577,14 @@ const RegisterForm = () => {
         <PasswordInput
           name="password"
           label="รหัสผ่าน"
-          placeholder="รหัสผ่าน"
+          placeholder="อย่างน้อย 6 ตัวอักษร"
         />
 
         {/* Confirm Password */}
         <PasswordInput
           name="confirmPassword"
           label="ยืนยันรหัสผ่าน"
-          placeholder="ยืนยันรหัสผ่าน"
+          placeholder="กรอกรหัสผ่านอีกครั้ง"
         />
 
         {/* Error message */}
