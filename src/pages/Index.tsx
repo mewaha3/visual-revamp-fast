@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -52,7 +51,7 @@ const Index = () => {
           </div>
         </div>
         
-        <Features />
+        {/* Features section removed as requested */}
       </main>
       <Footer />
     </div>

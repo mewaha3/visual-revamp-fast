@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -5,12 +6,7 @@ import { Link } from "react-router-dom";
 const Hero = () => {
   return (
     <section className="py-16 md:py-24 overflow-hidden relative bg-blue-50">
-      {/* Removed full-section gradient overlay so both image and text are crisp */}
-      {/*
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-transparent pointer-events-none"></div>
-      */}
-
-      {/* Decorative elements - you can still keep these if desired */}
+      {/* Decorative elements */}
       <div className="absolute top-1/3 right-0 w-64 h-64 bg-fastlabor-200 rounded-full filter blur-3xl opacity-70 -z-10"></div>
       <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-blue-200 rounded-full filter blur-3xl opacity-70 -z-10"></div>
 
