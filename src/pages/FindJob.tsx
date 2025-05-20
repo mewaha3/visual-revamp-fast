@@ -42,15 +42,21 @@ const FindJob = () => {
 
   // Update filters when location selections change
   useEffect(() => {
-    setProvinceFilter(selectedProvince);
+    if (selectedProvince) {
+      setProvinceFilter(selectedProvince);
+    }
   }, [selectedProvince]);
 
   useEffect(() => {
-    setDistrictFilter(selectedAmphure);
+    if (selectedAmphure) {
+      setDistrictFilter(selectedAmphure);
+    }
   }, [selectedAmphure]);
 
   useEffect(() => {
-    setSubdistrictFilter(selectedTambon);
+    if (selectedTambon) {
+      setSubdistrictFilter(selectedTambon);
+    }
   }, [selectedTambon]);
 
   // Filter jobs based on search term and filters
@@ -62,12 +68,20 @@ const FindJob = () => {
       : true;
 
     // Filter by job type
-    const matchesJobType = jobTypeFilter ? job.job_type === jobTypeFilter : true;
+    const matchesJobType = jobTypeFilter && jobTypeFilter !== "all-types" 
+      ? job.job_type === jobTypeFilter 
+      : true;
 
     // Filter by location
-    const matchesProvince = provinceFilter ? job.province === provinceFilter : true;
-    const matchesDistrict = districtFilter ? job.district === districtFilter : true;
-    const matchesSubdistrict = subdistrictFilter ? job.subdistrict === subdistrictFilter : true;
+    const matchesProvince = provinceFilter && provinceFilter !== "all-provinces" 
+      ? job.province === provinceFilter 
+      : true;
+    const matchesDistrict = districtFilter && districtFilter !== "all-districts" 
+      ? job.district === districtFilter 
+      : true;
+    const matchesSubdistrict = subdistrictFilter && subdistrictFilter !== "all-subdistricts" 
+      ? job.subdistrict === subdistrictFilter 
+      : true;
 
     return matchesSearchTerm && matchesJobType && matchesProvince && matchesDistrict && matchesSubdistrict;
   });
@@ -81,14 +95,29 @@ const FindJob = () => {
   };
 
   const handleProvinceFilterChange = (value: string) => {
+    if (value === "all-provinces") {
+      setProvinceFilter(value);
+      setDistrictFilter("");
+      setSubdistrictFilter("");
+      return;
+    }
     handleProvinceChange(value);
   };
 
   const handleDistrictFilterChange = (value: string) => {
+    if (value === "all-districts") {
+      setDistrictFilter(value);
+      setSubdistrictFilter("");
+      return;
+    }
     handleAmphureChange(value);
   };
 
   const handleSubdistrictFilterChange = (value: string) => {
+    if (value === "all-subdistricts") {
+      setSubdistrictFilter(value);
+      return;
+    }
     handleTambonChange(value);
   };
 
@@ -155,7 +184,7 @@ const FindJob = () => {
                 <SelectContent>
                   <SelectItem value="all-provinces">All Provinces</SelectItem>
                   {isLoading ? (
-                    <SelectItem value="loading" disabled>
+                    <SelectItem value="loading-province" disabled>
                       กำลังโหลดข้อมูล...
                     </SelectItem>
                   ) : provinces.map((prov) => (
@@ -172,15 +201,15 @@ const FindJob = () => {
               <Select
                 value={districtFilter}
                 onValueChange={handleDistrictFilterChange}
-                disabled={!provinceFilter}
+                disabled={!provinceFilter || provinceFilter === "all-provinces"}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="District" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-districts">All Districts</SelectItem>
-                  {!provinceFilter ? (
-                    <SelectItem value="select-province" disabled>
+                  {!provinceFilter || provinceFilter === "all-provinces" ? (
+                    <SelectItem value="select-province-first" disabled>
                       โปรดเลือกจังหวัดก่อน
                     </SelectItem>
                   ) : filteredAmphures.map((dist) => (
@@ -197,15 +226,15 @@ const FindJob = () => {
               <Select
                 value={subdistrictFilter}
                 onValueChange={handleSubdistrictFilterChange}
-                disabled={!districtFilter}
+                disabled={!districtFilter || districtFilter === "all-districts"}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Subdistrict" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all-subdistricts">All Subdistricts</SelectItem>
-                  {!districtFilter ? (
-                    <SelectItem value="select-district" disabled>
+                  {!districtFilter || districtFilter === "all-districts" ? (
+                    <SelectItem value="select-district-first" disabled>
                       โปรดเลือกอำเภอ/เขตก่อน
                     </SelectItem>
                   ) : filteredTambons.map((tamb) => (
