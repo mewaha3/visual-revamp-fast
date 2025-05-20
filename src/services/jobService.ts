@@ -20,7 +20,7 @@ export const addNewJob = (jobData: Partial<Job>): Job => {
   
   const newJob: Job = {
     job_id: newJobId,
-    job_type: jobData.job_type || "ไม่ระบุ",
+    job_type: jobData.job_type || "",  // Use job_type directly as selected
     job_detail: jobData.job_detail || "",
     job_date: jobData.job_date || new Date().toISOString().split('T')[0],
     start_time: jobData.start_time || "00:00",
@@ -38,7 +38,7 @@ export const addNewJob = (jobData: Partial<Job>): Job => {
   };
   
   // Add the new job to the array - in a real app this would save to a database
-  postJobs.unshift(newJob);
+  postJobs.unshift(newJob as any);
   
   return newJob;
 };

@@ -15,7 +15,7 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
   
   const newJob: FindJob = {
     findjob_id: newFindJobId,
-    job_type: jobData.job_type || "ไม่ระบุ",
+    job_type: jobData.job_type || "",  // Use job_type directly as selected
     skills: jobData.skills || "",
     job_date: jobData.job_date || new Date().toISOString().split('T')[0],
     start_time: jobData.start_time || "00:00",
@@ -34,7 +34,7 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
   };
   
   // Add the new find job to the array - in a real app this would save to a database
-  findJobs.unshift(newJob);
+  findJobs.unshift(newJob as any);
   
   return newJob;
 };

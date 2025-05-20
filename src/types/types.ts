@@ -11,7 +11,7 @@ export interface Job {
   email: string;
   first_name: string;
   last_name: string;
-  gender: string; // Changed from specific literals to string to match implementation
+  gender: string;
   province: string;
   district: string;
   subdistrict: string;
@@ -55,7 +55,7 @@ export interface FindJob {
   last_name: string;
   job_address: string;
   zip_code: string;
-  gender: string; // Changed from specific literals to string to match implementation
+  gender: string;
 }
 
 export interface FindMatch {

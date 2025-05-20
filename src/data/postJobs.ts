@@ -1,10 +1,8 @@
-
-
 export interface PostJob {
   job_id: string;
   first_name: string;
   last_name: string;
-  gender: "Male" | "Female";
+  gender: string;
   email: string;
   job_type: string;
   job_detail: string;
@@ -201,4 +199,3 @@ export const postJobs: PostJob[] = [
     zip_code: "11000"
   }
 ];
-

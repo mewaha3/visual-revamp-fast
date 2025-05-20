@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -59,9 +60,9 @@ const FindJob: React.FC = () => {
         return;
       }
 
-      // Create find job data
+      // Create find job data - use jobType value directly without modification
       const jobData = {
-        job_type: formData.jobType,
+        job_type: formData.jobType, // Use the selected value directly
         skills: formData.skills,
         job_date: formData.jobDate,
         start_time: formData.startTime,
@@ -201,7 +202,7 @@ const FindJob: React.FC = () => {
               </div>
               
               <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Location Preferences</h2>
+                <h2 className="font-medium text-gray-700">Address Information</h2>
                 
                 <div>
                   <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
