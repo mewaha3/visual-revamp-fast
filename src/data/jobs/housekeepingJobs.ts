@@ -1,45 +1,41 @@
 
-import { PostJob } from "@/types/types";
+import { PostJob } from "../types/jobTypes";
 
-const housekeepingJobs: PostJob[] = [
+export const housekeepingJobs: PostJob[] = [
   {
-    id: "housekeeping1", // Add id field
-    job_id: "housekeeping1",
-    first_name: "สมหญิง",
-    last_name: "รักสะอาด",
-    gender: "Female",
-    email: "somying@example.com",
-    job_type: "housekeeping",
-    job_detail: "ต้องการแม่บ้านทำความสะอาดบ้าน 2 ชั้น 3 ห้องนอน",
-    salary: 12000,
-    job_date: "2023-04-10",
-    start_time: "08:00",
-    end_time: "17:00",
-    job_address: "789 ถนนรัชดาภิเษก กรุงเทพฯ",
-    province: "กรุงเทพมหานคร",
-    district: "ห้วยขวาง",
-    subdistrict: "ห้วยขวาง",
-    zip_code: "10310"
+    job_id: "PJ3",
+    first_name: "ชาย",
+    last_name: "กลางบัว",
+    gender: "Male",
+    email: "chai@example.com",
+    job_type: "gardener",
+    job_detail: "ตัดต้นไม้",
+    salary: 2800,
+    job_date: "2025-06-03",
+    start_time: "7:30:00",
+    end_time: "15:30:00",
+    job_address: "303 ถ.สุขุมวิท ซ. สมชาย",
+    province: "ราชบุรี",
+    district: "เมืองราชบุรี",
+    subdistrict: "หน้าเมือง",
+    zip_code: "70000"
   },
   {
-    id: "housekeeping2", // Add id field
-    job_id: "housekeeping2",
-    first_name: "ใจดี",
-    last_name: "มีบ้าน",
+    job_id: "PJ8",
+    first_name: "สมชาย",
+    last_name: "สุขใจดี",
     gender: "Female",
-    email: "jaidee@example.com",
-    job_type: "housekeeping",
-    job_detail: "หาแม่บ้านทำความสะอาดและซักผ้า อาทิตย์ละ 3 วัน",
-    salary: 9000,
-    job_date: "2023-04-12",
-    start_time: "09:00",
-    end_time: "16:00",
-    job_address: "101 ถนนลาดพร้าว กรุงเทพฯ",
-    province: "กรุงเทพมหานคร",
-    district: "จตุจักร",
-    subdistrict: "จตุจักร",
-    zip_code: "10900"
+    email: "somchai@example.com",
+    job_type: "gardener",
+    job_detail: "ตัดหญ้า",
+    salary: 3600,
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    job_address: "50 ถ.พัฒนาการ นนทบุรี",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    zip_code: "11000"
   }
 ];
-
-export { housekeepingJobs };
