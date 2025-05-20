@@ -13,5 +13,5 @@ export const postJobs: PostJob[] = [
   ...driverJobs
 ];
 
-// Re-export the interface
-export { PostJob } from "../types/jobTypes";
+// Re-export the interface with proper syntax for isolatedModules
+export type { PostJob } from "../types/jobTypes";
