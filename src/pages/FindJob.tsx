@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -17,10 +16,7 @@ import {
 import { toast } from "sonner";
 import { addNewFindJob } from "@/services/findJobService";
 import { JOB_TYPES } from "@/types/types";
-import { 
-  Bath, Car, Dog, Factory, FileText, Glasses, Home, 
-  Broom, Package, Scissors, Search, Shield 
-} from "lucide-react";
+import { getJobIcon } from "@/utils/jobIcons";
 
 const FindJob: React.FC = () => {
   const navigate = useNavigate();
@@ -50,25 +46,6 @@ const FindJob: React.FC = () => {
       ...formData,
       [name]: value,
     });
-  };
-
-  // Function to get the icon component based on job type
-  const getJobIcon = (iconName: string) => {
-    switch (iconName) {
-      case "broom": return <Broom className="h-4 w-4 mr-2" />;
-      case "shield": return <Shield className="h-4 w-4 mr-2" />;
-      case "bath": return <Bath className="h-4 w-4 mr-2" />;
-      case "scissors": return <Scissors className="h-4 w-4 mr-2" />;
-      case "factory": return <Factory className="h-4 w-4 mr-2" />;
-      case "package": return <Package className="h-4 w-4 mr-2" />;
-      case "search": return <Search className="h-4 w-4 mr-2" />;
-      case "dog": return <Dog className="h-4 w-4 mr-2" />;
-      case "car": return <Car className="h-4 w-4 mr-2" />;
-      case "home": return <Home className="h-4 w-4 mr-2" />;
-      case "glasses": return <Glasses className="h-4 w-4 mr-2" />;
-      case "file-text": return <FileText className="h-4 w-4 mr-2" />;
-      default: return null;
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

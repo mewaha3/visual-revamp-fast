@@ -5,22 +5,11 @@ import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
 import { addNewJob } from "@/services/jobService";
-import { JOB_TYPES } from "@/types/types";
-import { 
-  Bath, Car, Dog, Factory, FileText, Glasses, Home, 
-  Broom, Package, Scissors, Search, Shield 
-} from "lucide-react";
+import JobInformationForm from "@/components/jobs/JobInformationForm";
+import AddressInformationForm from "@/components/jobs/AddressInformationForm";
+import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -52,25 +41,6 @@ const PostJob = () => {
       ...formData,
       [name]: value,
     });
-  };
-
-  // Function to get the icon component based on job type
-  const getJobIcon = (iconName: string) => {
-    switch (iconName) {
-      case "broom": return <Broom className="h-4 w-4 mr-2" />;
-      case "shield": return <Shield className="h-4 w-4 mr-2" />;
-      case "bath": return <Bath className="h-4 w-4 mr-2" />;
-      case "scissors": return <Scissors className="h-4 w-4 mr-2" />;
-      case "factory": return <Factory className="h-4 w-4 mr-2" />;
-      case "package": return <Package className="h-4 w-4 mr-2" />;
-      case "search": return <Search className="h-4 w-4 mr-2" />;
-      case "dog": return <Dog className="h-4 w-4 mr-2" />;
-      case "car": return <Car className="h-4 w-4 mr-2" />;
-      case "home": return <Home className="h-4 w-4 mr-2" />;
-      case "glasses": return <Glasses className="h-4 w-4 mr-2" />;
-      case "file-text": return <FileText className="h-4 w-4 mr-2" />;
-      default: return null;
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,204 +107,38 @@ const PostJob = () => {
             />
             
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Job Information</h2>
-                
-                <div>
-                  <label htmlFor="JobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
-                  <Select
-                    value={formData.JobType}
-                    onValueChange={(value) => handleSelectChange("JobType", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {JOB_TYPES.map((jobType) => (
-                        <SelectItem key={jobType.value} value={jobType.value} className="flex items-center">
-                          <div className="flex items-center">
-                            {getJobIcon(jobType.icon)}
-                            {jobType.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label htmlFor="jobDetail" className="block text-sm font-medium text-gray-700 mb-1">Job Detail *</label>
-                  <Textarea
-                    id="jobDetail"
-                    name="jobDetail"
-                    value={formData.jobDetail}
-                    onChange={handleChange}
-                    placeholder="Enter job details"
-                    className="min-h-[100px]"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
-                    <Input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
-                    <Input
-                      id="endDate"
-                      name="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">Start Time *</label>
-                    <Select
-                      value={formData.startTime}
-                      onValueChange={(value) => handleSelectChange("startTime", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }).map((_, i) => (
-                          <SelectItem key={i} value={`${i}:00`}>{`${i}:00`}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">End Time *</label>
-                    <Select
-                      value={formData.endTime}
-                      onValueChange={(value) => handleSelectChange("endTime", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }).map((_, i) => (
-                          <SelectItem key={i} value={`${i}:00`}>{`${i}:00`}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">Salary (THB) *</label>
-                  <Input
-                    id="salary"
-                    name="salary"
-                    type="number"
-                    value={formData.salary}
-                    onChange={handleChange}
-                    placeholder="Enter salary"
-                    required
-                  />
-                </div>
-              </div>
+              <JobInformationForm 
+                jobType={formData.JobType}
+                jobDetail={formData.jobDetail}
+                startDate={formData.startDate}
+                endDate={formData.endDate}
+                startTime={formData.startTime}
+                endTime={formData.endTime}
+                salary={formData.salary}
+                onJobTypeChange={(value) => handleSelectChange("JobType", value)}
+                onJobDetailChange={handleChange}
+                onStartDateChange={handleChange}
+                onEndDateChange={handleChange}
+                onStartTimeChange={(value) => handleSelectChange("startTime", value)}
+                onEndTimeChange={(value) => handleSelectChange("endTime", value)}
+                onSalaryChange={handleChange}
+              />
               
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Address Information</h2>
-                
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address (House No, Street, Area) *</label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Enter your address"
-                    required
-                  />
-                </div>
-              </div>
+              <AddressInformationForm 
+                address={formData.address}
+                onAddressChange={handleChange}
+              />
               
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Location Details</h2>
-                
-                <div>
-                  <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
-                  <Select
-                    value={formData.province}
-                    onValueChange={(value) => handleSelectChange("province", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
-                      <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
-                      <SelectItem value="phuket">ภูเก็ต</SelectItem>
-                      <SelectItem value="chonburi">ชลบุรี</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District *</label>
-                  <Select
-                    value={formData.district}
-                    onValueChange={(value) => handleSelectChange("district", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select District" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="district1">เขตพระนคร</SelectItem>
-                      <SelectItem value="district2">เขตดุสิต</SelectItem>
-                      <SelectItem value="district3">เขตหนองจอก</SelectItem>
-                      <SelectItem value="district4">เขตบางรัก</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label htmlFor="subdistrict" className="block text-sm font-medium text-gray-700 mb-1">Subdistrict *</label>
-                  <Select
-                    value={formData.subdistrict}
-                    onValueChange={(value) => handleSelectChange("subdistrict", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Subdistrict" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
-                      <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
-                      <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
-                      <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-                  <Input
-                    id="postalCode"
-                    name="postalCode"
-                    value={formData.postalCode}
-                    onChange={handleChange}
-                    placeholder="Enter postal code"
-                  />
-                </div>
-              </div>
+              <LocationDetailsForm 
+                province={formData.province}
+                district={formData.district}
+                subdistrict={formData.subdistrict}
+                postalCode={formData.postalCode}
+                onProvinceChange={(value) => handleSelectChange("province", value)}
+                onDistrictChange={(value) => handleSelectChange("district", value)}
+                onSubdistrictChange={(value) => handleSelectChange("subdistrict", value)}
+                onPostalCodeChange={handleChange}
+              />
               
               <Button 
                 type="submit" 
