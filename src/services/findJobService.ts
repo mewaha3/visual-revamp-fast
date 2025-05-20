@@ -1,6 +1,6 @@
 
 import { findJobs } from "@/data/findJobs";
-import { FindJob } from "@/types/types";
+import { FindJob } from "@/data/types/jobTypes"; // Import from data/types instead
 
 // Event to notify components about new find job data
 export const findJobsUpdatedEvent = new CustomEvent('findJobsUpdated');
@@ -21,7 +21,8 @@ export const addNewFindJob = (jobData: Partial<FindJob>): Promise<FindJob> => {
         const newFindJobId = `FND${findJobs.length + 1}`;
         
         const newJob: FindJob = {
-          findjob_id: newFindJobId,
+          id: newFindJobId,
+          name: "",
           job_type: jobData.job_type || "",
           skills: jobData.skills || "",
           job_date: jobData.job_date || new Date().toISOString().split('T')[0],
@@ -37,7 +38,14 @@ export const addNewFindJob = (jobData: Partial<FindJob>): Promise<FindJob> => {
           last_name: jobData.last_name || "",
           job_address: jobData.job_address || "",
           zip_code: jobData.zip_code || "",
-          gender: jobData.gender || "",  // Changed from enum to string type
+          gender: jobData.gender || "",
+          findjob_id: newFindJobId,
+          detail: "",
+          address: jobData.address || "",
+          salary_type: "",
+          expected_salary: 0,
+          start_date: "",
+          available_days: []
         };
         
         // Add the new find job to the array - in a real app this would save to a database

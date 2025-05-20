@@ -28,7 +28,7 @@ export interface FindJob {
     zip_code?: string;
 }
 
-// Add PostJob interface that was missing
+// Update PostJob interface with job_id property
 export interface PostJob {
     id: string;
     job_type: string;
@@ -47,4 +47,5 @@ export interface PostJob {
     subdistrict: string;
     zip_code: string;
     status?: string;
+    job_id?: string; // Added to fix type errors
 }
