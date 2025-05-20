@@ -6,8 +6,9 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ1",
     job_id: "PJ5",
-    job_type: "พนักงานจัดแสดงสินค้า",
-    detail: "งานจัดแสดงสินค้าที่ห้างสรรพสินค้า",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "cleaning",
+    detail: "ทำความสะอาดบ้าน",
     job_date: "2025-06-10",
     start_time: "09:00:00",
     end_time: "18:00:00",
@@ -19,8 +20,9 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ2",
     job_id: "PJ6",
-    job_type: "รักษาความปลอดภัย",
-    detail: "จัดแสดงสินค้า",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "security",
+    detail: "รักษาความปลอดภัย",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -32,8 +34,9 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ3",
     job_id: "PJ7",
-    job_type: "พนักงานทำความสะอาด",
-    detail: "ล้างจาน",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "tailor",
+    detail: "ซ่อมเสื้อผ้า",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -46,8 +49,9 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ4",
     job_id: "PJ8",
-    job_type: "คนสวน",
-    detail: "จัดหญ้า",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "packer",
+    detail: "ติดฉลากสินค้า",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -60,7 +64,8 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ5",
     job_id: "PJ9",
-    job_type: "พนักงานขับรถ",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "driver",
     detail: "ขับรถบรรทุก",
     job_date: "2025-06-05",
     start_time: "12:00:00",
@@ -74,8 +79,9 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ6",
     job_id: "PJ10",
-    job_type: "พนักงานขับรถ",
-    detail: "ขับรถให้จ่าย",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "gardener",
+    detail: "ตัดกิ่งไม้",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -91,8 +97,9 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ5": {
     findjob_id: "FJ1",
     job_id: "PJ5",
-    job_type: "พนักงานจัดแสดงสินค้า",
-    detail: "งานจัดแสดงสินค้าเครื่องใช้ไฟฟ้าที่ห้างสรรพสินค้า Central Rama 9",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "cleaning",
+    detail: "ทำความสะอาดบ้าน",
     job_date: "2025-06-10",
     start_time: "09:00:00",
     end_time: "18:00:00",
@@ -105,8 +112,9 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ6": {
     findjob_id: "FJ2",
     job_id: "PJ6",
-    job_type: "รักษาความปลอดภัย",
-    detail: "จัดแสดงสินค้า",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "security",
+    detail: "รักษาความปลอดภัย",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -119,8 +127,9 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ7": {
     findjob_id: "FJ3",
     job_id: "PJ7",
-    job_type: "พนักงานทำความสะอาด",
-    detail: "ล้างจาน",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "tailor",
+    detail: "ซ่อมเสื้อผ้า",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -134,8 +143,9 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ8": {
     findjob_id: "FJ4",
     job_id: "PJ8",
-    job_type: "คนสวน",
-    detail: "จัดหญ้า",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "packer",
+    detail: "ติดฉลากสินค้า",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -149,7 +159,8 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ9": {
     findjob_id: "FJ5",
     job_id: "PJ9",
-    job_type: "พนักงานขับรถ",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "driver",
     detail: "ขับรถบรรทุก",
     job_date: "2025-06-05",
     start_time: "12:00:00",
@@ -164,8 +175,9 @@ export const mockJobDetails: Record<string, JobDetail> = {
   "PJ10": {
     findjob_id: "FJ6",
     job_id: "PJ10",
-    job_type: "พนักงานขับรถ",
-    detail: "ขับรถให้จ่าย",
+    name: "คุณสมชาย สมบัติดี",
+    job_type: "gardener",
+    detail: "ตัดกิ่งไม้",
     job_date: "2025-06-05",
     start_time: "12:00:00",
     end_time: "21:00:00",
@@ -180,7 +192,7 @@ export const mockJobDetails: Record<string, JobDetail> = {
 // Collection of mock employer data
 export const mockEmployers: Record<string, Employer> = {
   "PJ5": {
-    name: "คุณสมชาย รักการค้า",
+    name: "คุณสมชาย สมบัติดี",
     phone: "081-234-5678",
     email: "somchai@example.com"
   },
