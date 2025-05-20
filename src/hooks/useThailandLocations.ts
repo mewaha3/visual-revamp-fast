@@ -103,8 +103,10 @@ export const useThailandLocations = () => {
     const selectedTmbObj = filteredTambons.find(t => t.name_th === tambonNameTh);
     
     if (selectedTmbObj) {
-      // Set zip code
-      setZipCode(selectedTmbObj.zip_code.toString());
+      // Set zip code immediately
+      const zipCodeValue = selectedTmbObj.zip_code.toString();
+      console.log("Setting zip code to:", zipCodeValue);
+      setZipCode(zipCodeValue);
     } else {
       setZipCode("");
     }

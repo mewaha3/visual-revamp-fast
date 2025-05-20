@@ -3,20 +3,12 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useFindJobForm from "@/hooks/useFindJobForm";
-import { JOB_TYPES } from "@/types/types";
-import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
-import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import { Search } from "lucide-react";
+import FindJobInformationForm from "@/components/jobs/FindJobInformationForm";
+import AddressInformationForm from "@/components/jobs/AddressInformationForm";
+import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
+import SalaryExpectationsForm from "@/components/jobs/SalaryExpectationsForm";
 
 const FindJob = () => {
   const {
@@ -69,90 +61,18 @@ const FindJob = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Job Information Section */}
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700 mb-4">Job Information</h2>
-                
-                <div>
-                  <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">
-                    Job Type <span className="text-red-500">*</span>
-                  </label>
-                  <Select value={jobType} onValueChange={setJobType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {JOB_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">
-                    Skills <span className="text-red-500">*</span>
-                  </label>
-                  <Textarea
-                    id="skills"
-                    value={skills}
-                    onChange={(e) => setSkills(e.target.value)}
-                    placeholder="Enter your skills"
-                    rows={4}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="jobDate" className="block text-sm font-medium text-gray-700 mb-1">
-                    Available Date <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    id="jobDate"
-                    type="date"
-                    value={jobDate}
-                    onChange={(e) => setJobDate(e.target.value)}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 mb-1">
-                      Start Time <span className="text-red-500">*</span>
-                    </label>
-                    <Select value={startTime} onValueChange={setStartTime}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                          <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
-                            {`${hour}:00`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 mb-1">
-                      End Time <span className="text-red-500">*</span>
-                    </label>
-                    <Select value={endTime} onValueChange={setEndTime}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                          <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
-                            {`${hour}:00`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+              <FindJobInformationForm
+                jobType={jobType}
+                skills={skills}
+                jobDate={jobDate}
+                startTime={startTime}
+                endTime={endTime}
+                onJobTypeChange={setJobType}
+                onSkillsChange={(e) => setSkills(e.target.value)}
+                onJobDateChange={(e) => setJobDate(e.target.value)}
+                onStartTimeChange={setStartTime}
+                onEndTimeChange={setEndTime}
+              />
 
               {/* Address Information */}
               <AddressInformationForm 
@@ -179,39 +99,12 @@ const FindJob = () => {
               />
 
               {/* Salary Expectations */}
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700 mb-4">Salary Expectations</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="minSalary" className="block text-sm font-medium text-gray-700 mb-1">
-                      Minimum Salary (THB) <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      id="minSalary"
-                      type="number"
-                      value={minSalary}
-                      onChange={(e) => setMinSalary(e.target.value)}
-                      placeholder="Enter minimum salary"
-                      min="0"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="maxSalary" className="block text-sm font-medium text-gray-700 mb-1">
-                      Maximum Salary (THB)
-                    </label>
-                    <Input
-                      id="maxSalary"
-                      type="number"
-                      value={maxSalary}
-                      onChange={(e) => setMaxSalary(e.target.value)}
-                      placeholder="Enter maximum salary"
-                      min="0"
-                    />
-                  </div>
-                </div>
-              </div>
+              <SalaryExpectationsForm
+                minSalary={minSalary}
+                maxSalary={maxSalary}
+                onMinSalaryChange={(e) => setMinSalary(e.target.value)}
+                onMaxSalaryChange={(e) => setMaxSalary(e.target.value)}
+              />
 
               {/* Submit Button */}
               <Button 
