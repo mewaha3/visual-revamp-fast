@@ -8,8 +8,7 @@ export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> =>
   console.log(`Fetching matches for user: ${userEmail}`);
   
   // Filter matches for the current user only
-  // Since FindMatch type doesn't have 'email' property, we'll use the 'name' property to filter
-  // In a real app, the FindMatch type would include an email field for proper filtering
+  // Using the name field which contains the email
   const userMatches = mockMatches.filter(match => match.name === userEmail);
   
   return Promise.resolve(userMatches);

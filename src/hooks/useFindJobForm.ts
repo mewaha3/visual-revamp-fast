@@ -5,8 +5,10 @@ import { FindJob } from '@/types/types';
 import { useNavigate } from 'react-router-dom';
 import useThailandLocations from './useThailandLocations';
 import { toast } from 'sonner';
+import { useAuth } from '@/context/AuthContext';
 
 export const useFindJobForm = () => {
+  const { userEmail, userFullName } = useAuth();
   const navigate = useNavigate();
   const {
     provinces,
@@ -36,6 +38,14 @@ export const useFindJobForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Redirect to login if user is not authenticated
+    if (!userEmail) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนค้นหางาน");
+      navigate('/login', { state: { from: '/find-job' } });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     // Validation
@@ -46,11 +56,10 @@ export const useFindJobForm = () => {
       return;
     }
 
-    // Get user info from local storage (would be from auth context in a real app)
-    const email = localStorage.getItem('userEmail') || 'user@example.com';
-    const firstName = localStorage.getItem('userFirstName') || 'Demo';
-    const lastName = localStorage.getItem('userLastName') || 'User';
-    const gender = localStorage.getItem('userGender') || 'male';
+    // Get user info from auth context or local storage
+    const firstName = localStorage.getItem('userFirstName') || userFullName?.split(' ')[0] || '';
+    const lastName = localStorage.getItem('userLastName') || userFullName?.split(' ')[1] || '';
+    const gender = localStorage.getItem('userGender') || 'Male';
     
     // Create job data object
     const jobData: Partial<FindJob> = {
@@ -65,7 +74,7 @@ export const useFindJobForm = () => {
       subdistrict: selectedTambon,
       start_salary: parseInt(minSalary, 10) || 0,
       range_salary: parseInt(maxSalary, 10) || 0,
-      email,
+      email: userEmail,
       first_name: firstName,
       last_name: lastName,
       gender,

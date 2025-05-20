@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/button"; // Corrected import
+import { Button } from "@/components/ui/button"; 
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +43,14 @@ const StatusMatchingPage: React.FC = () => {
         
         // Get status results
         const { status } = await getStatusResults(jobId);
-        setStatusResults(status);
+        
+        // Transform status results - convert any 'job_done' status to 'on_queue'
+        const updatedStatus = status.map(item => ({
+          ...item,
+          status: item.status === 'job_done' ? 'on_queue' : item.status
+        }));
+        
+        setStatusResults(updatedStatus);
       } catch (error) {
         console.error("Error fetching status results:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");
@@ -67,8 +74,6 @@ const StatusMatchingPage: React.FC = () => {
         return <Badge className="bg-green-500 hover:bg-green-600 flex items-center gap-1"><Check size={14} /> Accepted</Badge>;
       case 'declined':
         return <Badge className="bg-red-500 hover:bg-red-600 flex items-center gap-1"><X size={14} /> Declined</Badge>;
-      case 'job_done':
-        return <Badge className="bg-blue-500 hover:bg-blue-600">Job Done</Badge>;
       default:
         return <Badge>Unknown</Badge>;
     }
@@ -100,7 +105,7 @@ const StatusMatchingPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
             <div className="flex items-center gap-2 mb-6">
               <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">Status Matching (5 อันดับแรก)</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Status Matching</h1>
             </div>
             
             <div className="mb-6">
@@ -182,10 +187,6 @@ const StatusMatchingPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-fastlabor-600">•</span>
                         <span>Salary: {status.salary}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>AI Score: {status.aiScore.toFixed(2)}</span>
                       </div>
                     </div>
                     <div className="mt-4 ml-6 flex items-center gap-3">

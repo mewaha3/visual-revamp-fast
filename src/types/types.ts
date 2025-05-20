@@ -61,6 +61,7 @@ export interface FindJob {
 export interface FindMatch {
   findjob_id: string;
   job_id: string;
+  name: string; // Added name property for filtering by user
   job_type: string;
   detail?: string;
   job_date: string;
