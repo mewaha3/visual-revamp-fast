@@ -1,5 +1,7 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,22 +15,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { addNewFindJob } from "@/services/findJobService";
 
-const FindJob = () => {
+const FindJob: React.FC = () => {
+  const navigate = useNavigate();
+  const { userEmail, userFullName } = useAuth();
   const [formData, setFormData] = useState({
-    jobTitle: "",
+    jobType: "",
     skills: "",
-    startDate: "",
-    endDate: "",
+    jobDate: "",
     startTime: "",
     endTime: "",
-    salary: "",
-    payPeriod: "",
-    address: "",
     province: "",
     district: "",
     subdistrict: "",
-    postalCode: "",
+    startSalary: "",
+    rangeSalary: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -48,13 +50,44 @@ const FindJob = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Here you would send data to your backend
-      console.log("Submitting worker data:", formData);
+      // Validate form
+      if (!formData.jobType || !formData.skills || !formData.jobDate || 
+          !formData.startTime || !formData.endTime || !formData.province || 
+          !formData.startSalary) {
+        toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+        return;
+      }
+
+      // Create find job data
+      const jobData = {
+        job_type: formData.jobType,
+        skills: formData.skills,
+        job_date: formData.jobDate,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        province: formData.province,
+        district: formData.district,
+        subdistrict: formData.subdistrict,
+        start_salary: parseInt(formData.startSalary) || 0,
+        range_salary: parseInt(formData.rangeSalary) || 0,
+        email: userEmail || "",
+        first_name: userFullName?.split(" ")[0] || "",
+        last_name: userFullName?.split(" ")[1] || "",
+      };
+
+      // Add the new find job
+      const newJob = addNewFindJob(jobData);
+      console.log("New find job added:", newJob);
       
-      // For now, just show a success message
-      toast.success("ลงทะเบียนหางานสำเร็จ");
+      // Show success message
+      toast.success("สร้างการค้นหางานสำเร็จ");
+      
+      // Redirect to My Jobs page
+      setTimeout(() => {
+        navigate("/my-jobs/find");
+      }, 1500);
     } catch (error) {
-      console.error("Error submitting job request:", error);
+      console.error("Error submitting find job:", error);
       toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
     }
   };
@@ -77,56 +110,50 @@ const FindJob = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Job Information</h2>
+                <h2 className="font-medium text-gray-700">Job Preferences</h2>
                 
                 <div>
-                  <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
-                  <Input
-                    id="jobTitle"
-                    name="jobTitle"
-                    value={formData.jobTitle}
-                    onChange={handleChange}
-                    placeholder="Enter job title you're looking for"
-                    required
-                  />
+                  <label htmlFor="jobType" className="block text-sm font-medium text-gray-700 mb-1">Job Type *</label>
+                  <Select
+                    value={formData.jobType}
+                    onValueChange={(value) => handleSelectChange("jobType", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select job type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="construction">งานก่อสร้าง</SelectItem>
+                      <SelectItem value="cleaning">งานทำความสะอาด</SelectItem>
+                      <SelectItem value="moving">งานขนย้าย</SelectItem>
+                      <SelectItem value="gardening">งานสวน</SelectItem>
+                      <SelectItem value="cooking">งานครัว</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>
                   <label htmlFor="skills" className="block text-sm font-medium text-gray-700 mb-1">Skills *</label>
-                  <Input
+                  <Textarea
                     id="skills"
                     name="skills"
                     value={formData.skills}
                     onChange={handleChange}
-                    placeholder="Enter skills separated by commas"
+                    placeholder="Enter your skills"
+                    className="min-h-[100px]"
                     required
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
-                    <Input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
-                    <Input
-                      id="endDate"
-                      name="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                <div>
+                  <label htmlFor="jobDate" className="block text-sm font-medium text-gray-700 mb-1">Available Date *</label>
+                  <Input
+                    id="jobDate"
+                    name="jobDate"
+                    type="date"
+                    value={formData.jobDate}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -164,59 +191,10 @@ const FindJob = () => {
                     </Select>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">Salary *</label>
-                    <Input
-                      id="salary"
-                      name="salary"
-                      type="number"
-                      value={formData.salary}
-                      onChange={handleChange}
-                      placeholder="Enter expected salary"
-                      required
-                    />
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="payPeriod" className="block text-sm font-medium text-gray-700 mb-1">Pay Period *</label>
-                    <Select
-                      value={formData.payPeriod}
-                      onValueChange={(value) => handleSelectChange("payPeriod", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select pay period" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="daily">รายวัน</SelectItem>
-                        <SelectItem value="weekly">รายสัปดาห์</SelectItem>
-                        <SelectItem value="monthly">รายเดือน</SelectItem>
-                        <SelectItem value="project">ตามโปรเจค</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
               </div>
               
               <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Address Information</h2>
-                
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address (House No, Street, Area) *</label>
-                  <Textarea
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Enter your address"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <h2 className="font-medium text-gray-700">Location Details</h2>
+                <h2 className="font-medium text-gray-700">Location Preferences</h2>
                 
                 <div>
                   <label htmlFor="province" className="block text-sm font-medium text-gray-700 mb-1">Province *</label>
@@ -271,16 +249,36 @@ const FindJob = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="font-medium text-gray-700">Salary Expectations</h2>
                 
-                <div>
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-                  <Input
-                    id="postalCode"
-                    name="postalCode"
-                    value={formData.postalCode}
-                    onChange={handleChange}
-                    placeholder="Enter postal code"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="startSalary" className="block text-sm font-medium text-gray-700 mb-1">Minimum Salary (THB) *</label>
+                    <Input
+                      id="startSalary"
+                      name="startSalary"
+                      type="number"
+                      value={formData.startSalary}
+                      onChange={handleChange}
+                      placeholder="Enter minimum salary"
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="rangeSalary" className="block text-sm font-medium text-gray-700 mb-1">Maximum Salary (THB)</label>
+                    <Input
+                      id="rangeSalary"
+                      name="rangeSalary"
+                      type="number"
+                      value={formData.rangeSalary}
+                      onChange={handleChange}
+                      placeholder="Enter maximum salary"
+                    />
+                  </div>
                 </div>
               </div>
               

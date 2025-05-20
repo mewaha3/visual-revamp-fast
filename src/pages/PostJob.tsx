@@ -1,5 +1,6 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { addNewJob } from "@/services/jobService";
 
 const PostJob = () => {
+  const navigate = useNavigate();
+  const { userEmail, userFullName } = useAuth();
   const [formData, setFormData] = useState({
     jobTitle: "",
     jobDetail: "",
@@ -27,6 +31,7 @@ const PostJob = () => {
     district: "",
     subdistrict: "",
     postalCode: "",
+    salary: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -46,11 +51,39 @@ const PostJob = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Here you would send data to your backend
-      console.log("Submitting job data:", formData);
+      // Validate form (simple validation)
+      if (!formData.jobTitle || !formData.jobDetail || !formData.startDate || 
+          !formData.startTime || !formData.endTime || !formData.address || 
+          !formData.province || !formData.salary) {
+        toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+        return;
+      }
+
+      // Create job data
+      const jobData = {
+        job_type: formData.jobTitle,
+        job_detail: formData.jobDetail,
+        job_date: formData.startDate,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        job_address: `${formData.address}, ${formData.subdistrict}, ${formData.district}, ${formData.province} ${formData.postalCode}`,
+        salary: parseInt(formData.salary) || 0,
+        email: userEmail || "",
+        first_name: userFullName?.split(" ")[0] || "",
+        last_name: userFullName?.split(" ")[1] || "",
+      };
+
+      // Add the new job
+      const newJob = addNewJob(jobData);
+      console.log("New job added:", newJob);
       
-      // For now, just show a success message
+      // Show success message
       toast.success("ประกาศงานสำเร็จ");
+      
+      // Redirect to My Jobs page
+      setTimeout(() => {
+        navigate("/my-jobs");
+      }, 1500);
     } catch (error) {
       console.error("Error submitting job:", error);
       toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
@@ -162,6 +195,19 @@ const PostJob = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="salary" className="block text-sm font-medium text-gray-700 mb-1">Salary (THB) *</label>
+                  <Input
+                    id="salary"
+                    name="salary"
+                    type="number"
+                    value={formData.salary}
+                    onChange={handleChange}
+                    placeholder="Enter salary"
+                    required
+                  />
                 </div>
               </div>
               

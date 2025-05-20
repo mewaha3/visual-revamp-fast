@@ -1,0 +1,37 @@
+
+import { findJobs } from "@/data/findJobs";
+import { FindJob } from "@/data/findJobs";
+
+// Get all find jobs from a specific user
+export const getUserFindJobs = (email: string | null): FindJob[] => {
+  if (!email) return [];
+  return findJobs.filter(job => job.email === email);
+};
+
+// Add a new find job request
+export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
+  // Generate a new find job ID - in a real app this would be handled by the backend
+  const newFindJobId = `FND${findJobs.length + 1}`;
+  
+  const newJob: FindJob = {
+    findjob_id: newFindJobId,
+    job_type: jobData.job_type || "ไม่ระบุ",
+    skills: jobData.skills || "",
+    job_date: jobData.job_date || new Date().toISOString().split('T')[0],
+    start_time: jobData.start_time || "00:00",
+    end_time: jobData.end_time || "00:00",
+    province: jobData.province || "",
+    district: jobData.district || "",
+    subdistrict: jobData.subdistrict || "",
+    start_salary: jobData.start_salary || 0,
+    range_salary: jobData.range_salary || 0,
+    email: jobData.email || "",
+    first_name: jobData.first_name || "",
+    last_name: jobData.last_name || "",
+  };
+  
+  // Add the new find job to the array - in a real app this would save to a database
+  findJobs.unshift(newJob);
+  
+  return newJob;
+};

@@ -1,30 +1,54 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import TabMenu from '@/components/TabMenu';
 import { PostJobList, FindJobList } from '@/components/JobList';
-import { postJobs } from '@/data/postJobs';
-import { findJobs } from '@/data/findJobs';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getUserJobs } from '@/services/jobService';
+import { getUserFindJobs } from '@/services/findJobService';
+import { Button } from "@/components/ui/button";
+import { Job } from '@/types/types';
+import { FindJob } from '@/data/findJobs';
+import { RefreshCw } from 'lucide-react';
+import { toast } from "sonner";
 
 const MyJobs: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'post' | 'find'>('post');
   const { userEmail, userFullName } = useAuth();
-  const [filteredPostJobs, setFilteredPostJobs] = useState([]);
-  const [filteredFindJobs, setFilteredFindJobs] = useState([]);
+  const [filteredPostJobs, setFilteredPostJobs] = useState<Job[]>([]);
+  const [filteredFindJobs, setFilteredFindJobs] = useState<FindJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
   useEffect(() => {
-    // Filter jobs by the logged-in user's email
-    if (userEmail) {
-      const userPostJobs = postJobs.filter(job => job.email === userEmail);
-      const userFindJobs = findJobs.filter(job => job.email === userEmail);
-      
-      setFilteredPostJobs(userPostJobs);
-      setFilteredFindJobs(userFindJobs);
-    }
+    fetchJobData();
   }, [userEmail]);
+  
+  const fetchJobData = () => {
+    setLoading(true);
+    try {
+      // Filter jobs by the logged-in user's email
+      if (userEmail) {
+        const userPostJobs = getUserJobs(userEmail);
+        const userFindJobs = getUserFindJobs(userEmail);
+        
+        setFilteredPostJobs(userPostJobs);
+        setFilteredFindJobs(userFindJobs);
+      }
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      toast.error("ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleRefresh = () => {
+    fetchJobData();
+    toast.success("อัปเดตข้อมูลล่าสุด");
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -32,16 +56,31 @@ const MyJobs: React.FC = () => {
       <main className="flex-grow py-6">
         <div className="container mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center mb-6">
-              <div className="mr-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fastlabor-600">
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                </svg>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <div className="mr-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-fastlabor-600">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                  </svg>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">งานของฉัน</h1>
+                  <p className="text-gray-600">สวัสดี, {userFullName || userEmail || 'ผู้ใช้งาน'}</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">งานของฉัน</h1>
-                <p className="text-gray-600">สวัสดี, {userFullName || userEmail || 'ผู้ใช้งาน'}</p>
+              
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleRefresh} className="flex items-center gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  <span>Refresh</span>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/post-job')} className="flex items-center gap-2">
+                  <span>Post Job</span>
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/find-job')} className="flex items-center gap-2">
+                  <span>Find Job</span>
+                </Button>
               </div>
             </div>
 
@@ -50,7 +89,11 @@ const MyJobs: React.FC = () => {
             {activeTab === 'post' ? (
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🚀 รายการที่ลงโพสต์งาน</h2>
-                {filteredPostJobs.length > 0 ? (
+                {loading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>กำลังโหลดข้อมูล...</p>
+                  </div>
+                ) : filteredPostJobs.length > 0 ? (
                   <PostJobList jobs={filteredPostJobs} />
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -66,7 +109,11 @@ const MyJobs: React.FC = () => {
             ) : (
               <div className="animate-fade-in">
                 <h2 className="text-lg font-semibold mb-4">🔍 รายการงานที่ค้นหา</h2>
-                {filteredFindJobs.length > 0 ? (
+                {loading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>กำลังโหลดข้อมูล...</p>
+                  </div>
+                ) : filteredFindJobs.length > 0 ? (
                   <FindJobList jobs={filteredFindJobs} />
                 ) : (
                   <div className="text-center py-8 text-gray-500">
