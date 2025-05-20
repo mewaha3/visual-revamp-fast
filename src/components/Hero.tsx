@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -24,12 +25,25 @@ const Hero = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button size="lg" className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white px-8 py-6 text-lg">
-              ค้นหาแรงงาน
+            <Button 
+              size="lg" 
+              className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white px-8 py-6 text-lg font-medium"
+              asChild
+            >
+              <Link to="/post-job">
+                ประกาศหางาน
+              </Link>
             </Button>
-            <Button size="lg" variant="outline" className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 px-8 py-6 text-lg">
-              สมัครเป็นแรงงาน
-              <ArrowRight size={18} className="ml-2" />
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 px-8 py-6 text-lg font-medium"
+              asChild
+            >
+              <Link to="/register">
+                สมัครเป็นแรงงาน
+                <ArrowRight size={18} className="ml-2" />
+              </Link>
             </Button>
           </div>
           
