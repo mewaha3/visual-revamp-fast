@@ -3,19 +3,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { FindJobList } from "@/components/JobList";
+import SearchBar from "@/components/jobs/SearchBar";
+import FilterBar from "@/components/jobs/FilterBar";
+import JobResults from "@/components/jobs/JobResults";
 import { findJobs } from "@/data/findJobs";
 import useThailandLocations from "@/hooks/useThailandLocations";
-import { Search } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const FindJob = () => {
   const navigate = useNavigate();
@@ -129,143 +121,34 @@ const FindJob = () => {
     setSubdistrictFilter("");
   };
 
-  const handleJobClick = (jobId: string) => {
-    navigate(`/jobs/${jobId}`);
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow container py-8">
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          Find Job <Search />
-        </h1>
-
-        {/* Search and filters */}
         <div className="bg-white p-4 rounded-lg shadow mb-6">
           {/* Search */}
-          <div className="mb-4">
-            <Input
-              type="text"
-              placeholder="Search for jobs..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="w-full"
-            />
-          </div>
+          <SearchBar searchTerm={searchTerm} onChange={handleSearchChange} />
 
           {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Job Type Filter */}
-            <div>
-              <Select value={jobTypeFilter} onValueChange={handleJobTypeChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Job Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-types">All Job Types</SelectItem>
-                  <SelectItem value="Driver">Driver</SelectItem>
-                  <SelectItem value="Housekeeping">Housekeeping</SelectItem>
-                  <SelectItem value="Service">Service</SelectItem>
-                  <SelectItem value="Teaching">Teaching</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Province Filter */}
-            <div>
-              <Select
-                value={provinceFilter}
-                onValueChange={handleProvinceFilterChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Province" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-provinces">All Provinces</SelectItem>
-                  {isLoading ? (
-                    <SelectItem value="loading-province" disabled>
-                      กำลังโหลดข้อมูล...
-                    </SelectItem>
-                  ) : provinces.map((prov) => (
-                    <SelectItem key={prov.id} value={prov.name_th}>
-                      {prov.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* District Filter */}
-            <div>
-              <Select
-                value={districtFilter}
-                onValueChange={handleDistrictFilterChange}
-                disabled={!provinceFilter || provinceFilter === "all-provinces"}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="District" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-districts">All Districts</SelectItem>
-                  {!provinceFilter || provinceFilter === "all-provinces" ? (
-                    <SelectItem value="select-province-first" disabled>
-                      โปรดเลือกจังหวัดก่อน
-                    </SelectItem>
-                  ) : filteredAmphures.map((dist) => (
-                    <SelectItem key={dist.id} value={dist.name_th}>
-                      {dist.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Subdistrict Filter */}
-            <div>
-              <Select
-                value={subdistrictFilter}
-                onValueChange={handleSubdistrictFilterChange}
-                disabled={!districtFilter || districtFilter === "all-districts"}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Subdistrict" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-subdistricts">All Subdistricts</SelectItem>
-                  {!districtFilter || districtFilter === "all-districts" ? (
-                    <SelectItem value="select-district-first" disabled>
-                      โปรดเลือกอำเภอ/เขตก่อน
-                    </SelectItem>
-                  ) : filteredTambons.map((tamb) => (
-                    <SelectItem key={tamb.id} value={tamb.name_th}>
-                      {tamb.name_th}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Clear Filters Button */}
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="outline"
-              onClick={handleClearFilters}
-              className="text-sm"
-            >
-              Clear Filters
-            </Button>
-          </div>
+          <FilterBar 
+            jobTypeFilter={jobTypeFilter}
+            provinceFilter={provinceFilter}
+            districtFilter={districtFilter}
+            subdistrictFilter={subdistrictFilter}
+            provinces={provinces}
+            filteredAmphures={filteredAmphures}
+            filteredTambons={filteredTambons}
+            isLoading={isLoading}
+            onJobTypeChange={handleJobTypeChange}
+            onProvinceChange={handleProvinceFilterChange}
+            onDistrictChange={handleDistrictFilterChange}
+            onSubdistrictChange={handleSubdistrictFilterChange}
+            onClearFilters={handleClearFilters}
+          />
         </div>
 
         {/* Job Results */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            {filteredJobs.length} Jobs Found
-          </h2>
-          <FindJobList jobs={filteredJobs} />
-        </div>
+        <JobResults filteredJobs={filteredJobs} />
       </main>
       <Footer />
     </div>
