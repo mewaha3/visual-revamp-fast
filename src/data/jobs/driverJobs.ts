@@ -1,41 +1,45 @@
 
-import { PostJob } from "../types/jobTypes";
+import { PostJob } from "@/types/types";
 
-export const driverJobs: PostJob[] = [
+const driverJobs: PostJob[] = [
   {
-    job_id: "PJ9",
+    id: "driver1", // Add id field
+    job_id: "driver1",
     first_name: "สมชาย",
-    last_name: "สุขใจดี",
-    gender: "Female",
+    last_name: "มีรถ",
+    gender: "Male",
     email: "somchai@example.com",
     job_type: "driver",
-    job_detail: "ขับรถบรรทุก",
-    salary: 3600,
-    job_date: "2025-06-05",
-    start_time: "12:00:00",
-    end_time: "21:00:00",
-    job_address: "50 ถ.พัฒนาการ นนทบุรี",
-    province: "นนทบุรี",
-    district: "เมืองนนทบุรี",
-    subdistrict: "บางกระสอ",
-    zip_code: "11000"
+    job_detail: "ต้องการคนขับรถส่วนตัว รู้เส้นทางในกรุงเทพฯ",
+    salary: 15000,
+    job_date: "2023-04-15",
+    start_time: "08:00",
+    end_time: "17:00",
+    job_address: "123 ถนนสุขุมวิท กรุงเทพฯ",
+    province: "กรุงเทพมหานคร",
+    district: "วัฒนา",
+    subdistrict: "คลองตันเหนือ",
+    zip_code: "10110"
   },
   {
-    job_id: "PJ10",
-    first_name: "สมชาย",
-    last_name: "สุขใจดี",
-    gender: "Female",
-    email: "somchai@example.com",
+    id: "driver2", // Add id field
+    job_id: "driver2",
+    first_name: "วิชัย",
+    last_name: "รักขับรถ",
+    gender: "Male",
+    email: "wichai@example.com",
     job_type: "driver",
-    job_detail: "ขับรถให้เจ้านาย",
-    salary: 3600,
-    job_date: "2025-06-05",
-    start_time: "12:00:00",
-    end_time: "21:00:00",
-    job_address: "50 ถ.พัฒนาการ นนทบุรี",
-    province: "นนทบุรี",
-    district: "เมืองนนทบุรี",
-    subdistrict: "บางกระสอ",
-    zip_code: "11000"
+    job_detail: "รับสมัครคนขับรถส่งของ ขับรถตู้ได้",
+    salary: 18000,
+    job_date: "2023-04-20",
+    start_time: "09:00",
+    end_time: "18:00",
+    job_address: "456 ถนนสีลม กรุงเทพฯ",
+    province: "กรุงเทพมหานคร",
+    district: "บางรัก",
+    subdistrict: "สีลม",
+    zip_code: "10500"
   }
 ];
+
+export { driverJobs };

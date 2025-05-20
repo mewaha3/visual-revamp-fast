@@ -62,7 +62,7 @@ export const JOB_TYPES = [
   { value: "other", label: "อื่นๆ", icon: "file-text" },
 ];
 
-// Update JobDetail interface to include job_id
+// Update JobDetail interface to include job_id and name
 export interface JobDetail {
   id: string;
   job_type: string;
@@ -78,7 +78,8 @@ export interface JobDetail {
   status?: string;
   findjob_id?: string;
   detail?: string;
-  job_id?: string; // Add job_id to fix type errors
+  job_id?: string;
+  name?: string; // Add name field to fix type errors
 }
 
 // Update Employer interface with required fields
@@ -116,7 +117,8 @@ export interface Job {
 }
 
 export interface PostJob {
-  id: string;
+  id: string; // Add id field
+  job_id?: string;
   job_type: string;
   job_detail: string;
   job_date: string;
@@ -133,7 +135,6 @@ export interface PostJob {
   subdistrict: string;
   zip_code: string;
   status?: string;
-  job_id?: string;
 }
 
 export interface MatchResult {
@@ -151,6 +152,15 @@ export interface MatchResult {
   location_match: boolean;
   province_match: boolean;
   province: string;
+  // Add missing properties that api.ts is looking for
+  name?: string;
+  gender?: string;
+  jobType?: string; 
+  date?: string;
+  time?: string;
+  location?: string;
+  salary?: string;
+  workerId?: string;
 }
 
 export interface StatusResult {

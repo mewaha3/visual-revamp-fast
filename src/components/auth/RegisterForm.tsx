@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Mail, User, Calendar, MapPin, Flag, Info } from "lucide-react";
+import { Mail, User, Calendar, MapPin, Flag, Info, Passport, FileText, IdCard } from "lucide-react";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import useThailandLocations from "@/hooks/useThailandLocations";
+import { nationalities } from "@/data/nationalities";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -121,6 +123,10 @@ const RegisterForm = () => {
   const handleDocumentUpload = (type: keyof typeof documents, file: File | null) => {
     setDocuments(prev => ({ ...prev, [type]: file }));
   };
+
+  // Watch the nationality field to determine which documents to show
+  const selectedNationality = form.watch("nationality");
+  const isThai = selectedNationality === "Thai";
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
@@ -343,7 +349,7 @@ const RegisterForm = () => {
           )}
         />
 
-        {/* Nationality */}
+        {/* Nationality dropdown */}
         <FormField
           control={form.control}
           name="nationality"
@@ -352,11 +358,25 @@ const RegisterForm = () => {
               <FormLabel>สัญชาติ <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Input className="pl-10" {...field} placeholder="เช่น ไทย, Laos, Myanmar" />
-                  <Flag
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
-                    size={16}
-                  />
+                  <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value}
+                  >
+                    <SelectTrigger className="pl-10">
+                      <Flag
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+                        size={16}
+                      />
+                      <SelectValue placeholder="เลือกสัญชาติ" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[240px]">
+                      {nationalities.map((nationality) => (
+                        <SelectItem key={nationality} value={nationality}>
+                          {nationality}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </FormControl>
               <FormMessage />
@@ -527,22 +547,32 @@ const RegisterForm = () => {
 
         <h2 className="text-xl font-semibold pt-4">อัพโหลดเอกสาร</h2>
         <div className="space-y-4">
-          <DocumentUpload 
-            title="สำเนาบัตรประชาชน (ID Card)" 
-            onChange={(file) => handleDocumentUpload("certificate", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสือเดินทาง (Passport)" 
-            onChange={(file) => handleDocumentUpload("passport", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสือวีซ่า (Visa)" 
-            onChange={(file) => handleDocumentUpload("visa", file)} 
-          />
-          <DocumentUpload 
-            title="หนังสืออนุญาตทำงาน (Work Permit)" 
-            onChange={(file) => handleDocumentUpload("work_permit", file)} 
-          />
+          {/* Conditionally show document uploads based on nationality */}
+          {isThai ? (
+            <DocumentUpload 
+              title="สำเนาบัตรประชาชน (ID Card)" 
+              onChange={(file) => handleDocumentUpload("certificate", file)}
+              icon={<IdCard size={20} className="mr-2" />}
+            />
+          ) : (
+            <>
+              <DocumentUpload 
+                title="หนังสือเดินทาง (Passport)" 
+                onChange={(file) => handleDocumentUpload("passport", file)}
+                icon={<Passport size={20} className="mr-2" />}
+              />
+              <DocumentUpload 
+                title="หนังสือวีซ่า (Visa)" 
+                onChange={(file) => handleDocumentUpload("visa", file)}
+                icon={<FileText size={20} className="mr-2" />}
+              />
+              <DocumentUpload 
+                title="หนังสืออนุญาตทำงาน (Work Permit)" 
+                onChange={(file) => handleDocumentUpload("work_permit", file)}
+                icon={<FileText size={20} className="mr-2" />}
+              />
+            </>
+          )}
         </div>
 
         <h2 className="text-xl font-semibold pt-4">ข้อมูลบัญชี</h2>

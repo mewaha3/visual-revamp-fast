@@ -1,41 +1,45 @@
 
-import { PostJob } from "../types/jobTypes";
+import { PostJob } from "@/types/types";
 
-export const teachingJobs: PostJob[] = [
+const teachingJobs: PostJob[] = [
   {
-    job_id: "PJ2",
-    first_name: "มานี",
-    last_name: "ปรีชา",
+    id: "teaching1", // Add id field
+    job_id: "teaching1",
+    first_name: "วิชัย",
+    last_name: "รักการสอน",
     gender: "Male",
-    email: "malee@example.com",
-    job_type: "cleaning",
-    job_detail: "ทำความสะอาดบ้าน",
-    salary: 3000,
-    job_date: "2025-06-02",
-    start_time: "9:00:00",
-    end_time: "18:00:00",
-    job_address: "20 ถ.เจริญกรุง ปทุมธานี",
-    province: "ปทุมธานี",
-    district: "ธัญบุรี",
-    subdistrict: "ประชาธิปัตย์",
-    zip_code: "12130"
+    email: "wichai_teacher@example.com",
+    job_type: "tutor",
+    job_detail: "ต้องการติวเตอร์สอนคณิตศาสตร์ ระดับมัธยมปลาย",
+    salary: 25000,
+    job_date: "2023-05-05",
+    start_time: "16:00",
+    end_time: "20:00",
+    job_address: "666 ถนนสุขุมวิท กรุงเทพฯ",
+    province: "กรุงเทพมหานคร",
+    district: "วัฒนา",
+    subdistrict: "พระโขนงเหนือ",
+    zip_code: "10110"
   },
   {
-    job_id: "PJ7",
-    first_name: "สมชาย",
-    last_name: "สุขใจดี",
+    id: "teaching2", // Add id field
+    job_id: "teaching2",
+    first_name: "สมศรี",
+    last_name: "มีลูกเล็ก",
     gender: "Female",
-    email: "somchai@example.com",
-    job_type: "cleaning",
-    job_detail: "ล้างจาน",
-    salary: 3600,
-    job_date: "2025-06-05",
-    start_time: "12:00:00",
-    end_time: "21:00:00",
-    job_address: "50 ถ.พัฒนาการ นนทบุรี",
-    province: "นนทบุรี",
-    district: "เมืองนนทบุรี",
-    subdistrict: "บางกระสอ",
-    zip_code: "11000"
+    email: "somsri@example.com",
+    job_type: "tutor",
+    job_detail: "สอนภาษาอังกฤษเด็ก 8 ขวบ เน้นการสนทนา",
+    salary: 18000,
+    job_date: "2023-05-08",
+    start_time: "15:00",
+    end_time: "17:00",
+    job_address: "777 ถนนรามคำแหง กรุงเทพฯ",
+    province: "กรุงเทพมหานคร",
+    district: "สวนหลวง",
+    subdistrict: "สวนหลวง",
+    zip_code: "10250"
   }
 ];
+
+export { teachingJobs };
