@@ -84,7 +84,7 @@ export interface Employer {
 }
 
 export const JOB_TYPES = [
-  { value: "cleaning", label: "พนักงานทำความสะอาด (แม่บ้านออฟฟิศ, ห้าง ฯลฯ)", icon: "mop" },
+  { value: "cleaning", label: "พนักงานทำความสะอาด (แม่บ้านออฟฟิศ, ห้าง ฯลฯ)", icon: "broom" },
   { value: "security", label: "พนักงานรักษาความปลอดภัย (รปภ.)", icon: "shield" },
   { value: "toilet", label: "พนักงานดูแลห้องน้ำสาธารณะ", icon: "bath" },
   { value: "tailor", label: "พนักงานเย็บผ้า", icon: "scissors" },

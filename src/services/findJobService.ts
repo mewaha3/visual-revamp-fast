@@ -34,7 +34,7 @@ export const addNewFindJob = (jobData: Partial<FindJob>): FindJob => {
   };
   
   // Add the new find job to the array - in a real app this would save to a database
-  findJobs.unshift(newJob as any); // Type assertion to handle the array type
+  findJobs.unshift(newJob);
   
   return newJob;
 };

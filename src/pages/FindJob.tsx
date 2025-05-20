@@ -19,7 +19,7 @@ import { addNewFindJob } from "@/services/findJobService";
 import { JOB_TYPES } from "@/types/types";
 import { 
   Bath, Car, Dog, Factory, FileText, Glasses, Home, 
-  Mop, Package, Scissors, Search, Shield 
+  Broom, Package, Scissors, Search, Shield 
 } from "lucide-react";
 
 const FindJob: React.FC = () => {
@@ -55,7 +55,7 @@ const FindJob: React.FC = () => {
   // Function to get the icon component based on job type
   const getJobIcon = (iconName: string) => {
     switch (iconName) {
-      case "mop": return <Mop className="h-4 w-4 mr-2" />;
+      case "broom": return <Broom className="h-4 w-4 mr-2" />;
       case "shield": return <Shield className="h-4 w-4 mr-2" />;
       case "bath": return <Bath className="h-4 w-4 mr-2" />;
       case "scissors": return <Scissors className="h-4 w-4 mr-2" />;
