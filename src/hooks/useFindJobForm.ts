@@ -73,8 +73,13 @@ export const useFindJobForm = () => {
     try {
       const newJob = addNewFindJob(jobData);
       toast.success("Job request submitted successfully!");
+      
       // Navigate to the find tab of My Jobs
-      navigate('/my-jobs/find');
+      setTimeout(() => {
+        navigate('/my-jobs');
+        // We use a small timeout to allow the toast to be visible before navigation
+        // The tab selection will be handled by the URL parameter
+      }, 1500);
     } catch (error) {
       toast.error("Failed to submit job request");
       console.error("Error submitting job:", error);

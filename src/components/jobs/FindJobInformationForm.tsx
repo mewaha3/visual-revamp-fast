@@ -9,6 +9,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { JOB_TYPES } from "@/types/types";
+import { getJobIcon } from "@/utils/jobIcons";
 
 interface FindJobInformationFormProps {
   jobType: string;
@@ -49,8 +50,11 @@ const FindJobInformationForm = ({
           </SelectTrigger>
           <SelectContent>
             {JOB_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
+              <SelectItem key={type.value} value={type.value} className="flex items-center">
+                <div className="flex items-center">
+                  {getJobIcon(type.icon as any)}
+                  {type.label}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>

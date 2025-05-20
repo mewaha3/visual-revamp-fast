@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import TabMenu from '@/components/TabMenu';
 import { PostJobList, FindJobList } from '@/components/JobList';
 import Header from '@/components/Header';
@@ -13,7 +14,9 @@ import { RefreshCw } from 'lucide-react';
 import { toast } from "sonner";
 
 const MyJobs: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'post' | 'find'>('post');
+  const location = useLocation();
+  const initialTab = location.pathname.includes('/find') ? 'find' : 'post';
+  const [activeTab, setActiveTab] = useState<'post' | 'find'>(initialTab as 'post' | 'find');
   const { userEmail, userFullName } = useAuth();
   const [filteredPostJobs, setFilteredPostJobs] = useState<Job[]>([]);
   const [filteredFindJobs, setFilteredFindJobs] = useState<FindJob[]>([]);
@@ -23,6 +26,17 @@ const MyJobs: React.FC = () => {
   useEffect(() => {
     fetchJobData();
   }, [userEmail]);
+
+  useEffect(() => {
+    // Update URL when active tab changes
+    navigate(activeTab === 'find' ? '/my-jobs/find' : '/my-jobs');
+  }, [activeTab]);
+
+  useEffect(() => {
+    // Set the active tab based on URL when the component mounts
+    const tabFromUrl = location.pathname.includes('/find') ? 'find' : 'post';
+    setActiveTab(tabFromUrl as 'post' | 'find');
+  }, [location]);
   
   const fetchJobData = () => {
     setLoading(true);
