@@ -3,7 +3,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { FindJob, Job, JobDetail, PostJob, MatchResult, StatusResult, Employer } from '@/types/types';
 import { findJobs } from '@/data/findJobs';
 import { postJobs } from '@/data/postJobs';
-import { driverJobs, housekeepingJobs, serviceJobs, teachingJobs } from '@/data/jobs';
+import { driverJobs } from '@/data/jobs/driverJobs';
+import { housekeepingJobs } from '@/data/jobs/housekeepingJobs';
+import { serviceJobs } from '@/data/jobs/serviceJobs';
+import { teachingJobs } from '@/data/jobs/teachingJobs';
 import { jobDetailsMock, employerDetailsMock } from '@/data/mocks/matchMocks';
 
 // Helper function to simulate async API calls
@@ -32,7 +35,7 @@ export const getPostJobs = (): Promise<PostJob[]> => {
 };
 
 export const getFindJobs = (): Promise<FindJob[]> => {
-  return simulateApiCall(findJobs);
+  return simulateApiCall(findJobs as FindJob[]);
 };
 
 export const getJobById = (jobId: string): Promise<Job | undefined> => {
@@ -50,7 +53,7 @@ export const getPostJobById = (jobId: string): Promise<PostJob | undefined> => {
 
 export const getFindJobById = (findJobId: string): Promise<FindJob | undefined> => {
   const findJob = findJobs.find(job => job.id === findJobId);
-  return simulateApiCall(findJob);
+  return simulateApiCall(findJob as FindJob | undefined);
 };
 
 export const getJobDetailById = (jobId: string): Promise<JobDetail | undefined> => {
@@ -164,7 +167,7 @@ export const createFindJob = (job: Omit<FindJob, 'id'>): Promise<FindJob> => {
     ...job,
     id: uuidv4(),
   };
-  findJobs.push(newJob);
+  (findJobs as FindJob[]).push(newJob as any);
   return simulateApiCall(newJob);
 };
 
@@ -175,14 +178,31 @@ export const createPostJob = (job: Omit<PostJob, 'id' | 'job_id'>): Promise<Post
     id: job_id,  // Use same value for both id and job_id
     job_id
   };
-  postJobs.push(newJob);
+  postJobs.push(newJob as any);
   return simulateApiCall(newJob);
 };
 
 export const updateFindJob = (job: FindJob): Promise<FindJob> => {
   const index = findJobs.findIndex(j => j.id === job.id);
   if (index !== -1) {
-    findJobs[index] = job;
+    findJobs[index] = job as any;
   }
   return simulateApiCall(job);
+};
+
+// Add these functions to fix errors in AIMatchingPage and StatusMatchingPage
+export const getMatchingResults = (findJobId: string): Promise<MatchResult[]> => {
+  return getJobMatches(findJobId);
+};
+
+export const confirmMatches = (jobId: string): Promise<boolean> => {
+  return simulateApiCall(true);
+};
+
+export const getStatusResults = (jobId: string): Promise<StatusResult[]> => {
+  return getMatchStatus(jobId);
+};
+
+export const isMatchesConfirmed = (jobId: string): Promise<boolean> => {
+  return simulateApiCall(true);
 };

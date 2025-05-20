@@ -2,12 +2,89 @@
 import { v4 as uuidv4 } from 'uuid';
 import { findJobs } from '@/data/findJobs';
 import { postJobs } from '@/data/postJobs';
-import { MatchResult } from '@/types/types';
-import { mockMatches, calculateMatchScore } from '@/utils/matchingUtils';
+import { MatchResult, FindJob, PostJob } from '@/types/types';
 
+// Helper function to simulate API calls
 const simulateApiCall = <T>(data: T): Promise<T> => {
   return new Promise((resolve) => setTimeout(() => resolve(data), 1000));
 };
+
+// Simple score calculation function for job matching
+const calculateMatchScore = (findJob: any, postJob: any): number => {
+  let score = 70; // Base score
+  
+  // Match location (province)
+  if (findJob.province === postJob.province) {
+    score += 10;
+  }
+  
+  // Match job type
+  if (findJob.job_type === postJob.job_type) {
+    score += 10;
+  }
+  
+  // Match time preference
+  if (findJob.start_time === postJob.start_time && 
+      findJob.end_time === postJob.end_time) {
+    score += 5;
+  }
+  
+  // Add randomness (±5%)
+  score += Math.floor(Math.random() * 11) - 5;
+  
+  // Ensure score is within bounds
+  return Math.min(100, Math.max(0, score));
+};
+
+// Mock matches data
+const mockMatches: MatchResult[] = [
+  {
+    id: "match1",
+    score: 95,
+    job_id: "job1",
+    findjob_id: "find1",
+    job_type: "housekeeping",
+    job_detail: "ทำความสะอาดบ้าน",
+    findjob_name: "สมหญิง ใจดี",
+    findjob_gender: "Female",
+    job_date: "2023-05-20",
+    day_match: true,
+    time_match: true,
+    location_match: true,
+    province_match: true,
+    province: "กรุงเทพมหานคร",
+    name: "สมหญิง ใจดี",
+    gender: "Female",
+    jobType: "housekeeping",
+    date: "2023-05-20",
+    time: "09:00 - 17:00",
+    location: "วัฒนา, กรุงเทพมหานคร",
+    salary: "15000",
+  },
+  {
+    id: "match2",
+    score: 88,
+    job_id: "job2",
+    findjob_id: "find1",
+    job_type: "driver",
+    job_detail: "คนขับรถ",
+    findjob_name: "สมชาย มีรถ",
+    findjob_gender: "Male",
+    job_date: "2023-05-22",
+    day_match: true,
+    time_match: false,
+    location_match: true,
+    province_match: true,
+    province: "กรุงเทพมหานคร",
+    name: "สมชาย มีรถ",
+    gender: "Male",
+    jobType: "driver",
+    date: "2023-05-22",
+    time: "08:00 - 18:00",
+    location: "บางรัก, กรุงเทพมหานคร",
+    salary: "18000",
+  },
+];
 
 export const getAIMatches = async (findJobId: string): Promise<MatchResult[]> => {
   try {
@@ -26,11 +103,11 @@ export const getAIMatches = async (findJobId: string): Promise<MatchResult[]> =>
       return {
         id: uuidv4(),
         score,
-        job_id: job.job_id || '',
+        job_id: job.job_id || job.id || '',
         findjob_id: findJobId,
         job_type: job.job_type,
         job_detail: job.job_detail,
-        findjob_name: `${findJob.first_name || ''} ${findJob.last_name || ''}`.trim() || findJob.name || 'Unknown',
+        findjob_name: findJob.name || `${findJob.first_name || ''} ${findJob.last_name || ''}`.trim() || 'Unknown',
         findjob_gender: findJob.gender || 'Unknown',
         job_date: job.job_date,
         day_match: true, // Simplified for demo
@@ -70,29 +147,11 @@ export const getMockMatches = async (findJobId: string): Promise<MatchResult[]> 
     }
     
     // Convert the mock matches to the correct format with all fields
-    const formattedMatches = mockMatches.map((match, index) => ({
-      id: uuidv4(),
-      score: match.aiScore,
-      job_id: `job-${index + 1}`,
+    const formattedMatches = mockMatches.map((match) => ({
+      ...match,
       findjob_id: findJobId,
-      job_type: match.jobType,
-      job_detail: `Job description for ${match.jobType}`,
-      findjob_name: findJob.name || `${findJob.first_name || ''} ${findJob.last_name || ''}`.trim(),
+      findjob_name: findJob.name || `${findJob.first_name || ''} ${findJob.last_name || ''}`.trim() || 'Unknown',
       findjob_gender: findJob.gender || 'Unknown',
-      job_date: match.date,
-      day_match: true,
-      time_match: true,
-      location_match: true,
-      province_match: true,
-      province: match.location.split(',')[1]?.trim() || 'Unknown',
-      // Add additional fields for compatibility
-      name: match.name,
-      gender: match.gender,
-      jobType: match.jobType,
-      date: match.date,
-      time: match.time,
-      location: match.location,
-      salary: match.salary.toString(),
     }));
 
     return simulateApiCall(formattedMatches);

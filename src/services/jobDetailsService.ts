@@ -1,7 +1,7 @@
 
 import { JobDetail } from "@/types/types";
-import { mockMatches } from "@/data/mocks/matchMocks";
-import { postJobs } from "@/data/jobs"; // Import postJobs for direct job lookup
+import { postJobs } from "@/data/postJobs";
+import { jobDetailsMock } from "@/data/mocks/matchMocks";
 
 /**
  * Get job details by job ID
@@ -14,14 +14,14 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
     setTimeout(() => {
       try {
         // First, try to find the job in our mock data
-        const match = mockMatches.find(match => match.job_id === jobId);
+        const match = jobDetailsMock.find(match => match.job_id === jobId);
         
         if (match) {
           const jobDetail: JobDetail = {
-            id: match.job_id,
+            id: match.job_id || match.id,
             job_id: match.job_id, // Add job_id to fix type errors
             job_type: match.job_type,
-            job_detail: match.detail,
+            job_detail: match.job_detail || match.detail || "",
             detail: "รายละเอียดงาน: " + match.job_type,
             job_date: match.job_date,
             start_time: match.start_time,
@@ -30,7 +30,7 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
             district: match.district,
             subdistrict: match.subdistrict,
             salary: match.salary,
-            job_address: `${match.district}, ${match.province}`
+            job_address: match.job_address || `${match.district}, ${match.province}`
           };
           
           resolve(jobDetail);
@@ -55,7 +55,8 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
             district: job.district, 
             subdistrict: job.subdistrict,
             salary: job.salary,
-            job_address: job.job_address
+            job_address: job.job_address,
+            name: `${job.first_name} ${job.last_name}`
           };
           
           resolve(jobDetail);

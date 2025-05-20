@@ -1,6 +1,7 @@
 
 import { postJobs } from "@/data/postJobs";
 import { Job } from "@/types/types";
+import { v4 as uuidv4 } from "uuid";
 
 // Get a job by ID
 export const getJobById = (jobId: string): Job | null => {
@@ -19,6 +20,7 @@ export const addNewJob = (jobData: Partial<Job>): Job => {
   const newJobId = `PJ${postJobs.length + 1}`;
   
   const newJob: Job = {
+    id: newJobId, // Add id property
     job_id: newJobId,
     job_type: jobData.job_type || "",  // Use job_type directly as selected
     job_detail: jobData.job_detail || "",
