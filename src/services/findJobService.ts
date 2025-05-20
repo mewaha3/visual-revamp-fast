@@ -37,8 +37,8 @@ export const addNewFindJob = (jobData: Partial<FindJob>): Promise<FindJob> => {
           last_name: jobData.last_name || "",
           job_address: jobData.job_address || "",
           zip_code: jobData.zip_code || "",
-          // Cast gender to the correct type to fix the TypeScript error
-          gender: (jobData.gender || "Male") as "Male" | "Female",
+          // Ensure gender is either "Male" or "Female" to match the FindJob type
+          gender: (jobData.gender === "Male" || jobData.gender === "Female") ? jobData.gender : "Male",
         };
         
         // Add the new find job to the array - in a real app this would save to a database

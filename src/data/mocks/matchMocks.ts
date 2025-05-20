@@ -1,4 +1,3 @@
-
 import { FindMatch, JobDetail, Employer } from "@/types/types";
 
 // Mock data for development - expanded with more diverse job details
@@ -6,7 +5,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ1",
     job_id: "PJ5",
-    name: "คุณสมชาย สมบัติดี",
+    name: "somchai@example.com", // Using email as name for filtering
     job_type: "cleaning",
     detail: "ทำความสะอาดบ้าน",
     job_date: "2025-06-10",
@@ -20,7 +19,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ2",
     job_id: "PJ6",
-    name: "คุณสมชาย สมบัติดี",
+    name: "somchai@example.com", // Using email as name for filtering
     job_type: "security",
     detail: "รักษาความปลอดภัย",
     job_date: "2025-06-05",
@@ -34,7 +33,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ3",
     job_id: "PJ7",
-    name: "คุณสมชาย สมบัติดี",
+    name: "somchai@example.com", // Using email as name for filtering
     job_type: "tailor",
     detail: "ซ่อมเสื้อผ้า",
     job_date: "2025-06-05",
@@ -49,7 +48,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ4",
     job_id: "PJ8",
-    name: "คุณสมชาย สมบัติดี",
+    name: "aaa@aaa.com", // Different user
     job_type: "packer",
     detail: "ติดฉลากสินค้า",
     job_date: "2025-06-05",
@@ -64,7 +63,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ5",
     job_id: "PJ9",
-    name: "คุณสมชาย สมบัติดี",
+    name: "aaa@aaa.com", // Different user
     job_type: "driver",
     detail: "ขับรถบรรทุก",
     job_date: "2025-06-05",
@@ -79,7 +78,7 @@ export const mockMatches: FindMatch[] = [
   {
     findjob_id: "FJ6",
     job_id: "PJ10",
-    name: "คุณสมชาย สมบัติดี",
+    name: "user3@example.com", // Different user
     job_type: "gardener",
     detail: "ตัดกิ่งไม้",
     job_date: "2025-06-05",

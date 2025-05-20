@@ -63,6 +63,7 @@ const MyJobsPage: React.FC = () => {
       
       // Fetch job matches filtered by current user's email
       const userMatches = await getUserMatches(userEmail);
+      console.log('Fetched matches for user:', userEmail, userMatches);
       setMatches(userMatches);
       
       toast.success("อัปเดตข้อมูลล่าสุด");
