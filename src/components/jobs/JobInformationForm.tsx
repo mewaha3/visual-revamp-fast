@@ -62,7 +62,7 @@ const JobInformationForm = ({
             {JOB_TYPES.map((jobType) => (
               <SelectItem key={jobType.value} value={jobType.value} className="flex items-center">
                 <div className="flex items-center">
-                  {getJobIcon(jobType.icon)}
+                  {getJobIcon(jobType.icon as any)}
                   {jobType.label}
                 </div>
               </SelectItem>

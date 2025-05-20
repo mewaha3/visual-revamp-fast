@@ -1,0 +1,77 @@
+
+import { PostJob } from "../types/jobTypes";
+
+export const serviceJobs: PostJob[] = [
+  {
+    job_id: "PJ1",
+    first_name: "สมชัย",
+    last_name: "สุขดี",
+    gender: "Male",
+    email: "somkid@example.com",
+    job_type: "พนักงาน",
+    job_detail: "ต้อนรับ",
+    salary: 3500,
+    job_date: "2025-05-01",
+    start_time: "8:00:00",
+    end_time: "17:00:00",
+    job_address: "101 ถ.พหลโยธิน กรุงเทพฯ",
+    province: "กรุงเทพ",
+    district: "จตุจักร",
+    subdistrict: "จตุจักร",
+    zip_code: "10900"
+  },
+  {
+    job_id: "PJ4",
+    first_name: "พรชัย",
+    last_name: "ทองสกุล",
+    gender: "Male",
+    email: "thanakorn@example.com",
+    job_type: "พนักงาน",
+    job_detail: "ยกกระเป๋าโรงแรม",
+    salary: 3700,
+    job_date: "2025-06-04",
+    start_time: "10:00:00",
+    end_time: "19:00:00",
+    job_address: "44 ซ.เพชรเกษม 3 ฉะเชิงเทรา",
+    province: "ฉะเชิงเทรา",
+    district: "เมืองฉะเชิงเทรา",
+    subdistrict: "หน้าเมือง",
+    zip_code: "10270"
+  },
+  {
+    job_id: "PJ5",
+    first_name: "อรทัย",
+    last_name: "บุญศรี",
+    gender: "Female",
+    email: "orathai@example.com",
+    job_type: "พนักงาน",
+    job_detail: "จัดแสดงสินค้า",
+    salary: 3600,
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    job_address: "50 ถ.พัฒนาการ นนทบุรี",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    zip_code: "11000"
+  },
+  {
+    job_id: "PJ6",
+    first_name: "สมชาย",
+    last_name: "สุขใจดี",
+    gender: "Female",
+    email: "somchai@example.com",
+    job_type: "พนักงาน",
+    job_detail: "จัดแสดงสินค้า",
+    salary: 3600,
+    job_date: "2025-06-05",
+    start_time: "12:00:00",
+    end_time: "21:00:00",
+    job_address: "50 ถ.พัฒนาการ นนทบุรี",
+    province: "นนทบุรี",
+    district: "เมืองนนทบุรี",
+    subdistrict: "บางกระสอ",
+    zip_code: "11000"
+  }
+];

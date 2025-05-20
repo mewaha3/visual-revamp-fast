@@ -1,7 +1,7 @@
 
 import React from "react";
 import { 
-  Broom, 
+  Brush, // Replace Broom with Brush
   Shield, 
   Bath, 
   Scissors, 
@@ -17,7 +17,7 @@ import {
   TreeDeciduous
 } from "lucide-react";
 
-type IconName = 
+export type IconName = 
   | "broom" 
   | "shield" 
   | "bath" 
@@ -36,7 +36,7 @@ type IconName =
 export const getJobIcon = (iconName: IconName) => {
   switch (iconName) {
     case "broom":
-      return <Broom className="mr-2 h-4 w-4" />;
+      return <Brush className="mr-2 h-4 w-4" />; // Using Brush instead of Broom
     case "shield":
       return <Shield className="mr-2 h-4 w-4" />;
     case "bath":
