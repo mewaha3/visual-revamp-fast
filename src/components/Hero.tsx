@@ -44,7 +44,7 @@ const Hero = () => {
         <div className="flex-1 relative">
           <div className="bg-white p-3 rounded-xl shadow-xl border border-gray-100">
             <img 
-              src="/worker.svg" 
+              src="/worker.png" 
               alt="FastLabor worker illustration" 
               className="max-w-full h-auto"
               onError={(e) => {
