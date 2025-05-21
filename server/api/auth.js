@@ -33,6 +33,7 @@ function writeUsersData(data) {
       fs.mkdirSync(dataDirectory, { recursive: true });
     }
     fs.writeFileSync(usersJsonPath, JSON.stringify(data, null, 2), 'utf8');
+    console.log('User data saved successfully to:', usersJsonPath);
     return true;
   } catch (error) {
     console.error('Error writing users data:', error);
@@ -43,6 +44,7 @@ function writeUsersData(data) {
 // Register endpoint
 router.post('/register', (req, res) => {
   try {
+    console.log('Register request received:', req.body);
     const { first_name, last_name, email, password, ...otherFields } = req.body;
     
     // Validate required fields
@@ -55,6 +57,7 @@ router.post('/register', (req, res) => {
     
     // Read current users
     const users = readUsersData();
+    console.log('Current users count:', users.length);
     
     // Check if email already exists
     const existingUser = users.find(user => user.email === email);
@@ -80,6 +83,7 @@ router.post('/register', (req, res) => {
     
     // Write updated users data
     if (writeUsersData(users)) {
+      console.log('New user registered successfully:', email);
       // Send response with user data (excluding password)
       const { password: _, ...userWithoutPassword } = newUser;
       return res.status(201).json({
@@ -105,6 +109,7 @@ router.post('/register', (req, res) => {
 // Login endpoint
 router.post('/login', (req, res) => {
   try {
+    console.log('Login request received:', req.body);
     const { email, password } = req.body;
     
     // Validate required fields
@@ -117,11 +122,13 @@ router.post('/login', (req, res) => {
     
     // Read users data
     const users = readUsersData();
+    console.log('Users loaded for login check, count:', users.length);
     
     // Find user with matching email and password
     const user = users.find(user => user.email === email && user.password === password);
     
     if (user) {
+      console.log('User found, login successful:', email);
       // User found, return user data without password
       const { password: _, ...userWithoutPassword } = user;
       return res.status(200).json({
@@ -130,6 +137,7 @@ router.post('/login', (req, res) => {
         user: userWithoutPassword
       });
     } else {
+      console.log('Login failed - user not found or invalid credentials');
       // Authentication failed
       return res.status(401).json({ 
         success: false, 

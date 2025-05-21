@@ -187,21 +187,28 @@ export function addUser(user: User): void {
     fullName: `${user.first_name} ${user.last_name}`
   });
   
-  console.log("New user added:", user);
+  console.log("New user added to memory:", user.email);
   
-  // Update JSON file
+  // Update localStorage
   try {
-    // In a browser environment, we need to use localStorage as a temporary solution
-    // since direct file system access is not available
-    const currentUsers = JSON.parse(localStorage.getItem('fastlabor_users') || '[]');
-    currentUsers.push({
+    // Get existing users from localStorage
+    const existingUsers = JSON.parse(localStorage.getItem('fastlabor_users') || '[]');
+    
+    // Add new user
+    existingUsers.push({
       ...user,
       fullName: `${user.first_name} ${user.last_name}`
     });
-    localStorage.setItem('fastlabor_users', JSON.stringify(currentUsers));
-    console.log("User data saved to localStorage");
     
-    // API call to the backend to save user data
+    // Save updated users array back to localStorage
+    localStorage.setItem('fastlabor_users', JSON.stringify(existingUsers));
+    console.log("User data saved to localStorage");
+  } catch (error) {
+    console.error("Error saving user to localStorage:", error);
+  }
+  
+  // API call to the backend to save user data
+  try {
     fetch('/api/auth/register', {
       method: 'POST',
       headers: {
@@ -221,14 +228,24 @@ export function addUser(user: User): void {
       console.error("Error calling registration API:", error);
     });
   } catch (error) {
-    console.error("Error saving user data:", error);
+    console.error("Error in API registration attempt:", error);
   }
 }
 
 // Function to get all registered users (including those from localStorage)
 export function getAllUsers(): User[] {
   try {
-    const localUsers = JSON.parse(localStorage.getItem('fastlabor_users') || '[]');
+    // Get local users from localStorage
+    const localUsersString = localStorage.getItem('fastlabor_users');
+    
+    if (!localUsersString) {
+      return users;
+    }
+    
+    const localUsers = JSON.parse(localUsersString);
+    console.log("Found localStorage users:", localUsers.length);
+    
+    // Combine predefined users and localStorage users
     return [...users, ...localUsers];
   } catch (error) {
     console.error("Error loading users from localStorage:", error);

@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { findUserByCredentials, User, getAllUsers } from "../data/users";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   userEmail: string | null;
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // restore from localStorage on mount
   useEffect(() => {
@@ -39,6 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         
         const data = await response.json();
+        console.log("API login response:", data);
         
         if (response.ok && data.success) {
           // API login successful
@@ -50,6 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem("fastlabor_user_fullname", fullName);
           
           console.log("Login successful via API");
+          toast({
+            title: "เข้าสู่ระบบสำเร็จ",
+            description: "ยินดีต้อนรับกลับมา",
+          });
           return true;
         }
       } catch (apiError) {
@@ -72,6 +79,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           localStorage.setItem("fastlabor_user", email);
           localStorage.setItem("fastlabor_user_fullname", fullName);
+          
+          toast({
+            title: "เข้าสู่ระบบสำเร็จ",
+            description: "ยินดีต้อนรับกลับมา",
+          });
           return true;
         }
         return false;
@@ -88,11 +100,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         localStorage.setItem("fastlabor_user", email);
         localStorage.setItem("fastlabor_user_fullname", fullName);
+        
+        toast({
+          title: "เข้าสู่ระบบสำเร็จ",
+          description: "ยินดีต้อนรับกลับมา",
+        });
         return true;
       }
       return false;
     } catch (error) {
       console.error("Login error:", error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
       return false;
     }
   }
@@ -102,6 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserFullName(null);
     localStorage.removeItem("fastlabor_user");
     localStorage.removeItem("fastlabor_user_fullname");
+    toast({
+      title: "ออกจากระบบสำเร็จ",
+      description: "คุณได้ออกจากระบบแล้ว",
+    });
     // Redirect to homepage after logout
     window.location.href = '/';
   }
