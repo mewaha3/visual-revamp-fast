@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { findUserByCredentials, User } from "../data/users";
 import { getUsersFromSheet } from "@/services/sheetsService";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   userEmail: string | null;
@@ -17,16 +18,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userFullName, setUserFullName] = useState<string | null>(null);
   const [sheetUsers, setSheetUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const { toast } = useToast();
 
   // Fetch users from Google Sheets on mount
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoadingUsers(true);
       try {
+        console.log('Fetching users from Google Sheets');
         const users = await getUsersFromSheet();
+        console.log(`Fetched ${users.length} users from sheets`);
         setSheetUsers(users);
       } catch (error) {
         console.error("Failed to fetch users from sheet:", error);
+        toast({
+          title: "ไม่สามารถเชื่อมต่อกับ Google Sheets ได้",
+          description: "ระบบจะใช้ข้อมูลผู้ใช้ในแอปพลิเคชัน",
+          variant: "destructive"
+        });
       } finally {
         setIsLoadingUsers(false);
       }
@@ -47,12 +56,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function login(email: string, password: string): Promise<boolean> {
     try {
       console.log("Attempting to login with:", email);
+      console.log("Sheet users count:", sheetUsers.length);
       
       // First try to find user in sheet data
       let user: User | undefined;
       
       if (sheetUsers.length > 0) {
-        user = sheetUsers.find(u => u.email === email && u.password === password);
+        console.log("Checking sheet users for match");
+        user = sheetUsers.find(u => {
+          console.log(`Comparing: ${u.email} === ${email} && ${u.password} === ${password}`);
+          return u.email === email && u.password === password;
+        });
+        
+        if (user) {
+          console.log("Found user in sheets:", user);
+        }
       }
       
       // If not found in sheets, try local user data as fallback

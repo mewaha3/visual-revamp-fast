@@ -36,32 +36,36 @@ router.get('/', async (req, res) => {
 
     // แปลงข้อมูลเป็นรูปแบบที่เหมาะสม
     const rows = response.data.values || [];
-    console.log("API: Retrieved rows from sheet:", rows);
+    console.log("API: Retrieved rows count:", rows.length);
     
-    // คอลัมน์ข้อมูลในชีต "ชีต1" (กำหนดตามโครงสร้างข้อมูลจริง)
-    // อ้างอิงจาก RegisterForm แถวข้อมูลจะเป็น [fullName, email, password]
-    const users = [];
-    
-    // ตรวจสอบข้อมูลที่ได้รับ
-    if (rows.length > 0) {
-      // ข้ามหัวตารางหากมี
-      const headerRow = rows[0];
-      const startIndex = (headerRow && (headerRow[0] === 'ชื่อ' || headerRow[0] === 'fullName')) ? 1 : 0;
-      
-      // วิเคราะห์โครงสร้างข้อมูล
-      for (let i = startIndex; i < rows.length; i++) {
-        const row = rows[i];
-        if (row && row.length >= 2) {
-          // ตรวจสอบโครงสร้างข้อมูลและปรับให้เหมาะสม
-          // fullName อยู่ที่คอลัมน์ 0, email คอลัมน์ 1, password คอลัมน์ 2
-          users.push({
-            fullName: row[0] || '',
-            email: row[1] || '',
-            password: row[2] || '',
-          });
-        }
+    // Return all rows including headers for debugging
+    const users = rows.map((row, index) => {
+      // Make sure we have enough columns to extract email and password
+      if (row.length >= 13) {
+        return {
+          first_name: row[0] || '',
+          last_name: row[1] || '',
+          national_id: row[2] || '',
+          dob: row[3] || '',
+          gender: row[4] || '',
+          nationality: row[5] || '',
+          address: row[6] || '',
+          province: row[7] || '',
+          district: row[8] || '',
+          subdistrict: row[9] || '',
+          zip_code: row[10] || '',
+          email: row[11] || '',
+          password: row[12] || '',
+          certificate: row[13] === 'Yes' ? 'Yes' : 'No',
+          passport: row[14] === 'Yes' ? 'Yes' : 'No',
+          visa: row[15] === 'Yes' ? 'Yes' : 'No',
+          work_permit: row[16] === 'Yes' ? 'Yes' : 'No',
+          fullName: `${row[0] || ''} ${row[1] || ''}`,
+          rowIndex: index
+        };
       }
-    }
+      return null;
+    }).filter(user => user !== null);
 
     console.log(`API: Formatted ${users.length} users for response`);
     res.status(200).json({ users });

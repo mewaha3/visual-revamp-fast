@@ -2,7 +2,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 export interface PostJob {
-  id: string;  // Added required id field
+  id: string;
   job_id: string;
   first_name: string;
   last_name: string;
@@ -43,10 +43,22 @@ export interface FindJob {
   email: string;
   phone: string;
   created_at?: string;
+  findjob_id?: string;
+  name?: string;
+  job_type?: string;
+  detail?: string;
+  province?: string;
+  district?: string;
+  subdistrict?: string;
+  job_date?: string;
+  start_time?: string;
+  end_time?: string;
+  job_address?: string;
+  zip_code?: string;
 }
 
 export interface JobDetail {
-  id: string;  // Added required id field
+  id: string;
   job_id: string;
   job_type: string;
   job_detail: string;
@@ -62,11 +74,11 @@ export interface JobDetail {
 }
 
 export interface Employer {
-  id: string;  // Added required id field
+  id: string;
   first_name: string;
   last_name: string;
   email: string;
-  name?: string;  // Make name optional
+  name?: string;
   phone?: string;
   rating?: number;
   reviews?: number;
@@ -94,7 +106,7 @@ export interface MatchResult {
   date?: string;
   time?: string;
   location?: string;
-  salary?: string;
+  salary?: string | number;
 }
 
 export interface StatusResult {

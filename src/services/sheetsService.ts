@@ -25,6 +25,8 @@ export async function addUserToSheet(user: User): Promise<boolean> {
       user.work_permit || "No"    // work_permit column
     ];
 
+    console.log('Sending user data to sheet:', userData);
+
     // Call the API route to add user to the sheet
     const response = await fetch('/api/users/add', {
       method: 'POST',
@@ -48,6 +50,7 @@ export async function addUserToSheet(user: User): Promise<boolean> {
 // Function to retrieve users from Google Sheet
 export async function getUsersFromSheet(): Promise<User[]> {
   try {
+    console.log('Fetching users from sheet API');
     const response = await fetch('/api/users');
     
     if (!response.ok) {
@@ -55,29 +58,37 @@ export async function getUsersFromSheet(): Promise<User[]> {
     }
     
     const data = await response.json();
-    return data.users.map((row: any) => {
-      // Map sheet data to User object based on column positions
-      return {
-        fullName: `${row[0]} ${row[1]}`, // Combine first_name and last_name
-        first_name: row[0] || "",
-        last_name: row[1] || "",
-        national_id: row[2] || "",
-        dob: row[3] || "",
-        gender: row[4] || "",
-        nationality: row[5] || "",
-        address: row[6] || "",
-        province: row[7] || "",
-        district: row[8] || "",
-        subdistrict: row[9] || "",
-        zip_code: row[10] || "",
-        email: row[11] || "",
-        password: row[12] || "",
-        certificate: row[13] || "No",  // ID Card
-        passport: row[14] || "No",
-        visa: row[15] || "No",
-        work_permit: row[16] || "No"
-      };
-    });
+    console.log('Received user data from API:', data);
+    
+    if (!data.users || !Array.isArray(data.users)) {
+      console.error('Invalid users data format:', data);
+      return [];
+    }
+    
+    // Skip the header row if it exists (check if first row has column headers)
+    const users = data.users;
+    console.log(`Processing ${users.length} users from sheet`);
+    
+    return users.map((user: any) => ({
+      fullName: user.fullName || `${user.first_name} ${user.last_name}`,
+      first_name: user.first_name || "",
+      last_name: user.last_name || "",
+      national_id: user.national_id || "",
+      dob: user.dob || "",
+      gender: user.gender || "",
+      nationality: user.nationality || "",
+      address: user.address || "",
+      province: user.province || "",
+      district: user.district || "",
+      subdistrict: user.subdistrict || "",
+      zip_code: user.zip_code || "",
+      email: user.email || "",
+      password: user.password || "",
+      certificate: user.certificate || "No",
+      passport: user.passport || "No",
+      visa: user.visa || "No",
+      work_permit: user.work_permit || "No"
+    }));
   } catch (error) {
     console.error('Error fetching users from sheet:', error);
     return [];
