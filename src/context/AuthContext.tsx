@@ -58,6 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             description: "ยินดีต้อนรับกลับมา",
           });
           return true;
+        } else if (!response.ok) {
+          console.log("API login failed with status:", response.status);
+          // Continue with fallback only if API returned an error
         }
       } catch (apiError) {
         console.warn("API login failed, falling back to local authentication:", apiError);

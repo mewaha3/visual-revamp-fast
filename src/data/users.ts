@@ -216,7 +216,15 @@ export function addUser(user: User): void {
       },
       body: JSON.stringify(user),
     })
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => {
+          console.error("API registration failed with status:", response.status, data.message);
+          throw new Error(data.message || 'Registration failed');
+        });
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.success) {
         console.log("User registered successfully via API");
