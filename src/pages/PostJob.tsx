@@ -1,22 +1,22 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { addNewJob } from "@/services/jobService";
+import { addPostJob } from "@/services/firestoreService";
 import JobInformationForm from "@/components/jobs/JobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
 import useThailandLocations from "@/hooks/useThailandLocations";
-import { Info } from "lucide-react";
-import { useEffect } from "react";
+import { Info, Loader2 } from "lucide-react";
 
 const PostJob = () => {
   const navigate = useNavigate();
-  const { userEmail, userFullName } = useAuth();
+  const { userEmail, userProfile, userId } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     JobType: "",
     jobDetail: "",
@@ -98,37 +98,39 @@ const PostJob = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!formData.JobType || !formData.jobDetail || !formData.startDate || 
+        !formData.startTime || !formData.endTime || !formData.address || 
+        !formData.province || !formData.salary) {
+      toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
     try {
-      // Validate form (simple validation)
-      if (!formData.JobType || !formData.jobDetail || !formData.startDate || 
-          !formData.startTime || !formData.endTime || !formData.address || 
-          !formData.province || !formData.salary) {
-        toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
-        return;
-      }
-
-      // Create job data
+      // Create job data for Firestore
       const jobData = {
         job_type: formData.JobType,
         job_detail: formData.jobDetail,
         job_date: formData.startDate,
         start_time: formData.startTime,
         end_time: formData.endTime,
-        job_address: `${formData.address}, ${formData.subdistrict}, ${formData.district}, ${formData.province} ${formData.postalCode}`,
+        job_address: formData.address,
         salary: parseInt(formData.salary) || 0,
-        email: userEmail || "",
-        first_name: userFullName?.split(" ")[0] || "",
-        last_name: userFullName?.split(" ")[1] || "",
-        gender: "",
+        email: userProfile?.email || userEmail || "",
+        first_name: userProfile?.first_name || "",
+        last_name: userProfile?.last_name || "",
+        gender: userProfile?.gender || "",
         province: formData.province,
         district: formData.district,
         subdistrict: formData.subdistrict,
         zip_code: formData.postalCode,
       };
 
-      // Add the new job
-      const newJob = addNewJob(jobData);
-      console.log("New job added:", newJob);
+      // Save to Firestore
+      const jobId = await addPostJob(jobData, userId || undefined);
       
       // Show success message
       toast.success("ประกาศงานสำเร็จ");
@@ -140,6 +142,8 @@ const PostJob = () => {
     } catch (error) {
       console.error("Error submitting job:", error);
       toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -224,8 +228,16 @@ const PostJob = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
+                disabled={isSubmitting}
               >
-                ลงประกาศงาน
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                    กำลังบันทึกข้อมูล...
+                  </>
+                ) : (
+                  "ลงประกาศงาน"
+                )}
               </Button>
             </form>
           </div>

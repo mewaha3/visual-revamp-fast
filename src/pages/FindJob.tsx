@@ -1,4 +1,6 @@
 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -8,6 +10,9 @@ import FindJobInformationForm from "@/components/jobs/FindJobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
 import SalaryExpectationsForm from "@/components/jobs/SalaryExpectationsForm";
+import { addFindJob } from "@/services/firestoreService";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 const FindJob = () => {
   const {
@@ -27,7 +32,7 @@ const FindJob = () => {
     setMinSalary,
     maxSalary,
     setMaxSalary,
-    handleSubmit,
+    handleSubmit: originalSubmit,
     provinces,
     filteredAmphures,
     filteredTambons,
@@ -40,8 +45,60 @@ const FindJob = () => {
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
-    isSubmitting,
   } = useFindJobForm();
+
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userProfile, userId } = useAuth();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!jobType || !jobDate || !startTime || !endTime || !selectedProvince || !minSalary) {
+      toast.error("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare data for Firestore
+      const findJobData = {
+        first_name: userProfile?.first_name || "",
+        last_name: userProfile?.last_name || "",
+        email: userProfile?.email || "",
+        job_type: jobType,
+        skills: skills,
+        job_date: jobDate,
+        start_time: startTime,
+        end_time: endTime,
+        job_address: address,
+        province: selectedProvince,
+        district: selectedAmphure,
+        subdistrict: selectedTambon,
+        zip_code: zipCode,
+        start_salary: Number(minSalary),
+        range_salary: Number(maxSalary),
+        gender: userProfile?.gender || "",
+      };
+      
+      // Save to Firestore
+      const findjobId = await addFindJob(findJobData, userId || undefined);
+      
+      toast.success("บันทึกข้อมูลการหางานสำเร็จ");
+      
+      // Redirect to find job listing or results page
+      setTimeout(() => {
+        navigate("/my-find-jobs");
+      }, 1500);
+      
+    } catch (error) {
+      console.error("Error submitting find job:", error);
+      toast.error("เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -125,10 +182,10 @@ const FindJob = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
-                    กำลังค้นหางาน...
+                    กำลังบันทึกข้อมูล...
                   </>
                 ) : (
-                  "ค้นหางาน"
+                  "บันทึกข้อมูลการหางาน"
                 )}
               </Button>
             </form>
