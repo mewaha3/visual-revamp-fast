@@ -31,9 +31,10 @@ export interface FindJob {
     phone?: string; // For MatchResult
     score?: number; // For MatchResult
     aiScore?: number; // For matching data
+    user_id?: string; // Added for Firestore users
 }
 
-// Update PostJob interface to make id optional
+// Update PostJob interface to make id optional and add fields
 export interface PostJob {
     id?: string; // Optional to allow creation of new jobs
     job_id?: string; // Added for compatibility
@@ -53,6 +54,7 @@ export interface PostJob {
     subdistrict: string;
     zip_code: string;
     status?: string;
+    user_id?: string; // Added for Firestore users
 }
 
 // Keep other interfaces unchanged
@@ -141,6 +143,31 @@ export interface Job {
   status?: string;
 }
 
+// Add MatchResultFirestore interface for Firebase storage
+export interface MatchResultFirestore {
+  id?: string;
+  first_name: string;
+  last_name: string;
+  gender: string;
+  email: string;
+  job_type: string;
+  job_date: string;
+  start_time: string;
+  end_time: string;
+  job_address: string;
+  province: string;
+  district: string;
+  subdistrict: string;
+  zip_code: string;
+  priority: number;
+  status: "on_queue" | "accepted" | "declined";
+  findjob_id: string;
+  job_id: string;
+  job_salary: number;
+  created_at?: any;
+  updated_at?: any;
+}
+
 export interface MatchResult {
   id?: string;
   name?: string; 
@@ -165,6 +192,10 @@ export interface MatchResult {
   province_match?: boolean;
   province?: string;
   workerId?: string;
+  priority?: number; // Added for priority selection
+  first_name?: string; // Added for Firebase matching
+  last_name?: string;
+  email?: string;
 }
 
 export interface StatusResult {
@@ -182,4 +213,7 @@ export interface StatusResult {
   location?: string;
   salary?: string | number;
   workerId?: string;
+  priority?: number; // Added for priority
+  first_name?: string;
+  last_name?: string;
 }

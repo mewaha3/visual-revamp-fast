@@ -21,17 +21,17 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
       const jobDetail: JobDetail = {
         id: firestoreJob.id || jobId,
         job_id: firestoreJob.job_id || jobId,
-        job_type: firestoreJob.job_type,
-        job_detail: firestoreJob.job_detail,
-        detail: firestoreJob.job_detail,
-        job_date: firestoreJob.job_date,
-        start_time: firestoreJob.start_time,
-        end_time: firestoreJob.end_time,
-        province: firestoreJob.province,
-        district: firestoreJob.district, 
-        subdistrict: firestoreJob.subdistrict,
-        salary: firestoreJob.salary,
-        job_address: firestoreJob.job_address
+        job_type: firestoreJob.job_type || '',
+        job_detail: firestoreJob.job_detail || '',
+        detail: firestoreJob.job_detail || '',
+        job_date: firestoreJob.job_date || '',
+        start_time: firestoreJob.start_time || '',
+        end_time: firestoreJob.end_time || '',
+        province: firestoreJob.province || '',
+        district: firestoreJob.district || '', 
+        subdistrict: firestoreJob.subdistrict || '',
+        salary: firestoreJob.salary || 0,
+        job_address: firestoreJob.job_address || '',
       };
       
       return jobDetail;

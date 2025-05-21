@@ -1,7 +1,7 @@
 
-import { collection, addDoc, getDocs, query, where, serverTimestamp, updateDoc, doc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, serverTimestamp, updateDoc, doc, getDoc, Firestore } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { PostJob } from "@/data/types/jobTypes";
+import { PostJob, FindJob } from "@/types/types";
 
 // Interface for FindJob submissions to Firestore
 export interface FindJobSubmission {
@@ -58,17 +58,17 @@ export async function addFindJob(jobData: FindJobSubmission, userId?: string): P
 }
 
 // Get find job entries for a specific user
-export async function getUserFindJobs(userId: string) {
+export async function getUserFindJobs(userId: string): Promise<FindJob[]> {
   try {
     const q = query(collection(db, "find_jobs"), where("user_id", "==", userId));
     const querySnapshot = await getDocs(q);
     
-    const jobs: any[] = [];
+    const jobs: FindJob[] = [];
     querySnapshot.forEach((doc) => {
       jobs.push({
         id: doc.id,
         ...doc.data()
-      });
+      } as FindJob);
     });
     
     return jobs;
@@ -109,17 +109,17 @@ export async function addPostJob(jobData: PostJob, userId?: string): Promise<str
 }
 
 // Get post job entries for a specific user
-export async function getUserPostJobs(userId: string) {
+export async function getUserPostJobs(userId: string): Promise<PostJob[]> {
   try {
     const q = query(collection(db, "post_jobs"), where("user_id", "==", userId));
     const querySnapshot = await getDocs(q);
     
-    const jobs: any[] = [];
+    const jobs: PostJob[] = [];
     querySnapshot.forEach((doc) => {
       jobs.push({
         id: doc.id,
         ...doc.data()
-      });
+      } as PostJob);
     });
     
     return jobs;
@@ -130,7 +130,7 @@ export async function getUserPostJobs(userId: string) {
 }
 
 // Get a post job by ID
-export async function getPostJobById(jobId: string) {
+export async function getPostJobById(jobId: string): Promise<PostJob | null> {
   try {
     // First try to find by job_id field
     const q = query(collection(db, "post_jobs"), where("job_id", "==", jobId));
@@ -141,7 +141,7 @@ export async function getPostJobById(jobId: string) {
       return {
         id: doc.id,
         ...doc.data()
-      };
+      } as PostJob;
     }
     
     // If not found, try to get by document ID
@@ -152,7 +152,7 @@ export async function getPostJobById(jobId: string) {
       return {
         id: docSnap.id,
         ...docSnap.data()
-      };
+      } as PostJob;
     }
     
     return null;
@@ -163,7 +163,7 @@ export async function getPostJobById(jobId: string) {
 }
 
 // Get a find job by ID
-export async function getFindJobById(jobId: string) {
+export async function getFindJobById(jobId: string): Promise<FindJob | null> {
   try {
     // First try to find by findjob_id field
     const q = query(collection(db, "find_jobs"), where("findjob_id", "==", jobId));
@@ -174,7 +174,7 @@ export async function getFindJobById(jobId: string) {
       return {
         id: doc.id,
         ...doc.data()
-      };
+      } as FindJob;
     }
     
     // If not found, try to get by document ID
@@ -185,12 +185,34 @@ export async function getFindJobById(jobId: string) {
       return {
         id: docSnap.id,
         ...docSnap.data()
-      };
+      } as FindJob;
     }
     
     return null;
   } catch (error) {
     console.error("Error getting find job:", error);
     throw error;
+  }
+}
+
+// Update a match result status
+export async function updateMatchStatus(matchId: string, status: "accepted" | "declined" | "on_queue"): Promise<boolean> {
+  try {
+    const docRef = doc(db, "match_results", matchId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      await updateDoc(docRef, {
+        status: status,
+        updated_at: serverTimestamp()
+      });
+      
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error(`Error updating match status to ${status}:`, error);
+    return false;
   }
 }

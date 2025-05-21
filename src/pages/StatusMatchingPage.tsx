@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
-import { matchJobWithWorkers } from '@/services/matchingService';
+import { getMatchResultsForJob } from '@/services/matchingService';
 import { PostJob, StatusResult } from '@/types/types';
 import { BarChart, ArrowLeft, Info, Check, X, ArrowRight, RefreshCw } from 'lucide-react';
 
@@ -36,31 +36,16 @@ const StatusMatchingPage: React.FC = () => {
         }
         
         setJob(jobDetails as PostJob);
-        setIsConfirmed(true); // For now, assume matches are confirmed
         
-        // Get matching results - use the same as AI matching for now
-        // In a real app, this would fetch the status of confirmed matches from Firestore
-        const matchResults = await matchJobWithWorkers(jobId);
+        // Get matching results from Firestore
+        const matchResults = await getMatchResultsForJob(jobId);
         
-        // Transform match results to status results
-        const statusResults: StatusResult[] = matchResults.map((match, index) => ({
-          id: match.id || `status-${index}`,
-          job_id: jobId,
-          findjob_id: match.workerId || '',
-          status: index % 3 === 0 ? 'accepted' : (index % 3 === 1 ? 'declined' : 'on_queue'),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          name: match.name,
-          gender: match.gender,
-          jobType: match.jobType,
-          date: match.date,
-          time: match.time,
-          location: match.location,
-          salary: match.salary,
-          workerId: match.workerId
-        }));
-        
-        setStatusResults(statusResults);
+        if (matchResults.length > 0) {
+          setIsConfirmed(true);
+          setStatusResults(matchResults);
+        } else {
+          setIsConfirmed(false);
+        }
       } catch (error) {
         console.error("Error fetching status results:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");
@@ -168,7 +153,7 @@ const StatusMatchingPage: React.FC = () => {
               <div className="space-y-8">
                 {statusResults.map((status, index) => (
                   <div key={index} className="border-b border-gray-100 pb-8 last:border-b-0">
-                    <h3 className="font-medium text-lg mb-3">Match No.{index + 1}</h3>
+                    <h3 className="font-medium text-lg mb-1">Match No.{status.priority || index + 1}</h3>
                     <div className="space-y-2 pl-6">
                       <div className="flex items-center gap-2">
                         <span className="text-fastlabor-600">•</span>

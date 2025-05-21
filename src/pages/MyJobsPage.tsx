@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,16 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserPostJobs } from '@/services/jobService';
 import { getUserFindJobs } from '@/services/firestoreService';
-import { getUserMatches, acceptJobMatch, declineJobMatch } from '@/services/matchService';
-import { FindMatch } from '@/types/types';
+import { updateMatchResultStatus } from '@/services/matchingService';
+import { StatusResult } from '@/types/types';
 import { Clipboard, Check, X, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { db } from '@/lib/firebase';
 
 const MyJobsPage: React.FC = () => {
   const { userProfile, userId, userEmail, userFullName } = useAuth();
   const [postJobs, setPostJobs] = useState<any[]>([]);
   const [findJobs, setFindJobs] = useState<any[]>([]);
-  const [matches, setMatches] = useState<FindMatch[]>([]);
+  const [matches, setMatches] = useState<StatusResult[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,11 +62,48 @@ const MyJobsPage: React.FC = () => {
       const userFindJobsData = await getUserFindJobs(userId);
       setFindJobs(userFindJobsData);
       
-      // Fetch job matches filtered by current user's email
-      if (userEmail) {
-        const userMatches = await getUserMatches(userEmail);
-        console.log('Fetched matches for user:', userEmail, userMatches);
-        setMatches(userMatches);
+      // Fetch job matches for this user
+      if (userFindJobsData && userFindJobsData.length > 0) {
+        const findJobIds = userFindJobsData.map(job => job.findjob_id || job.id);
+        
+        const matchResults: StatusResult[] = [];
+        
+        // For each find job, get matches
+        for (const findJobId of findJobIds) {
+          try {
+            const matchResultsRef = collection(db, "match_results");
+            const q = query(matchResultsRef, 
+              where("findjob_id", "==", findJobId),
+              where("status", "==", "on_queue")
+            );
+            
+            const querySnapshot = await getDocs(q);
+            
+            querySnapshot.forEach(doc => {
+              const data = doc.data();
+              matchResults.push({
+                id: doc.id,
+                job_id: data.job_id,
+                findjob_id: data.findjob_id,
+                status: data.status,
+                created_at: data.created_at?.toDate()?.toISOString() || new Date().toISOString(),
+                updated_at: data.updated_at?.toDate()?.toISOString() || new Date().toISOString(),
+                name: `${data.first_name} ${data.last_name}`,
+                gender: data.gender,
+                jobType: data.job_type,
+                date: data.job_date,
+                time: `${data.start_time} - ${data.end_time}`,
+                location: `${data.province}/${data.district}/${data.subdistrict}`,
+                salary: data.job_salary,
+                workerId: data.findjob_id
+              });
+            });
+          } catch (error) {
+            console.error(`Error fetching matches for find job ${findJobId}:`, error);
+          }
+        }
+        
+        setMatches(matchResults);
       }
       
       toast.success("อัปเดตข้อมูลล่าสุด");
@@ -81,24 +119,40 @@ const MyJobsPage: React.FC = () => {
     fetchData();
   };
   
-  const handleAcceptJob = async (findjobId: string, jobId: string) => {
+  const handleAcceptJob = async (matchId: string, jobId: string) => {
     try {
-      await acceptJobMatch(findjobId);
-      toast.success("รับงานสำเร็จ กำลังไปยังหน้ารายละเอียด");
-      // Navigate to new worker job detail page
-      navigate(`/worker/jobs/${jobId}`);
+      // Update the status to accepted
+      const success = await updateMatchResultStatus(matchId, "accepted");
+      
+      if (success) {
+        toast.success("รับงานสำเร็จ กำลังไปยังหน้ารายละเอียด");
+        
+        // Remove this job from the list
+        setMatches(matches.filter(match => match.id !== matchId));
+        
+        // Navigate to worker job detail page
+        navigate(`/worker/jobs/${jobId}`);
+      } else {
+        toast.error("ไม่สามารถรับงานได้ กรุณาลองใหม่อีกครั้ง");
+      }
     } catch (error) {
       console.error("Error accepting job:", error);
       toast.error("ไม่สามารถรับงานได้ กรุณาลองใหม่อีกครั้ง");
     }
   };
   
-  const handleDeclineJob = async (findjobId: string) => {
+  const handleDeclineJob = async (matchId: string) => {
     try {
-      await declineJobMatch(findjobId);
-      // Remove the declined job from the list
-      setMatches(matches.filter(match => match.findjob_id !== findjobId));
-      toast.success("ปฏิเสธงานสำเร็จ");
+      // Update the status to declined
+      const success = await updateMatchResultStatus(matchId, "declined");
+      
+      if (success) {
+        // Remove this job from the list
+        setMatches(matches.filter(match => match.id !== matchId));
+        toast.success("ปฏิเสธงานสำเร็จ");
+      } else {
+        toast.error("ไม่สามารถปฏิเสธงานได้ กรุณาลองใหม่อีกครั้ง");
+      }
     } catch (error) {
       console.error("Error declining job:", error);
       toast.error("ไม่สามารถปฏิเสธงานได้ กรุณาลองใหม่อีกครั้ง");
@@ -300,7 +354,7 @@ const MyJobsPage: React.FC = () => {
                     ) : matches.length > 0 ? (
                       <div className="space-y-4">
                         {matches.map((match) => (
-                          <Card key={match.findjob_id} className="border border-gray-200">
+                          <Card key={match.id} className="border border-gray-200">
                             <CardHeader className="pb-2">
                               <CardTitle className="text-lg font-medium flex justify-between">
                                 <span>Job ID: {match.job_id}</span>
@@ -311,31 +365,23 @@ const MyJobsPage: React.FC = () => {
                               <div className="space-y-2 text-sm">
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">ประเภทงาน:</span>
-                                  <span className="col-span-2">{match.job_type}</span>
+                                  <span className="col-span-2">{match.jobType}</span>
                                 </div>
-                                {match.detail && (
-                                  <div className="grid grid-cols-3 gap-1">
-                                    <span className="font-medium">รายละเอียด:</span>
-                                    <span className="col-span-2">{match.detail}</span>
-                                  </div>
-                                )}
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">วันที่:</span>
-                                  <span className="col-span-2">{match.job_date}</span>
+                                  <span className="col-span-2">{match.date}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">เวลา:</span>
-                                  <span className="col-span-2">{match.start_time} - {match.end_time}</span>
+                                  <span className="col-span-2">{match.time}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">สถานที่:</span>
-                                  <span className="col-span-2">
-                                    {match.province}, {match.district}, {match.subdistrict}
-                                  </span>
+                                  <span className="col-span-2">{match.location}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">ค่าจ้าง:</span>
-                                  <span className="col-span-2">{match.salary} บาท/วัน</span>
+                                  <span className="col-span-2">{match.salary} บาท</span>
                                 </div>
                               </div>
                             </CardContent>
@@ -343,7 +389,7 @@ const MyJobsPage: React.FC = () => {
                               <Button 
                                 variant="destructive" 
                                 size="sm"
-                                onClick={() => handleDeclineJob(match.findjob_id)}
+                                onClick={() => handleDeclineJob(match.id)}
                                 className="text-xs flex items-center gap-1"
                               >
                                 <X size={16} /> ปฏิเสธ
@@ -351,7 +397,7 @@ const MyJobsPage: React.FC = () => {
                               <Button 
                                 className="text-xs bg-green-600 hover:bg-green-700 flex items-center gap-1"
                                 size="sm"
-                                onClick={() => handleAcceptJob(match.findjob_id, match.job_id)}
+                                onClick={() => handleAcceptJob(match.id, match.job_id || '')}
                               >
                                 <Check size={16} /> รับงาน
                               </Button>

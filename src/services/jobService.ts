@@ -1,6 +1,6 @@
 
 import { postJobs } from "@/data/postJobs";
-import { PostJob } from "@/data/types/jobTypes";
+import { PostJob, Job } from "@/types/types";
 import { addPostJob, getUserPostJobs as getFirestoreUserPostJobs } from "./firestoreService";
 
 // Get a job by ID from mock data (for compatibility with existing code)
@@ -9,13 +9,13 @@ export const getJobById = (jobId: string) => {
 };
 
 // Get all jobs from a specific user from mock data (for compatibility)
-export const getUserJobs = (email: string | null) => {
+export const getUserJobs = (email: string | null): Job[] => {
   if (!email) return [];
-  return postJobs.filter(job => job.email === email);
+  return postJobs.filter(job => job.email === email) as Job[];
 };
 
 // Get all jobs from a specific user from Firestore
-export const getUserPostJobs = async (userId: string) => {
+export const getUserPostJobs = async (userId: string): Promise<PostJob[]> => {
   if (!userId) return [];
   try {
     return await getFirestoreUserPostJobs(userId);

@@ -6,9 +6,10 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
-import { matchJobWithWorkers } from '@/services/matchingService';
+import { matchJobWithWorkers, saveMatchResults } from '@/services/matchingService';
 import { confirmMatches } from '@/services/api';
 import { MatchResult, PostJob } from '@/types/types';
 import { BarChart, Check, UserCheck } from 'lucide-react';
@@ -51,15 +52,40 @@ const AIMatchingPage: React.FC = () => {
     fetchData();
   }, [jobId]);
   
+  const handlePriorityChange = (index: number, value: string) => {
+    const priority = parseInt(value);
+    const updatedResults = [...matchingResults];
+    
+    // Find the worker that currently has this priority
+    const currentWorkerIndex = updatedResults.findIndex(w => w.priority === priority);
+    
+    // If found, swap priorities
+    if (currentWorkerIndex !== -1 && currentWorkerIndex !== index) {
+      const currentPriority = updatedResults[index].priority || 0;
+      updatedResults[currentWorkerIndex].priority = currentPriority;
+    }
+    
+    // Set new priority for the selected worker
+    updatedResults[index].priority = priority;
+    
+    setMatchingResults(updatedResults);
+  };
+  
   const handleConfirmMatches = async () => {
     if (!jobId) return;
     
     setConfirming(true);
     try {
-      await confirmMatches(jobId);
-      toast.success("ระบบได้ทำการจับคู่งานเรียบร้อยแล้ว");
-      // Navigate to status page after confirming matches
-      navigate(`/status/${jobId}`);
+      // Save matches to Firestore with priorities
+      const success = await saveMatchResults(jobId, matchingResults);
+      
+      if (success) {
+        toast.success("ระบบได้ทำการจับคู่งานเรียบร้อยแล้ว");
+        // Navigate to status page after confirming matches
+        navigate(`/status/${jobId}`);
+      } else {
+        toast.error("ไม่สามารถบันทึกข้อมูลการจับคู่ได้");
+      }
     } catch (error) {
       console.error("Error confirming matches:", error);
       toast.error("ไม่สามารถยืนยันการจับคู่ได้ กรุณาลองใหม่อีกครั้ง");
@@ -100,7 +126,7 @@ const AIMatchingPage: React.FC = () => {
               <Alert>
                 <UserCheck className="h-4 w-4" />
                 <AlertDescription>
-                  เมื่อกดปุ่มยืนยันการจับคู่ ระบบจะส่งข้อมูลไปยังแรงงาน
+                  เลือกลำดับความสำคัญของแรงงานและกดปุ่มยืนยันการจับคู่ ระบบจะส่งข้อมูลไปยังแรงงาน
                 </AlertDescription>
               </Alert>
             </div>
@@ -118,19 +144,60 @@ const AIMatchingPage: React.FC = () => {
                 <div className="space-y-8">
                   {matchingResults.map((match, index) => (
                     <div key={index} className="border-b border-gray-100 pb-8 last:border-b-0">
-                      <h3 className="font-medium text-lg mb-3">แรงงาน {index + 1}</h3>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-24">
+                          <Select 
+                            value={match.priority?.toString() || (index + 1).toString()}
+                            onValueChange={(value) => handlePriorityChange(index, value)}
+                          >
+                            <SelectTrigger className="w-24">
+                              <SelectValue placeholder="ลำดับ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">ลำดับ 1</SelectItem>
+                              <SelectItem value="2">ลำดับ 2</SelectItem>
+                              <SelectItem value="3">ลำดับ 3</SelectItem>
+                              <SelectItem value="4">ลำดับ 4</SelectItem>
+                              <SelectItem value="5">ลำดับ 5</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <h3 className="font-medium text-lg">แรงงาน {match.name}</h3>
+                      </div>
+                      
                       <div className="space-y-2 pl-6">
-                        {Object.entries(match).map(([key, value]) => {
-                          // Skip internal fields
-                          if (key === "aiScore" || key === "workerId") return null;
-                          
-                          return (
-                            <div key={key} className="flex items-center gap-2">
-                              <span className="text-fastlabor-600">•</span>
-                              <span>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</span>
-                            </div>
-                          );
-                        })}
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Name: {match.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Gender: {match.gender}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Job Type: {match.jobType || match.job_type}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Date: {match.date}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Time: {match.time}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Location: {match.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>Salary: {match.salary}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-fastlabor-600">•</span>
+                          <span>AI Score: {(match.aiScore || 0).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
