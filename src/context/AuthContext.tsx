@@ -28,7 +28,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to login with:", email);
       
-      // Try to find user in both hard-coded array and localStorage
+      // Try to call the login API first
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+          // API login successful
+          setUserEmail(email);
+          const fullName = data.user.fullName || `${data.user.first_name} ${data.user.last_name}`;
+          setUserFullName(fullName);
+          
+          localStorage.setItem("fastlabor_user", email);
+          localStorage.setItem("fastlabor_user_fullname", fullName);
+          
+          console.log("Login successful via API");
+          return true;
+        }
+      } catch (apiError) {
+        console.warn("API login failed, falling back to local authentication:", apiError);
+        // Continue with fallback to local authentication
+      }
+      
+      // Fallback: Try to find user in both hard-coded array and localStorage
       const user = findUserByCredentials(email, password);
       
       // If not found in hard-coded array, check localStorage

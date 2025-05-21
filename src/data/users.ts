@@ -201,8 +201,25 @@ export function addUser(user: User): void {
     localStorage.setItem('fastlabor_users', JSON.stringify(currentUsers));
     console.log("User data saved to localStorage");
     
-    // Additional code to send the data to server would go here in a production app
-    // Example: fetch('/api/users', { method: 'POST', body: JSON.stringify(user) })
+    // API call to the backend to save user data
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        console.log("User registered successfully via API");
+      } else {
+        console.error("API registration failed:", data.message);
+      }
+    })
+    .catch(error => {
+      console.error("Error calling registration API:", error);
+    });
   } catch (error) {
     console.error("Error saving user data:", error);
   }

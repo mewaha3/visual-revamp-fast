@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import { addRowToSheet1 } from '../sheets.mjs';  // ← note .mjs
 import usersRouter from './api/users.js'; // นำเข้า router สำหรับผู้ใช้
+import authRouter from './api/auth.js'; // นำเข้า router สำหรับ authentication
 
 const app = express();
 app.use(cors({
@@ -20,6 +21,9 @@ app.get('/', (req, res) => {
 
 // เพิ่ม endpoint สำหรับดึงข้อมูลผู้ใช้
 app.use('/api/users', usersRouter);
+
+// เพิ่ม endpoint สำหรับ authentication
+app.use('/api/auth', authRouter);
 
 app.post('/sheets', async (req, res) => {
   try {
