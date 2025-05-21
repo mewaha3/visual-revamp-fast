@@ -181,11 +181,15 @@ export function findUserByCredentials(email: string, password: string): User | u
 
 // Helper function to add a new user to the array
 export function addUser(user: User): void {
-  // In a real application, we would save this to a database
-  // For this demo, we'll just log it, but in a real app, we would push to the array
+  // Add to the in-memory array
   users.push({
     ...user,
     fullName: `${user.first_name} ${user.last_name}`
   });
+  
   console.log("New user added:", user);
+  
+  // In a production environment, we would update the JSON and CSV files here
+  // This would typically involve server-side code, which isn't directly available in the client
+  // For now, the user is added to the in-memory array only
 }
