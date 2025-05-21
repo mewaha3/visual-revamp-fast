@@ -4,11 +4,8 @@ import { User } from "@/data/users";
 // Function to add a new user to the Google Sheet
 export async function addUserToSheet(user: User): Promise<boolean> {
   try {
-    // Format user data as an array for the sheet
+    // Format user data as an array for the sheet - match the column headers exactly
     const userData = [
-      user.fullName || `${user.first_name} ${user.last_name}`,
-      user.email,
-      user.password,
       user.first_name,
       user.last_name,
       user.national_id || "",
@@ -20,10 +17,12 @@ export async function addUserToSheet(user: User): Promise<boolean> {
       user.district || "",
       user.subdistrict || "",
       user.zip_code || "",
-      user.certificate || "No",
-      user.passport || "No",
-      user.visa || "No",
-      user.work_permit || "No"
+      user.email,
+      user.password,
+      user.certificate || "No",   // ID Card column
+      user.passport || "No",      // passport column
+      user.visa || "No",          // visa column
+      user.work_permit || "No"    // work_permit column
     ];
 
     // Call the API route to add user to the sheet
@@ -59,24 +58,24 @@ export async function getUsersFromSheet(): Promise<User[]> {
     return data.users.map((row: any) => {
       // Map sheet data to User object based on column positions
       return {
-        fullName: row[0] || "",
-        email: row[1] || "",
-        password: row[2] || "",
-        first_name: row[3] || row[0].split(' ')[0] || "",
-        last_name: row[4] || row[0].split(' ')[1] || "",
-        national_id: row[5] || "",
-        dob: row[6] || "",
-        gender: row[7] || "",
-        nationality: row[8] || "",
-        address: row[9] || "",
-        province: row[10] || "",
-        district: row[11] || "",
-        subdistrict: row[12] || "",
-        zip_code: row[13] || "",
-        certificate: row[14] || "No",
-        passport: row[15] || "No",
-        visa: row[16] || "No",
-        work_permit: row[17] || "No"
+        fullName: `${row[0]} ${row[1]}`, // Combine first_name and last_name
+        first_name: row[0] || "",
+        last_name: row[1] || "",
+        national_id: row[2] || "",
+        dob: row[3] || "",
+        gender: row[4] || "",
+        nationality: row[5] || "",
+        address: row[6] || "",
+        province: row[7] || "",
+        district: row[8] || "",
+        subdistrict: row[9] || "",
+        zip_code: row[10] || "",
+        email: row[11] || "",
+        password: row[12] || "",
+        certificate: row[13] || "No",  // ID Card
+        passport: row[14] || "No",
+        visa: row[15] || "No",
+        work_permit: row[16] || "No"
       };
     });
   } catch (error) {

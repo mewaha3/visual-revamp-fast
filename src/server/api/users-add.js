@@ -12,6 +12,8 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid user data' });
     }
 
+    console.log('Adding user data to sheet:', userData);
+    
     // Add the row to the sheet
     const result = await addRowToSheet1(userData);
     
