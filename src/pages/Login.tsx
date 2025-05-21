@@ -1,11 +1,23 @@
 
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AuthCard from "@/components/auth/AuthCard";
 import LoginForm from "@/components/auth/LoginForm";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
+  const { userEmail } = useAuth();
+  const navigate = useNavigate();
+  
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (userEmail) {
+      navigate('/');
+    }
+  }, [userEmail, navigate]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />

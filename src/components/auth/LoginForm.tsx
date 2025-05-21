@@ -50,14 +50,7 @@ const LoginForm = () => {
       const success = await login(values.email, values.password);
 
       if (success) {
-        toast({
-          title: "เข้าสู่ระบบสำเร็จ",
-          description: "ยินดีต้อนรับกลับมาอีกครั้ง",
-        });
-        // Changed this line to navigate to the home page instead of upload-documents
         navigate("/");
-      } else {
-        setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
       }
     } catch (err) {
       console.error("Login error:", err);

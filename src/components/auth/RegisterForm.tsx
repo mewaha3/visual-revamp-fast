@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -18,7 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { users, addUser, getAllUsers } from "@/data/users";
 import {
   Select,
   SelectContent,
@@ -34,6 +32,12 @@ import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import useThailandLocations from "@/hooks/useThailandLocations";
 import { nationalities } from "@/data/nationalities";
+
+// Firebase imports
+import { auth, createUserWithEmailAndPassword } from "@/lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { db, storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // Define form validation schema
 const formSchema = z.object({
@@ -131,30 +135,51 @@ const RegisterForm = () => {
     setDocuments(prev => ({ ...prev, [type]: file }));
   };
 
+  // Function to upload a document to Firebase Storage
+  const uploadDocument = async (file: File | null, uid: string, docType: string): Promise<string | null> => {
+    if (!file) return null;
+    
+    try {
+      const fileExtension = file.name.split('.').pop();
+      const storageRef = ref(storage, `users/${uid}/${docType}.${fileExtension}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      console.error(`Error uploading ${docType}:`, error);
+      return null;
+    }
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setErrorMessage(null);
     
     try {
-      // Check if email already exists - use getAllUsers() to include localStorage users
-      const allUsers = getAllUsers();
-      const emailExists = allUsers.some(user => user.email === values.email);
+      // Register the user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
       
-      if (emailExists) {
-        setErrorMessage("อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น");
-        setIsSubmitting(false);
-        return;
-      }
+      // Get the user ID from Firebase Auth
+      const uid = userCredential.user.uid;
       
       // Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
       
-      // Create the new user object with all required fields explicitly set
-      const newUser = {
+      // Upload documents to Firebase Storage and get download URLs
+      const certificateURL = await uploadDocument(documents.certificate, uid, "idcard");
+      const passportURL = await uploadDocument(documents.passport, uid, "passport");
+      const visaURL = await uploadDocument(documents.visa, uid, "visa");
+      const workPermitURL = await uploadDocument(documents.work_permit, uid, "workpermit");
+      
+      // Create the user document in Firestore
+      await setDoc(doc(db, "users", uid), {
         first_name: values.first_name,
         last_name: values.last_name,
-        email: values.email,
-        password: values.password,
+        fullName: `${values.first_name} ${values.last_name}`,
         national_id: values.national_id,
         dob: formattedDate,
         gender: values.gender,
@@ -164,18 +189,13 @@ const RegisterForm = () => {
         district: values.district,
         subdistrict: values.subdistrict,
         zip_code: values.zip_code,
-        certificate: documents.certificate ? documents.certificate.name : "No",
-        passport: documents.passport ? documents.passport.name : "No",
-        visa: documents.visa ? documents.visa.name : "No",
-        work_permit: documents.work_permit ? documents.work_permit.name : "No",
-        fullName: `${values.first_name} ${values.last_name}`
-      };
-      
-      // Add the new user to the users array using the addUser function
-      addUser(newUser);
-      
-      // Log the new user for debugging purposes
-      console.log("New user registered:", newUser);
+        email: values.email,
+        certificate: certificateURL || "No",
+        passport: passportURL || "No",
+        visa: visaURL || "No",
+        work_permit: workPermitURL || "No",
+        createdAt: new Date().toISOString(),
+      });
       
       toast({
         title: "ลงทะเบียนสำเร็จ",
@@ -186,7 +206,27 @@ const RegisterForm = () => {
       navigate("/login");
     } catch (err: any) {
       console.error("Registration error:", err);
-      setErrorMessage(err.message || "เกิดข้อผิดพลาดในการลงทะเบียน โปรดลองอีกครั้ง");
+      
+      let errorMsg = "เกิดข้อผิดพลาดในการลงทะเบียน โปรดลองอีกครั้ง";
+      
+      // Handle specific Firebase auth errors
+      if (err.code === 'auth/email-already-in-use') {
+        errorMsg = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
+      } else if (err.code === 'auth/invalid-email') {
+        errorMsg = "รูปแบบอีเมลไม่ถูกต้อง";
+      } else if (err.code === 'auth/weak-password') {
+        errorMsg = "รหัสผ่านไม่ปลอดภัย กรุณาใช้รหัสผ่านที่มีความซับซ้อนมากขึ้น";
+      } else if (err.code === 'auth/operation-not-allowed') {
+        errorMsg = "การลงทะเบียนถูกปิดใช้งานชั่วคราว กรุณาติดต่อผู้ดูแลระบบ";
+      }
+      
+      setErrorMessage(errorMsg);
+      
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: errorMsg,
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

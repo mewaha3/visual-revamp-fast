@@ -1,11 +1,19 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { findUserByCredentials, User, getAllUsers } from "../data/users";
+import { 
+  auth, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  signOut as firebaseSignOut
+} from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextType {
   userEmail: string | null;
   userFullName: string | null;
+  userId: string | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -15,128 +23,119 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // restore from localStorage on mount
+  // Monitor auth state
   useEffect(() => {
-    const savedEmail = localStorage.getItem("fastlabor_user");
-    const savedFullName = localStorage.getItem("fastlabor_user_fullname");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        console.log("User is signed in:", user.uid);
+        setUserEmail(user.email);
+        setUserId(user.uid);
+        
+        // Get user data from Firestore
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
+            setUserFullName(fullName);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        setUserEmail(null);
+        setUserFullName(null);
+        setUserId(null);
+      }
+    });
     
-    if (savedEmail) setUserEmail(savedEmail);
-    if (savedFullName) setUserFullName(savedFullName);
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   async function login(email: string, password: string): Promise<boolean> {
     try {
       console.log("Attempting to login with:", email);
       
-      // Try to call the login API first
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        
-        const data = await response.json();
-        console.log("API login response:", data);
-        
-        if (response.ok && data.success) {
-          // API login successful
-          setUserEmail(email);
-          const fullName = data.user.fullName || `${data.user.first_name} ${data.user.last_name}`;
-          setUserFullName(fullName);
-          
-          localStorage.setItem("fastlabor_user", email);
-          localStorage.setItem("fastlabor_user_fullname", fullName);
-          
-          console.log("Login successful via API");
-          toast({
-            title: "เข้าสู่ระบบสำเร็จ",
-            description: "ยินดีต้อนรับกลับมา",
-          });
-          return true;
-        } else if (!response.ok) {
-          console.log("API login failed with status:", response.status);
-          // Continue with fallback only if API returned an error
-        }
-      } catch (apiError) {
-        console.warn("API login failed, falling back to local authentication:", apiError);
-        // Continue with fallback to local authentication
-      }
+      // Sign in with Firebase authentication
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
-      // Fallback: Try to find user in both hard-coded array and localStorage
-      const user = findUserByCredentials(email, password);
+      console.log("Login successful:", user.uid);
       
-      // If not found in hard-coded array, check localStorage
-      if (!user) {
-        const allUsers = getAllUsers();
-        const localUser = allUsers.find(u => u.email === email && u.password === password);
-        
-        if (localUser) {
-          setUserEmail(email);
-          const fullName = localUser.fullName || `${localUser.first_name} ${localUser.last_name}` || email;
-          setUserFullName(fullName);
-          
-          localStorage.setItem("fastlabor_user", email);
-          localStorage.setItem("fastlabor_user_fullname", fullName);
-          
-          toast({
-            title: "เข้าสู่ระบบสำเร็จ",
-            description: "ยินดีต้อนรับกลับมา",
-          });
-          return true;
-        }
-        return false;
-      }
+      // Get user data from Firestore
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
       
-      console.log("Login match found:", user ? "Yes" : "No");
-      
-      if (user) {
-        setUserEmail(email);
-        
-        // ดึงชื่อเต็มจากข้อมูลผู้ใช้
-        const fullName = user.fullName || `${user.first_name} ${user.last_name}` || email;
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
         setUserFullName(fullName);
-        
-        localStorage.setItem("fastlabor_user", email);
-        localStorage.setItem("fastlabor_user_fullname", fullName);
-        
-        toast({
-          title: "เข้าสู่ระบบสำเร็จ",
-          description: "ยินดีต้อนรับกลับมา",
-        });
-        return true;
       }
-      return false;
-    } catch (error) {
+      
+      toast({
+        title: "เข้าสู่ระบบสำเร็จ",
+        description: "ยินดีต้อนรับกลับมา",
+      });
+      
+      return true;
+    } catch (error: any) {
       console.error("Login error:", error);
+      
+      let errorMessage = "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง";
+      
+      // Handle specific Firebase auth errors
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        errorMessage = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = "คุณพยายามเข้าสู่ระบบมากเกินไป กรุณาลองใหม่ในภายหลัง";
+      } else if (error.code === 'auth/user-disabled') {
+        errorMessage = "บัญชีนี้ถูกระงับการใช้งาน";
+      } else if (error.code === 'auth/invalid-credential') {
+        errorMessage = "ข้อมูลการเข้าสู่ระบบไม่ถูกต้อง";
+      }
+      
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถเข้าสู่ระบบได้ กรุณาลองใหม่อีกครั้ง",
+        description: errorMessage,
         variant: "destructive",
       });
+      
       return false;
     }
   }
 
-  function logout(): void {
-    setUserEmail(null);
-    setUserFullName(null);
-    localStorage.removeItem("fastlabor_user");
-    localStorage.removeItem("fastlabor_user_fullname");
-    toast({
-      title: "ออกจากระบบสำเร็จ",
-      description: "คุณได้ออกจากระบบแล้ว",
-    });
-    // Redirect to homepage after logout
-    window.location.href = '/';
+  async function logout(): Promise<void> {
+    try {
+      await firebaseSignOut(auth);
+      setUserEmail(null);
+      setUserFullName(null);
+      setUserId(null);
+      
+      toast({
+        title: "ออกจากระบบสำเร็จ",
+        description: "คุณได้ออกจากระบบแล้ว",
+      });
+      
+      // Redirect to homepage after logout
+      window.location.href = '/';
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถออกจากระบบได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ userEmail, userFullName, login, logout }}>
+    <AuthContext.Provider value={{ userEmail, userFullName, userId, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
