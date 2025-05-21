@@ -157,26 +157,27 @@ const RegisterForm = () => {
     setErrorMessage(null);
     
     try {
-      // Register the user with Firebase Authentication
+      // Step 1: Register the user with Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
         values.password
       );
       
-      // Get the user ID from Firebase Auth
+      // Step 2: Get the user ID from Firebase Auth
       const uid = userCredential.user.uid;
       
-      // Format the date to string for storing
+      // Step 3: Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
       
-      // Upload documents to Firebase Storage and get download URLs
+      // Step 4: Upload documents to Firebase Storage and get download URLs
       const certificateURL = await uploadDocument(documents.certificate, uid, "idcard");
       const passportURL = await uploadDocument(documents.passport, uid, "passport");
       const visaURL = await uploadDocument(documents.visa, uid, "visa");
       const workPermitURL = await uploadDocument(documents.work_permit, uid, "workpermit");
       
-      // Create the user document in Firestore with all profile fields
+      // Step 5: Create the user document in Firestore using user.uid as the document ID
+      // IMPORTANT: We do NOT save the password in Firestore for security
       const userDocRef = doc(db, "users", uid);
       await setDoc(userDocRef, {
         first_name: values.first_name,
@@ -192,10 +193,12 @@ const RegisterForm = () => {
         subdistrict: values.subdistrict,
         zip_code: values.zip_code,
         email: values.email,
-        certificate: certificateURL || "No",
-        passport: passportURL || "No",
-        visa: visaURL || "No",
-        work_permit: workPermitURL || "No",
+        // Document URLs
+        certificate: certificateURL || null,
+        passport: passportURL || null,
+        visa: visaURL || null,
+        work_permit: workPermitURL || null,
+        // Metadata
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         role: "user", // Default role for registered users
@@ -223,6 +226,10 @@ const RegisterForm = () => {
         errorMsg = "รหัสผ่านไม่ปลอดภัย กรุณาใช้รหัสผ่านที่มีความซับซ้อนมากขึ้น";
       } else if (err.code === 'auth/operation-not-allowed') {
         errorMsg = "การลงทะเบียนถูกปิดใช้งานชั่วคราว กรุณาติดต่อผู้ดูแลระบบ";
+      } else if (err.code === 'auth/network-request-failed') {
+        errorMsg = "เกิดปัญหาในการเชื่อมต่อเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต";
+      } else if (err.code === 'firestore/permission-denied') {
+        errorMsg = "คุณไม่มีสิทธิ์ในการเข้าถึงข้อมูล กรุณาติดต่อผู้ดูแลระบบ";
       }
       
       setErrorMessage(errorMsg);
