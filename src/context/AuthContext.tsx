@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { findUserByCredentials, User } from "../data/users";
+import { findUserByCredentials, User, getAllUsers } from "../data/users";
 
 interface AuthContextType {
   userEmail: string | null;
@@ -28,8 +28,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Attempting to login with:", email);
       
-      // ค้นหาผู้ใช้จากข้อมูลในไฟล์ users.ts แทนการดึงจาก Google Sheets
+      // Try to find user in both hard-coded array and localStorage
       const user = findUserByCredentials(email, password);
+      
+      // If not found in hard-coded array, check localStorage
+      if (!user) {
+        const allUsers = getAllUsers();
+        const localUser = allUsers.find(u => u.email === email && u.password === password);
+        
+        if (localUser) {
+          setUserEmail(email);
+          const fullName = localUser.fullName || `${localUser.first_name} ${localUser.last_name}` || email;
+          setUserFullName(fullName);
+          
+          localStorage.setItem("fastlabor_user", email);
+          localStorage.setItem("fastlabor_user_fullname", fullName);
+          return true;
+        }
+        return false;
+      }
       
       console.log("Login match found:", user ? "Yes" : "No");
       

@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { users, addUser } from "@/data/users";
+import { users, addUser, getAllUsers } from "@/data/users";
 import {
   Select,
   SelectContent,
@@ -136,8 +136,9 @@ const RegisterForm = () => {
     setErrorMessage(null);
     
     try {
-      // Check if email already exists
-      const emailExists = users.some(user => user.email === values.email);
+      // Check if email already exists - use getAllUsers() to include localStorage users
+      const allUsers = getAllUsers();
+      const emailExists = allUsers.some(user => user.email === values.email);
       
       if (emailExists) {
         setErrorMessage("อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น");

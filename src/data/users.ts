@@ -189,7 +189,32 @@ export function addUser(user: User): void {
   
   console.log("New user added:", user);
   
-  // In a production environment, we would update the JSON and CSV files here
-  // This would typically involve server-side code, which isn't directly available in the client
-  // For now, the user is added to the in-memory array only
+  // Update JSON file
+  try {
+    // In a browser environment, we need to use localStorage as a temporary solution
+    // since direct file system access is not available
+    const currentUsers = JSON.parse(localStorage.getItem('fastlabor_users') || '[]');
+    currentUsers.push({
+      ...user,
+      fullName: `${user.first_name} ${user.last_name}`
+    });
+    localStorage.setItem('fastlabor_users', JSON.stringify(currentUsers));
+    console.log("User data saved to localStorage");
+    
+    // Additional code to send the data to server would go here in a production app
+    // Example: fetch('/api/users', { method: 'POST', body: JSON.stringify(user) })
+  } catch (error) {
+    console.error("Error saving user data:", error);
+  }
+}
+
+// Function to get all registered users (including those from localStorage)
+export function getAllUsers(): User[] {
+  try {
+    const localUsers = JSON.parse(localStorage.getItem('fastlabor_users') || '[]');
+    return [...users, ...localUsers];
+  } catch (error) {
+    console.error("Error loading users from localStorage:", error);
+    return users;
+  }
 }
