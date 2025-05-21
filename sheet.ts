@@ -1,4 +1,3 @@
-
 // sheets.ts
 import { readFile } from 'fs/promises'
 import { google } from 'googleapis'
@@ -26,4 +25,3 @@ export async function addRowToSheet1(row: any[]) {
   })
   return res.data.updates
 }
-
