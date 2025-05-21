@@ -1,18 +1,18 @@
 
 export interface FindJob {
     id: string;
-    name: string;
+    name?: string; // เพิ่ม name เป็น optional เพื่อแก้ไขปัญหาใน matchMocks
     job_type: string;
     province: string;
     district: string;
     subdistrict: string;
-    gender: string; // Updated to accept any string value
+    gender: string;
     detail: string;
     address: string;
     salary_type: string;
-    expected_salary: number;
+    expected_salary: string | number; // แก้ type เป็น union type เพื่อรองรับทั้ง string และ number
     start_date: string;
-    available_days: string[];
+    available_days: string | string[]; // แก้ type เป็น union type เพื่อรองรับทั้ง string และ string[]
     start_time: string;
     end_time: string;
     // Add additional fields that were causing type errors in other files
@@ -26,11 +26,14 @@ export interface FindJob {
     range_salary?: number;
     job_address?: string;
     zip_code?: string;
+    phone?: string; // เพิ่มเพื่อรองรับ MatchResult
+    score?: number; // เพิ่มเพื่อรองรับ MatchResult
+    aiScore?: number; // เพิ่มเพื่อรองรับ matching data
 }
 
 // Update PostJob interface with both id and job_id properties
 export interface PostJob {
-    id: string; // Required property to fix TypeScript errors
+    id?: string; // เปลี่ยนเป็น optional เพื่อให้สามารถสร้าง object ที่ยังไม่มี id ได้
     job_type: string;
     job_detail: string;
     job_date: string;
@@ -47,5 +50,5 @@ export interface PostJob {
     subdistrict: string;
     zip_code: string;
     status?: string;
-    job_id?: string; // Added to fix type errors
+    job_id?: string; // คงไว้เพื่อรองรับ data ที่มีอยู่แล้ว
 }
