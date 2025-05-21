@@ -14,8 +14,33 @@ interface AuthContextType {
   userEmail: string | null;
   userFullName: string | null;
   userId: string | null;
+  userProfile: UserProfile | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+}
+
+interface UserProfile {
+  first_name: string;
+  last_name: string;
+  fullName: string;
+  email: string;
+  national_id?: string;
+  dob?: string;
+  gender?: string;
+  nationality?: string;
+  address?: string;
+  province?: string;
+  district?: string;
+  subdistrict?: string;
+  zip_code?: string;
+  certificate?: string;
+  passport?: string;
+  visa?: string;
+  work_permit?: string;
+  role?: string;
+  createdAt?: string;
+  [key: string]: any; // For any additional fields
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -24,33 +49,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   // Monitor auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        console.log("User is signed in:", user.uid);
-        setUserEmail(user.email);
-        setUserId(user.uid);
-        
-        // Get user data from Firestore
-        try {
+      setIsLoading(true);
+      try {
+        if (user) {
+          console.log("User is signed in:", user.uid);
+          setUserEmail(user.email);
+          setUserId(user.uid);
+          
+          // Get user data from Firestore
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
           
           if (docSnap.exists()) {
-            const userData = docSnap.data();
-            const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
-            setUserFullName(fullName);
+            const userData = docSnap.data() as UserProfile;
+            setUserFullName(userData.fullName || `${userData.first_name} ${userData.last_name}`);
+            setUserProfile(userData);
+          } else {
+            console.warn("No user document found in Firestore for:", user.uid);
+            setUserFullName(null);
+            setUserProfile(null);
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error);
+        } else {
+          setUserEmail(null);
+          setUserFullName(null);
+          setUserId(null);
+          setUserProfile(null);
         }
-      } else {
-        setUserEmail(null);
-        setUserFullName(null);
-        setUserId(null);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
       }
     });
     
@@ -59,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string): Promise<boolean> {
+    setIsLoading(true);
     try {
       console.log("Attempting to login with:", email);
       
@@ -73,9 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const docSnap = await getDoc(docRef);
       
       if (docSnap.exists()) {
-        const userData = docSnap.data();
-        const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
-        setUserFullName(fullName);
+        const userData = docSnap.data() as UserProfile;
+        setUserFullName(userData.fullName || `${userData.first_name} ${userData.last_name}`);
+        setUserProfile(userData);
+      } else {
+        console.warn("No user document found in Firestore");
       }
       
       toast({
@@ -107,6 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       return false;
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -116,6 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserEmail(null);
       setUserFullName(null);
       setUserId(null);
+      setUserProfile(null);
       
       toast({
         title: "ออกจากระบบสำเร็จ",
@@ -135,7 +176,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ userEmail, userFullName, userId, login, logout }}>
+    <AuthContext.Provider value={{ 
+      userEmail, 
+      userFullName, 
+      userId, 
+      userProfile,
+      isLoading,
+      login, 
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );

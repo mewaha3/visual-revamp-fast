@@ -14,11 +14,20 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
   const [showConsent, setShowConsent] = useState(true);
   const [isConsented, setIsConsented] = useState(false);
+  const { userEmail, isLoading } = useAuth();
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (!isLoading && userEmail) {
+      navigate('/');
+    }
+  }, [userEmail, navigate, isLoading]);
 
   const handleConsent = () => {
     if (isConsented) {
@@ -30,6 +39,22 @@ const Register = () => {
     // Redirect to home page if user declines
     navigate('/');
   };
+  
+  // Don't render content until authentication state is determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow py-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fastlabor-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">กำลังตรวจสอบข้อมูลผู้ใช้...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

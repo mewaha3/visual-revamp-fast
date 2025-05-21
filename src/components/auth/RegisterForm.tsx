@@ -141,7 +141,7 @@ const RegisterForm = () => {
     
     try {
       const fileExtension = file.name.split('.').pop();
-      const storageRef = ref(storage, `users/${uid}/${docType}.${fileExtension}`);
+      const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
       await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
@@ -175,8 +175,9 @@ const RegisterForm = () => {
       const visaURL = await uploadDocument(documents.visa, uid, "visa");
       const workPermitURL = await uploadDocument(documents.work_permit, uid, "workpermit");
       
-      // Create the user document in Firestore
-      await setDoc(doc(db, "users", uid), {
+      // Create the user document in Firestore with all profile fields
+      const userDocRef = doc(db, "users", uid);
+      await setDoc(userDocRef, {
         first_name: values.first_name,
         last_name: values.last_name,
         fullName: `${values.first_name} ${values.last_name}`,
@@ -195,15 +196,16 @@ const RegisterForm = () => {
         visa: visaURL || "No",
         work_permit: workPermitURL || "No",
         createdAt: new Date().toISOString(),
+        role: "user", // Default role for registered users
       });
       
       toast({
         title: "ลงทะเบียนสำเร็จ",
-        description: "กรุณาเข้าสู่ระบบด้วยบัญชีที่สร้างขึ้น",
+        description: "บัญชีผู้ใช้ถูกสร้างเรียบร้อยแล้ว",
       });
 
-      // Redirect to login page after successful registration
-      navigate("/login");
+      // Redirect to home page after successful registration
+      navigate("/");
     } catch (err: any) {
       console.error("Registration error:", err);
       

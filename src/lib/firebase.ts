@@ -6,10 +6,31 @@ import {
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  signOut
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  User
 } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { 
+  getFirestore, 
+  collection, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  query, 
+  where, 
+  getDocs, 
+  serverTimestamp,
+  DocumentData
+} from "firebase/firestore";
+import { 
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCfgHWEJjpI5J5vvXRlpBtvp7xk8mF2HOc",
@@ -29,10 +50,60 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// Helper function to get user profile data
+export async function getUserProfile(userId: string): Promise<DocumentData | null> {
+  try {
+    const docRef = doc(db, "users", userId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log("No such document!");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error getting user profile:", error);
+    return null;
+  }
+}
+
+// Helper function to update user profile data
+export async function updateUserProfile(userId: string, data: Partial<DocumentData>): Promise<boolean> {
+  try {
+    const docRef = doc(db, "users", userId);
+    await updateDoc(docRef, {
+      ...data,
+      updatedAt: serverTimestamp()
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return false;
+  }
+}
+
 // Export auth functions for easier use
 export {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  signOut
+  signOut,
+  sendPasswordResetEmail,
+  updateProfile,
+  // Firestore exports
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+  // Storage exports
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject
 };
