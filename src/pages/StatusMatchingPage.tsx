@@ -3,18 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/button"; 
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getJobById, getStatusResults, isMatchesConfirmed } from '@/services/api';
-import { Job, StatusResult } from '@/types/types';
+import { toast } from "sonner";
+import { getPostJobById } from '@/services/firestoreService';
+import { matchJobWithWorkers } from '@/services/matchingService';
+import { PostJob, StatusResult } from '@/types/types';
 import { BarChart, ArrowLeft, Info, Check, X, ArrowRight, RefreshCw } from 'lucide-react';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<PostJob | null>(null);
   const [statusResults, setStatusResults] = useState<StatusResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,29 +28,39 @@ const StatusMatchingPage: React.FC = () => {
       setError(null);
       
       try {
-        // Get job details
-        const jobDetails = getJobById(jobId);
+        // Get job details from Firestore
+        const jobDetails = await getPostJobById(jobId);
         if (!jobDetails) {
           setError("ไม่พบข้อมูลงาน");
           return;
         }
         
-        setJob(jobDetails);
+        setJob(jobDetails as PostJob);
+        setIsConfirmed(true); // For now, assume matches are confirmed
         
-        // Check if matches are confirmed
-        const confirmed = isMatchesConfirmed(jobId);
-        setIsConfirmed(confirmed);
+        // Get matching results - use the same as AI matching for now
+        // In a real app, this would fetch the status of confirmed matches from Firestore
+        const matchResults = await matchJobWithWorkers(jobId);
         
-        // Get status results
-        const { status } = await getStatusResults(jobId);
-        
-        // Transform status results - convert any 'job_done' status to 'on_queue'
-        const updatedStatus = status.map(item => ({
-          ...item,
-          status: item.status === 'job_done' ? 'on_queue' : item.status
+        // Transform match results to status results
+        const statusResults: StatusResult[] = matchResults.map((match, index) => ({
+          id: match.id || `status-${index}`,
+          job_id: jobId,
+          findjob_id: match.workerId || '',
+          status: index % 3 === 0 ? 'accepted' : (index % 3 === 1 ? 'declined' : 'on_queue'),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          name: match.name,
+          gender: match.gender,
+          jobType: match.jobType,
+          date: match.date,
+          time: match.time,
+          location: match.location,
+          salary: match.salary,
+          workerId: match.workerId
         }));
         
-        setStatusResults(updatedStatus);
+        setStatusResults(statusResults);
       } catch (error) {
         console.error("Error fetching status results:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");

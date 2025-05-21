@@ -4,18 +4,19 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "@/components/ui/use-toast";
-import { getJobById, getMatchingResults, confirmMatches } from '@/services/api';
-import { Job, MatchResult } from '@/types/types';
+import { toast } from "sonner";
+import { getPostJobById } from '@/services/firestoreService';
+import { matchJobWithWorkers } from '@/services/matchingService';
+import { confirmMatches } from '@/services/api';
+import { MatchResult, PostJob } from '@/types/types';
 import { BarChart, Check, UserCheck } from 'lucide-react';
 
 const AIMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<PostJob | null>(null);
   const [matchingResults, setMatchingResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
@@ -24,16 +25,24 @@ const AIMatchingPage: React.FC = () => {
     const fetchData = async () => {
       if (!jobId) return;
       
-      // Get job details
-      const jobDetails = getJobById(jobId);
-      setJob(jobDetails);
+      setLoading(true);
       
-      // Get matching results
       try {
-        const { matches } = await getMatchingResults(jobId);
-        setMatchingResults(matches);
+        // Get job details from Firestore
+        const jobDetails = await getPostJobById(jobId);
+        if (jobDetails) {
+          setJob(jobDetails as PostJob);
+          
+          // Get matching results from Firestore using the matcher
+          const matches = await matchJobWithWorkers(jobId);
+          console.log("Matching results:", matches);
+          setMatchingResults(matches);
+        } else {
+          console.error("No job found with ID:", jobId);
+        }
       } catch (error) {
         console.error("Error fetching matching results:", error);
+        toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล");
       } finally {
         setLoading(false);
       }
@@ -48,20 +57,12 @@ const AIMatchingPage: React.FC = () => {
     setConfirming(true);
     try {
       await confirmMatches(jobId);
-      toast({
-        variant: "default",
-        title: "จับคู่งานสำเร็จ",
-        description: "ระบบได้ทำการจับคู่งานเรียบร้อยแล้ว",
-      });
+      toast.success("ระบบได้ทำการจับคู่งานเรียบร้อยแล้ว");
       // Navigate to status page after confirming matches
       navigate(`/status/${jobId}`);
     } catch (error) {
       console.error("Error confirming matches:", error);
-      toast({
-        variant: "destructive",
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถยืนยันการจับคู่ได้ กรุณาลองใหม่อีกครั้ง",
-      });
+      toast.error("ไม่สามารถยืนยันการจับคู่ได้ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setConfirming(false);
     }
@@ -120,8 +121,8 @@ const AIMatchingPage: React.FC = () => {
                       <h3 className="font-medium text-lg mb-3">แรงงาน {index + 1}</h3>
                       <div className="space-y-2 pl-6">
                         {Object.entries(match).map(([key, value]) => {
-                          // Skip aiScore as we don't want to show it
-                          if (key === "aiScore") return null;
+                          // Skip internal fields
+                          if (key === "aiScore" || key === "workerId") return null;
                           
                           return (
                             <div key={key} className="flex items-center gap-2">

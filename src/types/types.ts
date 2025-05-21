@@ -1,23 +1,23 @@
-
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
 export interface FindJob {
     id: string;
-    name: string;
+    name?: string; // Added as optional to fix errors in matchMocks
     job_type: string;
     province: string;
     district: string;
     subdistrict: string;
-    gender: string; // Changed from the enum to string to fix TypeScript error
-    detail: string;
-    address: string;
-    salary_type: string;
-    expected_salary: number;
-    start_date: string;
-    available_days: string[];
+    gender: string;
+    detail?: string;
+    address?: string;
+    salary_type?: string;
+    expected_salary?: string | number; // Support both types
+    start_date?: string;
+    available_days?: string | string[]; // Support both types
     start_time: string;
     end_time: string;
+    // Additional fields for compatibility
     findjob_id?: string;
     first_name?: string;
     last_name?: string;
@@ -28,6 +28,31 @@ export interface FindJob {
     range_salary?: number;
     job_address?: string;
     zip_code?: string;
+    phone?: string; // For MatchResult
+    score?: number; // For MatchResult
+    aiScore?: number; // For matching data
+}
+
+// Update PostJob interface to make id optional
+export interface PostJob {
+    id?: string; // Optional to allow creation of new jobs
+    job_id?: string; // Added for compatibility
+    job_type: string;
+    job_detail: string;
+    job_date: string;
+    start_time: string;
+    end_time: string;
+    job_address: string;
+    salary: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+    province: string;
+    district: string;
+    subdistrict: string;
+    zip_code: string;
+    status?: string;
 }
 
 // Keep other interfaces unchanged
@@ -62,9 +87,10 @@ export const JOB_TYPES = [
   { value: "other", label: "อื่นๆ", icon: "file-text" },
 ];
 
-// Update JobDetail interface to include job_id
+// Update JobDetail interface to include job_id and name
 export interface JobDetail {
   id: string;
+  job_id?: string;
   job_type: string;
   job_detail: string;
   job_date: string;
@@ -78,7 +104,7 @@ export interface JobDetail {
   status?: string;
   findjob_id?: string;
   detail?: string;
-  job_id?: string; // Add job_id to fix type errors
+  name?: string; // Add name to fix type errors in matchMocks
 }
 
 // Update Employer interface with required fields
@@ -96,61 +122,49 @@ export interface Employer {
 
 export interface Job {
   id: string;
+  job_id?: string;
   job_type: string;
-  job_detail: string;
+  job_detail?: string;
   job_date: string;
   start_time: string;
   end_time: string;
-  job_address: string;
-  salary: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
+  job_address?: string;
+  salary?: number;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  gender?: string;
   province: string;
   district: string;
   subdistrict: string;
-  zip_code: string;
+  zip_code?: string;
   status?: string;
-  job_id?: string;
-}
-
-export interface PostJob {
-  id: string;
-  job_type: string;
-  job_detail: string;
-  job_date: string;
-  start_time: string;
-  end_time: string;
-  job_address: string;
-  salary: number;
-  email: string;
-  first_name: string;
-  last_name: string;
-  gender: string;
-  province: string;
-  district: string;
-  subdistrict: string;
-  zip_code: string;
-  status?: string;
-  job_id?: string;
 }
 
 export interface MatchResult {
-  id: string;
-  score: number;
-  job_id: string;
-  findjob_id: string;
-  job_type: string;
-  job_detail: string;
-  findjob_name: string;
-  findjob_gender: string;
-  job_date: string;
-  day_match: boolean;
-  time_match: boolean;
-  location_match: boolean;
-  province_match: boolean;
-  province: string;
+  id?: string;
+  name?: string; 
+  gender?: string;
+  jobType?: string;
+  job_type?: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  salary?: number | string;
+  aiScore?: number;
+  score?: number;
+  job_id?: string;
+  findjob_id?: string;
+  job_detail?: string;
+  findjob_name?: string;
+  findjob_gender?: string;
+  job_date?: string;
+  day_match?: boolean;
+  time_match?: boolean;
+  location_match?: boolean;
+  province_match?: boolean;
+  province?: string;
+  workerId?: string;
 }
 
 export interface StatusResult {
@@ -166,6 +180,6 @@ export interface StatusResult {
   date?: string;
   time?: string;
   location?: string;
-  salary?: string;
+  salary?: string | number;
   workerId?: string;
 }

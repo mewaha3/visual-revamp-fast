@@ -1,6 +1,6 @@
 
-import { postJobs } from "@/data/postJobs";
-import { findJobs } from "@/data/findJobs";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { MatchResult } from "@/types/types";
 import { 
   calculateStringSimilarity, 
@@ -9,7 +9,7 @@ import {
   calculateDateMatch, 
   calculateSalaryMatch 
 } from '@/utils/matchingUtils';
-import { matchedWorkers } from './workerService';
+import { getPostJobById } from './firestoreService';
 
 // ฟังก์ชันคำนวณคะแนนรวมสำหรับการจับคู่
 export const calculateMatchingScore = (job: any, worker: any): number => {
@@ -59,30 +59,63 @@ export const calculateMatchingScore = (job: any, worker: any): number => {
   return finalScore;
 };
 
-// ฟังก์ชันสำหรับการจับคู่งานและพนักงาน
-export const matchJobWithWorkers = (jobId: string): MatchResult[] => {
-  // หางานจาก ID
-  const job = postJobs.find(job => job.job_id === jobId);
-  if (!job) {
+// ฟังก์ชันสำหรับการจับคู่งานและพนักงาน จาก Firestore
+export const matchJobWithWorkers = async (jobId: string): Promise<MatchResult[]> => {
+  try {
+    // หางานจาก ID ใน Firestore
+    const job = await getPostJobById(jobId);
+    if (!job) {
+      console.error("Job not found with ID:", jobId);
+      return [];
+    }
+    
+    console.log("Found job:", job);
+    
+    // ดึงข้อมูลพนักงานที่ต้องการหางานทั้งหมดจาก Firestore
+    const findJobsRef = collection(db, "find_jobs");
+    const findJobsSnapshot = await getDocs(findJobsRef);
+    
+    if (findJobsSnapshot.empty) {
+      console.log("No find_jobs documents found");
+      return [];
+    }
+    
+    const findJobs: any[] = [];
+    findJobsSnapshot.forEach((doc) => {
+      findJobs.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    console.log("Found find_jobs:", findJobs.length);
+    
+    // คำนวณคะแนนสำหรับแต่ละพนักงาน
+    const matchResults = await Promise.all(findJobs.map(async (worker) => {
+      const score = calculateMatchingScore(job, worker);
+      
+      // สร้าง full name จาก first_name และ last_name
+      const fullName = `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
+      
+      return {
+        name: fullName,
+        gender: worker.gender || 'ไม่ระบุ',
+        jobType: worker.job_type || 'ไม่ระบุ',
+        date: worker.job_date || 'ไม่ระบุ',
+        time: `${worker.start_time || '00:00'} - ${worker.end_time || '00:00'}`,
+        location: `${worker.province || ''}/${worker.district || ''}/${worker.subdistrict || ''}`,
+        salary: worker.start_salary || 0,
+        aiScore: score,
+        workerId: worker.findjob_id || worker.id // ใช้ findjob_id ถ้ามี ไม่งั้นใช้ doc ID
+      };
+    }));
+    
+    console.log("Calculated match results:", matchResults);
+    
+    // เรียงลำดับตามคะแนน (มากไปน้อย) และจำกัดให้แสดงเพียง 5 อันดับแรก
+    return matchResults.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0)).slice(0, 5);
+  } catch (error) {
+    console.error("Error in matchJobWithWorkers:", error);
     return [];
   }
-  
-  // คำนวณคะแนนสำหรับแต่ละพนักงาน
-  const matchedWorkers = findJobs.map(worker => {
-    const score = calculateMatchingScore(job, worker);
-    
-    return {
-      name: `${worker.first_name} ${worker.last_name}`,
-      gender: worker.gender,
-      jobType: worker.job_type,
-      date: worker.job_date,
-      time: `${worker.start_time} - ${worker.end_time}`,
-      location: `${worker.province}/${worker.district}/${worker.subdistrict}`,
-      salary: worker.start_salary,
-      aiScore: score
-    };
-  });
-  
-  // เรียงลำดับตามคะแนน (มากไปน้อย) และจำกัดให้แสดงเพียง 5 อันดับแรก
-  return matchedWorkers.sort((a, b) => b.aiScore - a.aiScore).slice(0, 5);
 };
