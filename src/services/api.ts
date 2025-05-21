@@ -1,5 +1,5 @@
 import { MatchResult } from "@/types/types";
-import { mockMatchResults } from "@/data/mocks/matchMocks";
+import { mockMatches } from "@/data/mocks/matchMocks";
 import { saveMatchResults, matchJobWithWorkers, getMatchResultsForJob, updateMatchResultStatus } from "@/services/matchingService";
 
 /**
@@ -17,11 +17,11 @@ export const getAIMatches = async (jobId: string): Promise<MatchResult[]> => {
     }
     
     // Fallback to mock data if no matches found
-    return mockMatchResults[jobId] || [];
+    return mockMatches[jobId] || [];
   } catch (error) {
     console.error("Error getting AI matches:", error);
     // Fallback to mock data on error
-    return mockMatchResults[jobId] || [];
+    return mockMatches[jobId] || [];
   }
 };
 

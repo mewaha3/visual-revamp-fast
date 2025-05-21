@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { getJobDetails, getEmployerDetails } from '@/services/matchService';
+import { getJobDetails } from '@/services/jobDetailsService';
+import { getEmployerDetails } from '@/services/employerService';
 import { JobDetail, Employer } from '@/types/types';
 import { toast } from "sonner";
 
@@ -23,7 +24,7 @@ export const useJobDetails = (jobId?: string) => {
       try {
         console.log(`Fetching details for job ID: ${jobId}`);
         
-        // Get job details
+        // Get job details from Firebase
         const details = await getJobDetails(jobId);
         console.log("Job details fetched:", details);
         setJobDetails(details);

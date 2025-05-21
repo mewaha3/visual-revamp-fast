@@ -37,8 +37,8 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
       return jobDetail;
     }
     
-    // If not found in Firestore, try mock data
-    if (mockJobDetails[jobId]) {
+    // If not found in Firestore, try mock data (fallback)
+    if (mockJobDetails && mockJobDetails[jobId]) {
       console.log("Found job in mock data:", mockJobDetails[jobId]);
       return mockJobDetails[jobId];
     }

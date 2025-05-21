@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -106,7 +107,6 @@ const MyJobsPage: React.FC = () => {
         setMatches(matchResults);
       }
       
-      toast.success("อัปเดตข้อมูลล่าสุด");
     } catch (error) {
       console.error("Error refreshing data:", error);
       toast.error("ไม่สามารถอัปเดตข้อมูล กรุณาลองใหม่อีกครั้ง");
@@ -117,6 +117,7 @@ const MyJobsPage: React.FC = () => {
   
   const handleRefresh = () => {
     fetchData();
+    toast.success("อัปเดตข้อมูลล่าสุด");
   };
   
   const handleAcceptJob = async (matchId: string, jobId: string) => {
