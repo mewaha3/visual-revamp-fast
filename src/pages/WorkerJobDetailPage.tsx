@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
+import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, RefreshCcw } from 'lucide-react';
@@ -16,11 +17,12 @@ const WorkerJobDetailPage: React.FC = () => {
   const navigate = useNavigate();
   
   // Custom hooks
-  const { jobDetails, employer, loading, error } = useJobDetails(jobId);
+  const { jobDetails, employer, matchDetails, loading, error } = useJobDetails(jobId);
   
   console.log("Worker Job Detail Page - Job ID:", jobId);
   console.log("Job Details:", jobDetails);
   console.log("Employer:", employer);
+  console.log("Match Details:", matchDetails);
   
   const handleJobDone = () => {
     if (jobId) {
@@ -77,6 +79,9 @@ const WorkerJobDetailPage: React.FC = () => {
               <JobDetailsCard jobDetails={jobDetails} />
               
               {employer && <EmployerCard employer={employer} />}
+              
+              {/* Show job match details */}
+              <JobMatchDetails matches={matchDetails} />
               
               <div className="mt-6 space-y-4">
                 <Button 

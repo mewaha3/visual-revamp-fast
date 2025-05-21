@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -196,7 +197,9 @@ const RegisterForm = () => {
         visa: visaURL || "No",
         work_permit: workPermitURL || "No",
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         role: "user", // Default role for registered users
+        user_id: uid, // Add user_id for easy reference
       });
       
       toast({

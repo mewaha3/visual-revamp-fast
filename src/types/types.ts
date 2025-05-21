@@ -3,7 +3,7 @@
 // Update the FindJob interface to match the expected type
 export interface FindJob {
     id: string;
-    name?: string; // Added as optional to fix errors in matchMocks
+    name?: string; 
     job_type: string;
     province: string;
     district: string;
@@ -12,9 +12,9 @@ export interface FindJob {
     detail?: string;
     address?: string;
     salary_type?: string;
-    expected_salary?: string | number; // Support both types
+    expected_salary?: string | number; 
     start_date?: string;
-    available_days?: string | string[]; // Support both types
+    available_days?: string | string[]; 
     start_time: string;
     end_time: string;
     // Additional fields for compatibility
@@ -28,16 +28,16 @@ export interface FindJob {
     range_salary?: number;
     job_address?: string;
     zip_code?: string;
-    phone?: string; // For MatchResult
-    score?: number; // For MatchResult
-    aiScore?: number; // For matching data
-    user_id?: string; // Added for Firestore users
+    phone?: string; 
+    score?: number; 
+    aiScore?: number; 
+    user_id?: string; 
 }
 
 // Update PostJob interface to make id optional and add fields
 export interface PostJob {
-    id?: string; // Optional to allow creation of new jobs
-    job_id?: string; // Added for compatibility
+    id?: string; 
+    job_id?: string; 
     job_type: string;
     job_detail: string;
     job_date: string;
@@ -54,7 +54,7 @@ export interface PostJob {
     subdistrict: string;
     zip_code: string;
     status?: string;
-    user_id?: string; // Added for Firestore users
+    user_id?: string; 
 }
 
 // Keep other interfaces unchanged
@@ -192,10 +192,17 @@ export interface MatchResult {
   province_match?: boolean;
   province?: string;
   workerId?: string;
-  priority?: number; // Added for priority selection
-  first_name?: string; // Added for Firebase matching
+  priority?: number;
+  first_name?: string;
   last_name?: string;
   email?: string;
+  status?: string;
+  first_name_post_jobs?: string;
+  last_name_post_jobs?: string;
+  gender_post_jobs?: string;
+  first_name_find_jobs?: string;
+  last_name_find_jobs?: string;
+  gender_find_jobs?: string;
 }
 
 export interface StatusResult {

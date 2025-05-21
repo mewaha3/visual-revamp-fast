@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
+import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import JobActionButtons from '@/components/jobs/JobActionButtons';
 import { Button } from "@/components/ui/button";
 import { useJobDetails } from '@/hooks/useJobDetails';
@@ -25,7 +26,7 @@ const JobDetailPage: React.FC = () => {
   const fromPaymentState = state?.fromPayment || false;
   
   // Custom hooks
-  const { jobDetails, employer, loading, error } = useJobDetails(jobId);
+  const { jobDetails, employer, matchDetails, loading, error } = useJobDetails(jobId);
   const { 
     showPaymentModal, 
     setShowPaymentModal, 
@@ -38,12 +39,10 @@ const JobDetailPage: React.FC = () => {
   } = usePayment(fromPaymentState);
   
   // For debugging
-  console.log("Payment state:", { 
-    hasPaid, 
-    fromPaymentState, 
-    showPaymentModal, 
-    showSuccessModal 
-  });
+  console.log("Job Detail Page - Job ID:", jobId);
+  console.log("Job Details:", jobDetails);
+  console.log("Employer:", employer);
+  console.log("Match Details:", matchDetails);
   
   const handleRetry = () => {
     window.location.reload();
@@ -87,6 +86,9 @@ const JobDetailPage: React.FC = () => {
               <JobDetailsCard jobDetails={jobDetails} />
               
               {employer && <EmployerCard employer={employer} />}
+              
+              {/* Show job match details */}
+              <JobMatchDetails matches={matchDetails} />
               
               <JobActionButtons 
                 jobId={jobId}

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -8,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserPostJobs } from '@/services/jobService';
-import { getUserFindJobs } from '@/services/firestoreService';
+import { getUnmatchedFindJobs } from '@/services/firestoreService';
 import { updateMatchResultStatus } from '@/services/matchingService';
 import { StatusResult } from '@/types/types';
 import { Clipboard, Check, X, RefreshCw, Loader2 } from 'lucide-react';
@@ -59,49 +58,63 @@ const MyJobsPage: React.FC = () => {
       const userPostedJobs = await getUserPostJobs(userId);
       setPostJobs(userPostedJobs);
       
-      // Fetch find jobs from Firestore
-      const userFindJobsData = await getUserFindJobs(userId);
-      setFindJobs(userFindJobsData);
+      // Fetch ONLY unmatched find jobs from Firestore
+      const unmatchedFindJobs = await getUnmatchedFindJobs(userId);
+      setFindJobs(unmatchedFindJobs);
       
       // Fetch job matches for this user
-      if (userFindJobsData && userFindJobsData.length > 0) {
-        const findJobIds = userFindJobsData.map(job => job.findjob_id || job.id);
-        
+      if (userId) {
         const matchResults: StatusResult[] = [];
         
-        // For each find job, get matches
-        for (const findJobId of findJobIds) {
-          try {
-            const matchResultsRef = collection(db, "match_results");
-            const q = query(matchResultsRef, 
-              where("findjob_id", "==", findJobId),
-              where("status", "==", "on_queue")
-            );
+        try {
+          const matchResultsRef = collection(db, "match_results");
+          // Get matches where the findjob belongs to this user and status is "on_queue"
+          const q = query(
+            matchResultsRef, 
+            where("status", "==", "on_queue")
+          );
+          
+          const querySnapshot = await getDocs(q);
+          
+          // Filter for this user's findjobs
+          for (const doc of querySnapshot.docs) {
+            const data = doc.data();
             
-            const querySnapshot = await getDocs(q);
+            // Check if this is the user's find job using the worker ID in each document
+            if (data.workerId !== userId) {
+              // Get the find job to check ownership
+              const findJobRef = query(
+                collection(db, "find_jobs"),
+                where("findjob_id", "==", data.findjob_id)
+              );
+              const findJobSnapshot = await getDocs(findJobRef);
+              
+              // Skip if no find job or not owned by this user
+              if (findJobSnapshot.empty) continue;
+              
+              const findJobData = findJobSnapshot.docs[0].data();
+              if (findJobData.user_id !== userId) continue;
+            }
             
-            querySnapshot.forEach(doc => {
-              const data = doc.data();
-              matchResults.push({
-                id: doc.id,
-                job_id: data.job_id,
-                findjob_id: data.findjob_id,
-                status: data.status,
-                created_at: data.created_at?.toDate()?.toISOString() || new Date().toISOString(),
-                updated_at: data.updated_at?.toDate()?.toISOString() || new Date().toISOString(),
-                name: `${data.first_name} ${data.last_name}`,
-                gender: data.gender,
-                jobType: data.job_type,
-                date: data.job_date,
-                time: `${data.start_time} - ${data.end_time}`,
-                location: `${data.province}/${data.district}/${data.subdistrict}`,
-                salary: data.job_salary,
-                workerId: data.findjob_id
-              });
+            matchResults.push({
+              id: doc.id,
+              job_id: data.job_id,
+              findjob_id: data.findjob_id,
+              status: data.status,
+              created_at: data.created_at?.toDate()?.toISOString() || new Date().toISOString(),
+              updated_at: data.updated_at?.toDate()?.toISOString() || new Date().toISOString(),
+              name: `${data.first_name} ${data.last_name}`,
+              gender: data.gender,
+              jobType: data.job_type,
+              date: data.job_date,
+              time: `${data.start_time} - ${data.end_time}`,
+              location: `${data.province}/${data.district}/${data.subdistrict}`,
+              salary: data.job_salary,
+              workerId: data.findjob_id
             });
-          } catch (error) {
-            console.error(`Error fetching matches for find job ${findJobId}:`, error);
           }
+        } catch (error) {
+          console.error("Error fetching job matches:", error);
         }
         
         setMatches(matchResults);

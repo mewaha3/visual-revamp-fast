@@ -1,4 +1,3 @@
-
 import { collection, addDoc, getDocs, query, where, serverTimestamp, updateDoc, doc, getDoc, Firestore } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { PostJob, FindJob } from "@/types/types";
@@ -30,9 +29,26 @@ export interface FindJobSubmission {
 // Add a new "find job" entry to Firestore
 export async function addFindJob(jobData: FindJobSubmission, userId?: string): Promise<string> {
   try {
-    // Add timestamp and user ID if available
+    // If userId is provided, get the user profile first to add additional data
+    let userProfileData = {};
+    if (userId) {
+      const userDocRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        userProfileData = {
+          first_name: userData.first_name || jobData.first_name,
+          last_name: userData.last_name || jobData.last_name,
+          gender: userData.gender || jobData.gender
+        };
+      }
+    }
+
+    // Add timestamp, user ID, and user profile data
     const dataWithMetadata = {
       ...jobData,
+      ...userProfileData, // Override with user profile data if available
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
       ...(userId && { user_id: userId })
@@ -60,11 +76,13 @@ export async function addFindJob(jobData: FindJobSubmission, userId?: string): P
 // Get find job entries for a specific user
 export async function getUserFindJobs(userId: string): Promise<FindJob[]> {
   try {
+    // Query jobs that belong to this user
     const q = query(collection(db, "find_jobs"), where("user_id", "==", userId));
     const querySnapshot = await getDocs(q);
     
     const jobs: FindJob[] = [];
     querySnapshot.forEach((doc) => {
+      // Get jobs that are not already matched in match_results
       jobs.push({
         id: doc.id,
         ...doc.data()
@@ -81,9 +99,26 @@ export async function getUserFindJobs(userId: string): Promise<FindJob[]> {
 // Add a new "post job" entry to Firestore
 export async function addPostJob(jobData: PostJob, userId?: string): Promise<string> {
   try {
-    // Add timestamp and user ID if available
+    // If userId is provided, get the user profile first to add additional data
+    let userProfileData = {};
+    if (userId) {
+      const userDocRef = doc(db, "users", userId);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        userProfileData = {
+          first_name: userData.first_name || jobData.first_name,
+          last_name: userData.last_name || jobData.last_name,
+          gender: userData.gender || jobData.gender
+        };
+      }
+    }
+
+    // Add timestamp, user ID, and user profile data
     const dataWithMetadata = {
       ...jobData,
+      ...userProfileData, // Override with user profile data if available
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
       ...(userId && { user_id: userId })
@@ -214,5 +249,82 @@ export async function updateMatchStatus(matchId: string, status: "accepted" | "d
   } catch (error) {
     console.error(`Error updating match status to ${status}:`, error);
     return false;
+  }
+}
+
+// Get user profile by userId
+export async function getUserProfile(userId: string): Promise<any | null> {
+  try {
+    if (!userId) return null;
+    
+    const userDocRef = doc(db, "users", userId);
+    const userDoc = await getDoc(userDocRef);
+    
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error getting user profile:", error);
+    return null;
+  }
+}
+
+// Get find jobs that have not been matched yet
+export async function getUnmatchedFindJobs(userId: string): Promise<FindJob[]> {
+  try {
+    if (!userId) return [];
+    
+    // Get all find jobs for this user
+    const findJobsQuery = query(collection(db, "find_jobs"), where("user_id", "==", userId));
+    const findJobsSnapshot = await getDocs(findJobsQuery);
+    
+    const findJobs: FindJob[] = [];
+    const findJobIds: string[] = [];
+    
+    // Collect all find job ids for this user
+    findJobsSnapshot.forEach((doc) => {
+      const data = doc.data();
+      const findJob = { id: doc.id, ...data } as FindJob;
+      findJobs.push(findJob);
+      
+      if (data.findjob_id) {
+        findJobIds.push(data.findjob_id);
+      } else {
+        findJobIds.push(doc.id);
+      }
+    });
+    
+    if (findJobIds.length === 0) {
+      return findJobs; // No find jobs to check for matches
+    }
+    
+    // Find matches that use these find job ids
+    const matchResults: { [key: string]: boolean } = {};
+    
+    // Check match_results to find any matched find jobs
+    for (const findJobId of findJobIds) {
+      const matchesQuery = query(
+        collection(db, "match_results"),
+        where("findjob_id", "==", findJobId)
+      );
+      
+      const matchesSnapshot = await getDocs(matchesQuery);
+      
+      if (!matchesSnapshot.empty) {
+        // This find job has been matched
+        matchResults[findJobId] = true;
+      }
+    }
+    
+    // Filter out matched find jobs
+    return findJobs.filter(job => {
+      const id = job.findjob_id || job.id;
+      return !matchResults[id];
+    });
+  } catch (error) {
+    console.error("Error getting unmatched find jobs:", error);
+    return [];
   }
 }

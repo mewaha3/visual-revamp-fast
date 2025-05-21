@@ -1,305 +1,209 @@
-import { collection, getDocs, query, where, addDoc, serverTimestamp, updateDoc, doc, getDoc } from "firebase/firestore";
+
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { MatchResult, MatchResultFirestore, FindJob, StatusResult } from "@/types/types";
-import { 
-  calculateStringSimilarity, 
-  calculateLocationSimilarity, 
-  calculateTimeOverlap, 
-  calculateDateMatch, 
-  calculateSalaryMatch 
-} from '@/utils/matchingUtils';
-import { getPostJobById, getFindJobById } from './firestoreService';
+import { getPostJobById } from "./firestoreService";
+import { getFindJobById } from "./firestoreService";
+import { getUserProfile } from "./firestoreService";
+import { MatchResult } from "@/types/types";
 
-// Function to calculate matching score between job and worker
-export const calculateMatchingScore = (job: any, worker: any): number => {
-  // Weights for each criterion
-  const weights = {
-    jobType: 0.2,    // Same job type
-    skills: 0.2,     // Matching skills
-    location: 0.2,   // Location proximity
-    time: 0.1,       // Working time overlap
-    date: 0.1,       // Working date match
-    salary: 0.2      // Salary compatibility
-  };
-  
-  // Calculate scores for each aspect
-  const jobTypeScore = job.job_type.toLowerCase() === worker.job_type.toLowerCase() ? 1.0 : 0.0;
-  
-  // Skills similarity score
-  let skillsScore = 0;
-  if (job.job_detail && worker.skills) {
-    skillsScore = calculateStringSimilarity(job.job_detail, worker.skills);
-  }
-  
-  // Location score
-  const locationScore = calculateLocationSimilarity(
-    job.province, job.district, job.subdistrict,
-    worker.province, worker.district, worker.subdistrict
-  );
-  
-  // Working time score
-  const timeScore = calculateTimeOverlap(job.start_time, job.end_time, worker.start_time, worker.end_time);
-  
-  // Working date score
-  const dateScore = calculateDateMatch(job.job_date, worker.job_date);
-  
-  // Salary score
-  const salaryScore = calculateSalaryMatch(job.salary, worker.start_salary, worker.range_salary);
-  
-  // Calculate final score
-  const finalScore = 
-    weights.jobType * jobTypeScore +
-    weights.skills * skillsScore +
-    weights.location * locationScore +
-    weights.time * timeScore +
-    weights.date * dateScore +
-    weights.salary * salaryScore;
-  
-  return finalScore;
-};
-
-// Function to match jobs with workers from Firestore
-export const matchJobWithWorkers = async (jobId: string): Promise<MatchResult[]> => {
+/**
+ * Match job with workers based on criteria
+ * @param jobId 
+ * @returns 
+ */
+export async function matchJobWithWorkers(jobId: string): Promise<MatchResult[]> {
   try {
-    // Get job from Firestore by ID
+    console.log("Matching job with workers:", jobId);
+    
+    // Get job details
     const job = await getPostJobById(jobId);
     if (!job) {
-      console.error("Job not found with ID:", jobId);
+      console.error("Job not found:", jobId);
       return [];
     }
     
-    console.log("Found job:", job);
-    
-    // Get all workers (find_jobs) from Firestore
+    // Query find_jobs collection for matching workers
     const findJobsRef = collection(db, "find_jobs");
-    const findJobsSnapshot = await getDocs(findJobsRef);
+    const querySnapshot = await getDocs(findJobsRef);
     
-    if (findJobsSnapshot.empty) {
-      console.log("No find_jobs documents found");
-      return [];
-    }
+    const matches: MatchResult[] = [];
     
-    const findJobs: FindJob[] = [];
-    findJobsSnapshot.forEach((doc) => {
-      findJobs.push({
-        id: doc.id,
-        ...doc.data()
-      } as FindJob);
+    // For each find job, check if it's a good match
+    querySnapshot.forEach((doc) => {
+      const findJob = { id: doc.id, ...doc.data() };
+      
+      // Basic matching criteria
+      const jobTypeMatch = findJob.job_type === job.job_type;
+      const dateMatch = !findJob.job_date || findJob.job_date === job.job_date;
+      const provinceMatch = findJob.province === job.province;
+      
+      // Calculate match score (simple version)
+      let score = 0;
+      if (jobTypeMatch) score += 40;
+      if (dateMatch) score += 30; 
+      if (provinceMatch) score += 30;
+      
+      // If score is high enough, consider it a match
+      if (score > 30) {
+        matches.push({
+          id: doc.id,
+          name: `${findJob.first_name || ''} ${findJob.last_name || ''}`,
+          gender: findJob.gender || '',
+          jobType: job.job_type,
+          date: job.job_date,
+          time: `${job.start_time} - ${job.end_time}`,
+          location: `${job.province}/${job.district}/${job.subdistrict}`,
+          salary: job.salary,
+          aiScore: score,
+          job_id: jobId,
+          findjob_id: findJob.findjob_id || doc.id,
+          province: job.province,
+          province_match: provinceMatch,
+          day_match: dateMatch,
+          score: score,
+          workerId: findJob.user_id || '',
+          // Add additional field for display
+          first_name: findJob.first_name || '',
+          last_name: findJob.last_name || '',
+          email: findJob.email || ''
+        });
+      }
     });
     
-    console.log("Found find_jobs:", findJobs.length);
-    
-    // Calculate scores for each worker
-    const matchResults: MatchResult[] = findJobs.map((worker, index) => {
-      const score = calculateMatchingScore(job, worker);
-      
-      // Create full name from first_name and last_name
-      const fullName = `${worker.first_name || ''} ${worker.last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
-      
-      return {
-        id: worker.id,
-        name: fullName,
-        gender: worker.gender || 'ไม่ระบุ',
-        jobType: worker.job_type || 'ไม่ระบุ',
-        job_type: worker.job_type || 'ไม่ระบุ',
-        date: worker.job_date || 'ไม่ระบุ',
-        time: `${worker.start_time || '00:00'} - ${worker.end_time || '00:00'}`,
-        location: `${worker.province || ''}/${worker.district || ''}/${worker.subdistrict || ''}`,
-        salary: worker.start_salary || 0,
-        aiScore: score,
-        workerId: worker.findjob_id || worker.id, // Use findjob_id if available, otherwise use doc ID
-        findjob_id: worker.findjob_id || worker.id,
-        job_id: jobId,
-        first_name: worker.first_name || '',
-        last_name: worker.last_name || '',
-        email: worker.email || '',
-        priority: index + 1 // Default priority based on index (1-5)
-      };
-    });
-    
-    console.log("Calculated match results:", matchResults);
-    
-    // Sort by score (highest to lowest) and limit to top 5
-    return matchResults
-      .sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0))
-      .slice(0, 5);
+    // Sort by score, highest first
+    return matches.sort((a, b) => (b.score || 0) - (a.score || 0));
   } catch (error) {
     console.error("Error in matchJobWithWorkers:", error);
     return [];
   }
-};
+}
 
-// Function to save match results to Firestore
-export const saveMatchResults = async (jobId: string, matchResults: MatchResult[]): Promise<boolean> => {
+/**
+ * Save match results to Firestore
+ * @param jobId 
+ * @param matchResults 
+ * @returns 
+ */
+export async function saveMatchResults(jobId: string, matchResults: MatchResult[]): Promise<boolean> {
   try {
-    // Get job details to include salary
-    const job = await getPostJobById(jobId);
-    if (!job) {
-      console.error("Job not found for saving match results:", jobId);
+    if (!matchResults || matchResults.length === 0) {
+      console.log("No matches to save");
       return false;
     }
     
-    // Delete any existing match results for this job
-    // For simplicity, we're just adding new ones without checking for duplicates
-    
-    // Create match_results collection if it doesn't exist
-    const matchResultsRef = collection(db, "match_results");
-    
-    // Save each match result to Firestore
-    for (const match of matchResults) {
-      // Create the match result object with all required fields
-      const matchResult: MatchResultFirestore = {
-        first_name: match.first_name || '',
-        last_name: match.last_name || '',
-        gender: match.gender || '',
-        email: match.email || '',
-        job_type: match.job_type || '',
-        job_date: job.job_date || '',
-        start_time: job.start_time || '',
-        end_time: job.end_time || '',
-        job_address: job.job_address || '',
-        province: job.province || '',
-        district: job.district || '',
-        subdistrict: job.subdistrict || '',
-        zip_code: job.zip_code || '',
-        priority: match.priority || 99, // Use provided priority or default to 99
-        status: "on_queue", // Default status
-        findjob_id: match.findjob_id || '',
-        job_id: jobId,
-        job_salary: job.salary || 0,
-        created_at: serverTimestamp(),
-        updated_at: serverTimestamp()
-      };
-      
-      await addDoc(matchResultsRef, matchResult);
+    // Get job details to include in match records
+    const job = await getPostJobById(jobId);
+    if (!job) {
+      console.error("Job not found when saving matches:", jobId);
+      return false;
     }
     
-    console.log(`Saved ${matchResults.length} match results to Firestore for job ${jobId}`);
+    // Get job poster details
+    const jobPoster = job.user_id ? await getUserProfile(job.user_id) : null;
+    
+    // For each match, create a record in the match_results collection
+    for (let i = 0; i < matchResults.length; i++) {
+      const match = matchResults[i];
+      
+      // Get worker details
+      const worker = match.workerId ? await getUserProfile(match.workerId) : null;
+      
+      // Get find job details
+      const findJob = await getFindJobById(match.findjob_id || '');
+      
+      // Create the match record with enhanced data
+      await addDoc(collection(db, "match_results"), {
+        job_id: jobId,
+        findjob_id: match.findjob_id,
+        first_name: match.first_name || findJob?.first_name || "",
+        last_name: match.last_name || findJob?.last_name || "",
+        gender: match.gender || findJob?.gender || "",
+        email: match.email || findJob?.email || "",
+        job_type: job.job_type || "",
+        job_date: job.job_date || "",
+        start_time: job.start_time || "",
+        end_time: job.end_time || "",
+        job_address: job.job_address || "",
+        province: job.province || "",
+        district: job.district || "",
+        subdistrict: job.subdistrict || "",
+        zip_code: job.zip_code || "",
+        job_salary: job.salary || 0,
+        priority: match.priority || (i + 1), // Use provided priority or default to position in array
+        status: "on_queue",
+        created_at: serverTimestamp(),
+        updated_at: serverTimestamp(),
+        // Additional fields for first name, last name, gender for both parties
+        first_name_post_jobs: jobPoster?.first_name || job.first_name || "",
+        last_name_post_jobs: jobPoster?.last_name || job.last_name || "",
+        gender_post_jobs: jobPoster?.gender || job.gender || "",
+        first_name_find_jobs: worker?.first_name || findJob?.first_name || match.first_name || "",
+        last_name_find_jobs: worker?.last_name || findJob?.last_name || match.last_name || "",
+        gender_find_jobs: worker?.gender || findJob?.gender || match.gender || ""
+      });
+    }
+    
+    console.log(`Saved ${matchResults.length} match results for job ${jobId}`);
     return true;
   } catch (error) {
     console.error("Error saving match results:", error);
     return false;
   }
-};
+}
 
-// Function to get match results for a specific job
-export const getMatchResultsForJob = async (jobId: string): Promise<StatusResult[]> => {
+/**
+ * Get match results for a job
+ * @param jobId 
+ * @returns 
+ */
+export async function getMatchResultsForJob(jobId: string) {
   try {
     const matchResultsRef = collection(db, "match_results");
     const q = query(matchResultsRef, where("job_id", "==", jobId));
-    const snapshot = await getDocs(q);
     
-    if (snapshot.empty) {
-      console.log(`No match results found for job ${jobId}`);
-      return [];
-    }
+    const querySnapshot = await getDocs(q);
+    const results: any[] = [];
     
-    const results: StatusResult[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data() as MatchResultFirestore;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
       results.push({
         id: doc.id,
-        job_id: data.job_id,
-        findjob_id: data.findjob_id,
-        status: data.status,
+        ...data,
         created_at: data.created_at?.toDate()?.toISOString() || new Date().toISOString(),
         updated_at: data.updated_at?.toDate()?.toISOString() || new Date().toISOString(),
-        name: `${data.first_name} ${data.last_name}`,
-        gender: data.gender,
-        jobType: data.job_type,
-        date: data.job_date,
-        time: `${data.start_time} - ${data.end_time}`,
-        location: `${data.province}/${data.district}/${data.subdistrict}`,
-        salary: data.job_salary,
-        workerId: data.findjob_id,
-        priority: data.priority,
-        first_name: data.first_name,
-        last_name: data.last_name
-      });
-    });
-    
-    // Sort by priority
-    return results.sort((a, b) => (a.priority || 99) - (b.priority || 99));
-  } catch (error) {
-    console.error("Error getting match results:", error);
-    return [];
-  }
-};
-
-// Function to get match results for a specific worker
-export const getMatchResultsForWorker = async (findJobId: string): Promise<StatusResult[]> => {
-  try {
-    const matchResultsRef = collection(db, "match_results");
-    const q = query(matchResultsRef, where("findjob_id", "==", findJobId));
-    const snapshot = await getDocs(q);
-    
-    if (snapshot.empty) {
-      console.log(`No match results found for worker ${findJobId}`);
-      return [];
-    }
-    
-    const results: StatusResult[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data() as MatchResultFirestore;
-      results.push({
-        id: doc.id,
-        job_id: data.job_id,
-        findjob_id: data.findjob_id,
-        status: data.status,
-        created_at: data.created_at?.toDate()?.toISOString() || new Date().toISOString(),
-        updated_at: data.updated_at?.toDate()?.toISOString() || new Date().toISOString(),
-        name: `${data.first_name} ${data.last_name}`,
-        gender: data.gender,
-        jobType: data.job_type,
-        date: data.job_date,
-        time: `${data.start_time} - ${data.end_time}`,
-        location: `${data.province}/${data.district}/${data.subdistrict}`,
-        salary: data.job_salary,
-        workerId: data.findjob_id,
-        priority: data.priority
       });
     });
     
     return results;
   } catch (error) {
-    console.error("Error getting worker match results:", error);
+    console.error("Error getting match results:", error);
     return [];
   }
-};
+}
 
-// Function to update match result status
-export const updateMatchResultStatus = async (matchId: string, status: "on_queue" | "accepted" | "declined"): Promise<boolean> => {
+/**
+ * Update match result status
+ * @param matchId 
+ * @param status 
+ * @returns 
+ */
+export async function updateMatchResultStatus(matchId: string, status: "accepted" | "declined" | "on_queue"): Promise<boolean> {
   try {
     const docRef = doc(db, "match_results", matchId);
-    await updateDoc(docRef, { 
-      status,
-      updated_at: serverTimestamp()
-    });
-    return true;
-  } catch (error) {
-    console.error("Error updating match result status:", error);
-    return false;
-  }
-};
-
-// Function to update match priorities
-export const updateMatchPriorities = async (matchPriorities: {id: string, priority: number}[]): Promise<boolean> => {
-  try {
-    // Create a batch to update multiple documents at once
-    const batch = require('firebase/firestore').writeBatch(db);
+    const docSnap = await getDoc(docRef);
     
-    for (const {id, priority} of matchPriorities) {
-      const docRef = doc(db, "match_results", id);
-      batch.update(docRef, { 
-        priority,
+    if (docSnap.exists()) {
+      await updateDoc(docRef, {
+        status: status,
         updated_at: serverTimestamp()
       });
+      
+      return true;
     }
     
-    await batch.commit();
-    return true;
+    return false;
   } catch (error) {
-    console.error("Error updating match priorities:", error);
+    console.error(`Error updating match status to ${status}:`, error);
     return false;
   }
-};
+}
