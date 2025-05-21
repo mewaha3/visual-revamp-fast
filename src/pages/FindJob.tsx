@@ -87,9 +87,9 @@ const FindJob = () => {
       
       toast.success("บันทึกข้อมูลการหางานสำเร็จ");
       
-      // Redirect to find job listing or results page
+      // Redirect to my jobs page
       setTimeout(() => {
-        navigate("/my-find-jobs");
+        navigate("/my-jobs");
       }, 1500);
       
     } catch (error) {

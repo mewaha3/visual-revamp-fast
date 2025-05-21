@@ -1,28 +1,36 @@
 
 import { postJobs } from "@/data/postJobs";
-import { Job } from "@/types/types";
 import { PostJob } from "@/data/types/jobTypes";
-import { addPostJob } from "./firestoreService";
+import { addPostJob, getUserPostJobs as getFirestoreUserPostJobs } from "./firestoreService";
 
-// Get a job by ID
-export const getJobById = (jobId: string): Job | null => {
+// Get a job by ID from mock data (for compatibility with existing code)
+export const getJobById = (jobId: string) => {
   return postJobs.find(job => job.job_id === jobId) || null;
 };
 
-// Get all jobs from a specific user
-export const getUserJobs = (email: string | null): Job[] => {
+// Get all jobs from a specific user from mock data (for compatibility)
+export const getUserJobs = (email: string | null) => {
   if (!email) return [];
   return postJobs.filter(job => job.email === email);
 };
 
-// Add a new job post
-export const addNewJob = async (jobData: Partial<PostJob>): Promise<PostJob> => {
+// Get all jobs from a specific user from Firestore
+export const getUserPostJobs = async (userId: string) => {
+  if (!userId) return [];
   try {
-    // Generate a new job ID - in a real app this would be handled by the backend
-    const tempJobId = `PJ${postJobs.length + 1}`;
-    
+    return await getFirestoreUserPostJobs(userId);
+  } catch (error) {
+    console.error("Error in getUserPostJobs:", error);
+    return [];
+  }
+};
+
+// Add a new job post
+export const addNewJob = async (jobData: Partial<PostJob>, userId?: string): Promise<PostJob> => {
+  try {
+    // Create a new job object
     const newJob: PostJob = {
-      job_type: jobData.job_type || "",  // Use job_type directly as selected
+      job_type: jobData.job_type || "",
       job_detail: jobData.job_detail || "",
       job_date: jobData.job_date || new Date().toISOString().split('T')[0],
       start_time: jobData.start_time || "00:00",
@@ -40,7 +48,7 @@ export const addNewJob = async (jobData: Partial<PostJob>): Promise<PostJob> => 
     };
     
     // Add to Firestore and get the job_id
-    const jobId = await addPostJob(newJob);
+    const jobId = await addPostJob(newJob, userId);
     newJob.job_id = jobId;
     
     // Also add to local array for immediate use

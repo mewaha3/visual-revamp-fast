@@ -183,8 +183,8 @@ export async function getFindJobById(jobId: string) {
     
     if (docSnap.exists()) {
       return {
-        id: docSnap.id,
-        ...docSnap.data()
+        id: doc.id,
+        ...doc.data()
       };
     }
     

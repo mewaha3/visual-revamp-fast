@@ -7,17 +7,17 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getUserJobs } from '@/services/jobService';
-import { getUserFindJobs } from '@/services/findJobService';
+import { getUserPostJobs } from '@/services/jobService';
+import { getUserFindJobs } from '@/services/firestoreService';
 import { getUserMatches, acceptJobMatch, declineJobMatch } from '@/services/matchService';
-import { Job, FindJob, FindMatch } from '@/types/types';
+import { FindMatch } from '@/types/types';
 import { Clipboard, Check, X, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 
 const MyJobsPage: React.FC = () => {
-  const { userEmail, userFullName } = useAuth();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [findJobs, setFindJobs] = useState<FindJob[]>([]);
+  const { userProfile, userId, userEmail, userFullName } = useAuth();
+  const [postJobs, setPostJobs] = useState<any[]>([]);
+  const [findJobs, setFindJobs] = useState<any[]>([]);
   const [matches, setMatches] = useState<FindMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ const MyJobsPage: React.FC = () => {
   }, [userEmail, navigate, location.pathname]);
   
   useEffect(() => {
-    if (userEmail) {
+    if (userId) {
       fetchData();
     }
     
@@ -46,25 +46,27 @@ const MyJobsPage: React.FC = () => {
     return () => {
       document.removeEventListener('findJobsUpdated', handleFindJobsUpdated);
     };
-  }, [userEmail]);
+  }, [userId]);
   
   const fetchData = async () => {
-    if (!userEmail) return;
+    if (!userId) return;
     
     setLoading(true);
     try {
-      // Fetch posted jobs
-      const userJobs = getUserJobs(userEmail);
-      setJobs(userJobs);
+      // Fetch posted jobs from Firestore
+      const userPostedJobs = await getUserPostJobs(userId);
+      setPostJobs(userPostedJobs);
       
-      // Fetch find jobs
-      const userFindJobs = getUserFindJobs(userEmail);
-      setFindJobs(userFindJobs as FindJob[]);
+      // Fetch find jobs from Firestore
+      const userFindJobsData = await getUserFindJobs(userId);
+      setFindJobs(userFindJobsData);
       
       // Fetch job matches filtered by current user's email
-      const userMatches = await getUserMatches(userEmail);
-      console.log('Fetched matches for user:', userEmail, userMatches);
-      setMatches(userMatches);
+      if (userEmail) {
+        const userMatches = await getUserMatches(userEmail);
+        console.log('Fetched matches for user:', userEmail, userMatches);
+        setMatches(userMatches);
+      }
       
       toast.success("อัปเดตข้อมูลล่าสุด");
     } catch (error) {
@@ -157,13 +159,13 @@ const MyJobsPage: React.FC = () => {
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     <p className="text-gray-500">กำลังโหลดข้อมูล...</p>
                   </div>
-                ) : jobs.length > 0 ? (
+                ) : postJobs.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {jobs.map((job) => (
-                      <Card key={job.job_id} className="border border-gray-200">
+                    {postJobs.map((job) => (
+                      <Card key={job.job_id || job.id} className="border border-gray-200">
                         <CardHeader className="pb-2">
                           <CardTitle className="text-lg font-medium">
-                            Job ID: {job.job_id}
+                            Job ID: {job.job_id || job.id}
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="pb-2">
@@ -198,7 +200,7 @@ const MyJobsPage: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/matching/${job.job_id}`)}
+                            onClick={() => navigate(`/matching/${job.job_id || job.id}`)}
                             className="text-xs"
                           >
                             ดูการจับคู่
@@ -206,7 +208,7 @@ const MyJobsPage: React.FC = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate(`/status/${job.job_id}`)}
+                            onClick={() => navigate(`/status/${job.job_id || job.id}`)}
                             className="text-xs"
                           >
                             ดูสถานะการจับคู่
@@ -239,10 +241,10 @@ const MyJobsPage: React.FC = () => {
                     ) : findJobs.length > 0 ? (
                       <div className="space-y-4">
                         {findJobs.map((job) => (
-                          <Card key={job.findjob_id} className="border border-gray-200">
+                          <Card key={job.findjob_id || job.id} className="border border-gray-200">
                             <CardHeader className="pb-2">
                               <CardTitle className="text-lg font-medium">
-                                Find Job ID: {job.findjob_id}
+                                Find Job ID: {job.findjob_id || job.id}
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="pb-2">
