@@ -1,4 +1,3 @@
-
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -122,7 +121,7 @@ export interface Employer {
   rating?: number;
   reviews?: number;
   profile_image?: string;
-  name: string; // Make name required to match EmployerCard type
+  name: string; // Make name required for EmployerCard
 }
 
 export interface Job {

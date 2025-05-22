@@ -1,7 +1,7 @@
 
-import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc, getDoc, Firestore } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { FindJob, PostJob, MatchResult } from "@/types/types";
+import { MatchResult } from "@/types/types";
 
 // Interface for match result submission
 export interface MatchResultSubmission {

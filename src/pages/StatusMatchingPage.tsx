@@ -98,6 +98,9 @@ const StatusMatchingPage: React.FC = () => {
             
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
+              {job && (
+                <p className="text-gray-600">ประเภทงาน: {job.job_type}</p>
+              )}
             </div>
             
             {loading ? (
