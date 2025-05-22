@@ -75,7 +75,8 @@ const App = () => (
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
             <Route path="/jobs/:jobId" element={<JobDetailPage />} />
-            {/* Review route */}
+            {/* Review routes */}
+            <Route path="/review/:jobId" element={<ReviewPage />} />
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
             {/* New worker job detail and employer review routes */}
             <Route path="/worker/jobs/:jobId" element={<WorkerJobDetailPage />} />

@@ -27,8 +27,10 @@ export const getWorkerById = async (workerId: string): Promise<any> => {
     if (!querySnapshot.empty) {
       const workerData = querySnapshot.docs[0].data();
       const formattedWorker = {
-        name: `${workerData.first_name || ''} ${workerData.last_name || ''}`.trim(),
-        gender: workerData.gender || '',
+        name: (workerData.first_name_find_jobs && workerData.last_name_find_jobs) 
+              ? `${workerData.first_name_find_jobs} ${workerData.last_name_find_jobs}` 
+              : `${workerData.first_name || ''} ${workerData.last_name || ''}`.trim(),
+        gender: workerData.gender_find_jobs || workerData.gender || '',
         skills: workerData.skills || '',
         jobType: workerData.job_type || '',
         email: workerData.email || ''

@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,11 +32,16 @@ interface LocationState {
 }
 
 const ReviewPage: React.FC = () => {
+  const { jobId } = useParams<{ jobId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
   
   const [ratingValue, setRatingValue] = useState<number>(3);
+  
+  // Debug logs
+  console.log("Review Page - Job ID from params:", jobId);
+  console.log("Review Page - Location state:", state);
   
   // Setup form with default values
   const form = useForm<FormValues>({
@@ -50,6 +55,8 @@ const ReviewPage: React.FC = () => {
   const onSubmit = (values: FormValues) => {
     // In a real app, we would submit this data to an API
     console.log("Review submitted:", values);
+    console.log("For job:", jobId || state?.jobId);
+    console.log("For worker:", state?.workerId);
     
     // Show success toast
     toast.success("ขอบคุณสำหรับการให้คะแนน", {

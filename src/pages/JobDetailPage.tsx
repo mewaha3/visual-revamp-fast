@@ -73,9 +73,9 @@ const JobDetailPage: React.FC = () => {
   
   const handleJobDone = () => {
     if (jobId && matchDetails && matchDetails.length > 0) {
-      const workerName = matchDetails[0].name || 
-                         `${matchDetails[0].first_name || ''} ${matchDetails[0].last_name || ''}`.trim() || 
-                         'ไม่ระบุชื่อ';
+      const workerName = matchDetails[0].first_name_find_jobs && matchDetails[0].last_name_find_jobs
+        ? `${matchDetails[0].first_name_find_jobs} ${matchDetails[0].last_name_find_jobs}`
+        : matchDetails[0].name || `${matchDetails[0].first_name || ''} ${matchDetails[0].last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
                          
       toast.success("กำลังไปยังหน้ารีวิวแรงงาน");
       navigate(`/review/${jobId}`, {
@@ -126,7 +126,7 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {/* Worker Information Card - Enhanced with find job details */}
+              {/* Worker Information Card - Enhanced with all worker details */}
               {matchDetails && matchDetails.length > 0 && (
                 <Card className="mb-6">
                   <CardHeader>
