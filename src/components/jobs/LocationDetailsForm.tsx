@@ -47,7 +47,7 @@ const LocationDetailsForm = ({
   
   // Find the selected tambon to get its zip code
   useEffect(() => {
-    if (subdistrict && subdistricts.length > 0) {
+    if (subdistrict && subdistricts && subdistricts.length > 0) {
       const selectedTambon = subdistricts.find(
         (t) => t.name_th === subdistrict
       );
@@ -83,7 +83,7 @@ const LocationDetailsForm = ({
           <SelectContent>
             {isLoading ? (
               <SelectItem value="loading-province" disabled>กำลังโหลดข้อมูล...</SelectItem>
-            ) : provinces.length > 0 ? (
+            ) : provinces && provinces.length > 0 ? (
               provinces.map((prov) => (
                 <SelectItem key={prov.id} value={prov.name_th}>
                   {prov.name_th}
@@ -115,7 +115,7 @@ const LocationDetailsForm = ({
           <SelectContent>
             {!province ? (
               <SelectItem value="select-province-first" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-            ) : districts.length > 0 ? (
+            ) : districts && districts.length > 0 ? (
               districts.map((dist) => (
                 <SelectItem key={dist.id} value={dist.name_th}>
                   {dist.name_th}
@@ -146,7 +146,7 @@ const LocationDetailsForm = ({
           <SelectContent>
             {!district ? (
               <SelectItem value="select-district-first" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-            ) : subdistricts.length > 0 ? (
+            ) : subdistricts && subdistricts.length > 0 ? (
               subdistricts.map((tambon) => (
                 <SelectItem key={tambon.id} value={tambon.name_th}>
                   {tambon.name_th}

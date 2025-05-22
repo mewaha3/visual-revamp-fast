@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { addFindJob } from '@/services/findJobService';
-import { FindJob } from '@/types/types';
 import { useNavigate } from 'react-router-dom';
 import useThailandLocations from './useThailandLocations';
 import { toast } from 'sonner';
@@ -10,10 +9,11 @@ import { useAuth } from '@/context/AuthContext';
 export const useFindJobForm = () => {
   const { userEmail, userFullName, userId } = useAuth();
   const navigate = useNavigate();
+  
   const {
-    provinces,
-    filteredAmphures,
-    filteredTambons,
+    provinces = [],
+    filteredAmphures = [],
+    filteredTambons = [],
     isLoading,
     error,
     zipCode,
