@@ -7,8 +7,8 @@ import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
-import { useJobDetails } from '@/hooks/useJobDetails';
 import { Button } from "@/components/ui/button";
+import { useJobDetails } from '@/hooks/useJobDetails';
 import { CheckCircle, RefreshCcw } from 'lucide-react';
 import { toast } from "sonner";
 
@@ -78,7 +78,12 @@ const WorkerJobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {employer && <EmployerCard employer={employer} />}
+              {employer && (
+                <EmployerCard employer={{
+                  ...employer, 
+                  name: `${employer.first_name} ${employer.last_name}`.trim()
+                }} />
+              )}
               
               {/* Show job match details */}
               <JobMatchDetails matches={matchDetails} />

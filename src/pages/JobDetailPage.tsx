@@ -47,6 +47,10 @@ const JobDetailPage: React.FC = () => {
   const handleRetry = () => {
     window.location.reload();
   };
+  
+  // Dummy functions for JobActionButtons props
+  const handleAccept = () => {};
+  const handleDecline = () => {};
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -85,17 +89,19 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {employer && <EmployerCard employer={employer} />}
+              {employer && <EmployerCard employer={{...employer, name: `${employer.first_name} ${employer.last_name}`.trim()}} />}
               
               {/* Show job match details */}
               <JobMatchDetails matches={matchDetails} />
               
               <JobActionButtons 
-                jobId={jobId}
-                workerId={workerId}
+                jobId={jobId || ""}
+                workerId={workerId || ""}
                 hasPaid={hasPaid}
                 fromPayment={fromPaymentState}
                 onOpenPaymentModal={handleOpenPaymentModal}
+                onAccept={handleAccept}
+                onDecline={handleDecline}
               />
             </>
           ) : (

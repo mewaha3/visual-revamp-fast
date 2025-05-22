@@ -19,7 +19,6 @@ export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> =>
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       matches.push({
-        id: doc.id,
         findjob_id: data.findjob_id,
         job_id: data.job_id,
         name: userEmail,
@@ -31,7 +30,8 @@ export const getUserMatches = async (userEmail: string): Promise<FindMatch[]> =>
         province: data.province,
         district: data.district,
         subdistrict: data.subdistrict,
-        salary: data.job_salary
+        salary: data.job_salary,
+        id: doc.id  // Include the document ID
       });
     });
     
@@ -157,7 +157,10 @@ export const getMatchesForJob = async (jobId: string): Promise<MatchResult[]> =>
         time: `${data.start_time} - ${data.end_time}`,
         start_time: data.start_time,
         end_time: data.end_time,
-        location: `${data.province}/${data.district}/${data.subdistrict}`,
+        location: `${data.province || ""}/${data.district || ""}/${data.subdistrict || ""}`,
+        province: data.province,
+        district: data.district,
+        subdistrict: data.subdistrict,
         salary: data.job_salary,
         status: data.status,
         priority: data.priority,

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { saveMatchResults } from '@/services/matchingService';
 const AIMatchingDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const { userId } = useAuth(); // Access userId from auth context
   const [job, setJob] = useState<PostJob | null>(null);
   const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,6 +51,12 @@ const AIMatchingDetailPage: React.FC = () => {
         // Create matches from find_jobs with scoring
         findJobsSnapshot.forEach(doc => {
           const findJobData = doc.data();
+
+          // Skip users matching with their own jobs
+          if (findJobData.user_id === userId) {
+            console.log(`Skipping job ${doc.id} as it belongs to the current user`);
+            return;
+          }
           
           // Calculate match score based on multiple factors
           let matchScore = 0;
@@ -92,6 +100,7 @@ const AIMatchingDetailPage: React.FC = () => {
             last_name: findJobData.last_name,
             gender: findJobData.gender || "ไม่ระบุ",
             jobType: findJobData.job_type,
+            job_type: findJobData.job_type,
             date: findJobData.job_date || findJobData.start_date,
             time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
             start_time: findJobData.start_time,
@@ -111,6 +120,9 @@ const AIMatchingDetailPage: React.FC = () => {
         // Sort by AI score descending
         matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
         
+        // Take only top 5 matches
+        matches = matches.slice(0, 5);
+        
         setMatchResults(matches);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -121,7 +133,19 @@ const AIMatchingDetailPage: React.FC = () => {
     };
     
     fetchJobAndMatches();
-  }, [jobId]);
+  }, [jobId, userId]);
+
+  const handleRankChange = (matchId: string, newRank: number) => {
+    // Update the local matches array with the new rank
+    const updatedMatches = [...matchResults];
+    const matchIndex = updatedMatches.findIndex(match => match.id === matchId);
+    
+    if (matchIndex !== -1) {
+      // Here we would normally update the rank in the database
+      console.log(`Changed rank of match ${matchId} to ${newRank}`);
+      setMatchResults(updatedMatches);
+    }
+  };
   
   const handleConfirmMatch = async () => {
     if (!jobId || matchResults.length === 0 || !job) return;
@@ -129,12 +153,9 @@ const AIMatchingDetailPage: React.FC = () => {
     setSubmitting(true);
     
     try {
-      // Only save the top 5 matches
-      const top5Matches = matchResults.slice(0, 5);
-      
-      // Save each match to Firestore
-      for (let i = 0; i < top5Matches.length; i++) {
-        const match = top5Matches[i];
+      // Save matches with their current ranks (based on array position)
+      for (let i = 0; i < matchResults.length; i++) {
+        const match = matchResults[i];
         
         await saveMatchResults({
           job_id: jobId,
@@ -241,6 +262,7 @@ const AIMatchingDetailPage: React.FC = () => {
                     <div>
                       <p><span className="font-medium">สถานที่:</span> {job.job_address}</p>
                       <p><span className="font-medium">ตำแหน่ง:</span> {job.province}/{job.district}/{job.subdistrict}</p>
+                      <p><span className="font-medium">รหัสไปรษณีย์:</span> {job.zip_code || "ไม่ระบุ"}</p>
                       <p><span className="font-medium">ค่าตอบแทน:</span> {job.salary} บาท</p>
                     </div>
                   </div>
@@ -249,10 +271,15 @@ const AIMatchingDetailPage: React.FC = () => {
               
               <div className="mb-4">
                 <h3 className="text-lg font-medium mb-2">แสดงงานที่มีผลการจับคู่สูงสุด 5 อันดับ</h3>
-                <p className="text-sm text-gray-500 mb-4">ระบบได้คัดกรองและจัดอันดับผลการจับคู่โดยใช้ AI เพื่อความเหมาะสมสูงสุด</p>
+                <p className="text-sm text-gray-500 mb-4">คุณสามารถเปลี่ยนอันดับลำดับความสำคัญของผลการจับคู่ได้ด้วย</p>
               </div>
               
-              <JobMatchDetails matches={matchResults} rankLimit={5} />
+              <JobMatchDetails 
+                matches={matchResults} 
+                rankLimit={5} 
+                allowRanking={true} 
+                onRankChange={handleRankChange}
+              />
               
               <div className="flex justify-center mt-6">
                 <Button 

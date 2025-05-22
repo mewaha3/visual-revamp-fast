@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserPostJobs } from '@/services/jobService';
 import { getUnmatchedFindJobs } from '@/services/firestoreService';
 import { updateMatchResultStatus } from '@/services/matchingService';
-import { StatusResult } from '@/types/types';
+import { StatusResult, FindJob } from '@/types/types';
 import { Clipboard, Check, X, RefreshCw, Loader2 } from 'lucide-react';
 import { toast } from "sonner";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
@@ -18,7 +19,7 @@ import { db } from '@/lib/firebase';
 const MyJobsPage: React.FC = () => {
   const { userProfile, userId, userEmail, userFullName } = useAuth();
   const [postJobs, setPostJobs] = useState<any[]>([]);
-  const [findJobs, setFindJobs] = useState<any[]>([]);
+  const [findJobs, setFindJobs] = useState<FindJob[]>([]);
   const [matches, setMatches] = useState<StatusResult[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -256,7 +257,10 @@ const MyJobsPage: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-3 gap-1">
                               <span className="font-medium">สถานที่:</span>
-                              <span className="col-span-2">{job.job_address}</span>
+                              <span className="col-span-2">
+                                {job.province}/{job.district}/{job.subdistrict}
+                                {job.zip_code ? ` (${job.zip_code})` : ""}
+                              </span>
                             </div>
                             <div className="grid grid-cols-3 gap-1">
                               <span className="font-medium">ค่าจ้าง:</span>
@@ -323,11 +327,11 @@ const MyJobsPage: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">ทักษะ:</span>
-                                  <span className="col-span-2">{job.skills}</span>
+                                  <span className="col-span-2">{job.skills || "ไม่ระบุ"}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">วันที่:</span>
-                                  <span className="col-span-2">{job.job_date}</span>
+                                  <span className="col-span-2">{job.job_date || job.start_date || "ไม่ระบุ"}</span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">เวลา:</span>
@@ -335,11 +339,22 @@ const MyJobsPage: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">สถานที่:</span>
-                                  <span className="col-span-2">{job.province}</span>
+                                  <span className="col-span-2">
+                                    {job.province || "ไม่ระบุจังหวัด"}/
+                                    {job.district || "ไม่ระบุเขต"}/
+                                    {job.subdistrict || "ไม่ระบุแขวง"}
+                                    {job.zip_code ? ` (${job.zip_code})` : ""}
+                                  </span>
                                 </div>
                                 <div className="grid grid-cols-3 gap-1">
                                   <span className="font-medium">ค่าจ้าง:</span>
-                                  <span className="col-span-2">{job.start_salary} - {job.range_salary} บาท</span>
+                                  <span className="col-span-2">
+                                    {job.start_salary && job.range_salary 
+                                      ? `${job.start_salary} - ${job.range_salary} บาท`
+                                      : job.expected_salary 
+                                        ? `${job.expected_salary} บาท`
+                                        : "ไม่ระบุ"}
+                                  </span>
                                 </div>
                               </div>
                             </CardContent>

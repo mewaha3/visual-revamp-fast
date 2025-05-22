@@ -71,6 +71,7 @@ export interface FindMatch {
     district: string;
     subdistrict: string;
     salary: number;
+    id?: string; // Add id to fix type error
 }
 
 // Update JOB_TYPES with improved icons
@@ -107,6 +108,7 @@ export interface JobDetail {
   findjob_id?: string;
   detail?: string;
   name?: string; // Add name to fix type errors in matchMocks
+  zip_code?: string; // Add zip_code
 }
 
 // Update Employer interface with required fields
@@ -119,7 +121,7 @@ export interface Employer {
   rating?: number;
   reviews?: number;
   profile_image?: string;
-  name: string; // Make name required to fix type errors
+  name?: string; // Make name optional to avoid type errors
 }
 
 export interface Job {
@@ -191,6 +193,8 @@ export interface MatchResult {
   location_match?: boolean;
   province_match?: boolean;
   province?: string;
+  district?: string; // Add district
+  subdistrict?: string; // Add subdistrict
   workerId?: string;
   priority?: number;
   first_name?: string;

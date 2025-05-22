@@ -1,18 +1,64 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MatchResult } from '@/types/types';
-import { User, Calendar, Clock, MapPin, Briefcase, Star } from 'lucide-react';
+import { User, Calendar, Clock, MapPin, Briefcase, Star, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
   rankLimit?: number;
+  allowRanking?: boolean;
+  onRankChange?: (id: string, newRank: number) => void;
+  showViewButton?: boolean;
+  onViewDetails?: (jobId: string) => void;
 }
 
-const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches, rankLimit }) => {
+const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ 
+  matches, 
+  rankLimit,
+  allowRanking = false,
+  onRankChange,
+  showViewButton = false,
+  onViewDetails 
+}) => {
   // If rankLimit is provided, only show that many matches
-  const displayMatches = rankLimit ? matches.slice(0, rankLimit) : matches;
+  const [displayMatches, setDisplayMatches] = useState<MatchResult[]>(
+    rankLimit ? matches.slice(0, rankLimit) : matches
+  );
+  
+  const handleRankUp = (index: number) => {
+    if (!allowRanking || index === 0 || !onRankChange) return;
+    
+    const newMatches = [...displayMatches];
+    const temp = newMatches[index];
+    newMatches[index] = newMatches[index - 1];
+    newMatches[index - 1] = temp;
+    
+    // Update priority based on new positions
+    if (temp.id && onRankChange) {
+      onRankChange(temp.id, index);
+    }
+    
+    setDisplayMatches(newMatches);
+  };
+  
+  const handleRankDown = (index: number) => {
+    if (!allowRanking || index === displayMatches.length - 1 || !onRankChange) return;
+    
+    const newMatches = [...displayMatches];
+    const temp = newMatches[index];
+    newMatches[index] = newMatches[index + 1];
+    newMatches[index + 1] = temp;
+    
+    // Update priority based on new positions
+    if (temp.id && onRankChange) {
+      onRankChange(temp.id, index + 2);
+    }
+    
+    setDisplayMatches(newMatches);
+  };
   
   if (!matches || matches.length === 0) {
     return (
@@ -93,20 +139,53 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches, rankLimit })
               
               <div className="flex items-start mt-2">
                 <MapPin className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
-                <span className="text-gray-700 text-sm">{match.location || match.province || "ไม่ระบุสถานที่"}</span>
+                <span className="text-gray-700 text-sm">
+                  {match.location || 
+                   (match.province || match.district || match.subdistrict ? 
+                    `${match.province || "ไม่ระบุจังหวัด"} / ${match.district || "ไม่ระบุเขต"} / ${match.subdistrict || "ไม่ระบุแขวง"}` : 
+                    "ไม่ระบุสถานที่")}
+                </span>
               </div>
-              
-              {match.aiScore !== undefined && (
-                <div className="mt-2 flex items-center">
-                  <Star className="h-4 w-4 mr-2 text-amber-500" />
-                  <span className="font-medium">AI Score: {match.aiScore.toFixed(2)}</span>
-                </div>
-              )}
               
               {match.email && (
                 <div className="mt-2 text-sm text-gray-600">
                   <span className="font-medium">อีเมล:</span> {match.email}
                 </div>
+              )}
+              
+              {/* Ranking buttons shown only when allowed */}
+              {allowRanking && index > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2"
+                  onClick={() => handleRankUp(index)}
+                >
+                  <ArrowUp size={16} />
+                </Button>
+              )}
+              
+              {allowRanking && index < displayMatches.length - 1 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
+                  onClick={() => handleRankDown(index)}
+                >
+                  <ArrowDown size={16} />
+                </Button>
+              )}
+              
+              {/* View details button */}
+              {showViewButton && match.status === "accepted" && onViewDetails && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-3 w-full"
+                  onClick={() => onViewDetails(match.job_id || "")}
+                >
+                  ดูรายละเอียดงาน
+                </Button>
               )}
             </div>
           ))}

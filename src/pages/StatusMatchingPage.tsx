@@ -62,6 +62,10 @@ const StatusMatchingPage: React.FC = () => {
     window.location.reload();
   };
 
+  const handleViewJobDetails = (jobId: string) => {
+    navigate(`/job-detail/${jobId}`);
+  };
+
   if (!jobId) {
     return <div>Invalid job ID</div>;
   }
@@ -133,7 +137,11 @@ const StatusMatchingPage: React.FC = () => {
                 <p>ไม่พบข้อมูลสถานะการจับคู่</p>
               </div>
             ) : (
-              <JobMatchDetails matches={statusResults} />
+              <JobMatchDetails 
+                matches={statusResults} 
+                showViewButton={true}
+                onViewDetails={handleViewJobDetails}
+              />
             )}
           </div>
         </div>
