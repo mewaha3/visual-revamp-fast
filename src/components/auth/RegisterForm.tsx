@@ -7,7 +7,6 @@ import { useRegisterForm } from "@/hooks/useRegisterForm";
 // Import modular form sections
 import PersonalInfoSection from "./form-sections/PersonalInfoSection";
 import AddressSection from "./form-sections/AddressSection";
-import DocumentsSection from "./form-sections/DocumentsSection";
 import AccountSection from "./form-sections/AccountSection";
 
 const RegisterForm = () => {
@@ -15,7 +14,6 @@ const RegisterForm = () => {
     form,
     isSubmitting,
     errorMessage,
-    handleDocumentUpload,
     onSubmit
   } = useRegisterForm();
 
@@ -37,9 +35,6 @@ const RegisterForm = () => {
         
         {/* Address Section */}
         <AddressSection />
-        
-        {/* Documents Upload Section */}
-        <DocumentsSection onDocumentUpload={handleDocumentUpload} />
         
         {/* Account Section */}
         <AccountSection />

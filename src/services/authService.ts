@@ -6,10 +6,7 @@ import {
   createUserWithEmailAndPassword, 
   updateProfile,
   doc, 
-  setDoc, 
-  ref, 
-  uploadBytes, 
-  getDownloadURL
+  setDoc
 } from "@/lib/firebase";
 
 // Interface for user registration data
@@ -27,12 +24,6 @@ export interface UserRegistrationData {
   district: string;
   subdistrict: string;
   zip_code: string;
-  documents?: {
-    certificate?: File | null;
-    passport?: File | null;
-    visa?: File | null;
-    work_permit?: File | null;
-  };
 }
 
 /**
@@ -65,40 +56,13 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       displayName: `${userData.first_name} ${userData.last_name}`
     });
     console.log("User display name updated successfully");
-
-    // Step 3: Upload documents if available
-    const documentUrls: Record<string, string | null> = {
-      certificate: null,
-      passport: null,
-      visa: null,
-      work_permit: null
-    };
-
-    if (userData.documents) {
-      console.log("Processing user documents for upload...");
-      for (const [docType, file] of Object.entries(userData.documents)) {
-        if (file) {
-          console.log(`Uploading ${docType} document:`, file.name);
-          try {
-            const fileExtension = file.name.split('.').pop();
-            const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
-            await uploadBytes(storageRef, file);
-            documentUrls[docType] = await getDownloadURL(storageRef);
-            console.log(`Document ${docType} uploaded successfully. URL:`, documentUrls[docType]);
-          } catch (uploadError) {
-            console.error(`Error uploading ${docType} document:`, uploadError);
-            // Continue with registration even if document upload fails
-          }
-        }
-      }
-    }
     
     // Convert date to string if it's a Date object
     const formattedDob = typeof userData.dob === 'object' 
       ? userData.dob.toISOString().split('T')[0]
       : userData.dob;
 
-    // Step 4: Create user profile document in Firestore
+    // Step 3: Create user profile document in Firestore
     // IMPORTANT: We do NOT save the password in Firestore
     const userDocRef = doc(db, "users", uid);
     
@@ -116,11 +80,6 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       subdistrict: userData.subdistrict,
       zip_code: userData.zip_code,
       email: userData.email,
-      // Document URLs
-      certificate: documentUrls.certificate,
-      passport: documentUrls.passport,
-      visa: documentUrls.visa,
-      work_permit: documentUrls.work_permit,
       // Metadata
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -129,44 +88,15 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     };
     
     console.log("Attempting to save user profile to Firestore with uid:", uid);
+    console.log("User profile data:", userProfileData);
     
-    try {
-      // Force setDoc to create the document, not just update it
-      await setDoc(userDocRef, userProfileData);
-      console.log("User profile saved successfully to Firestore");
-    } catch (firestoreError) {
-      console.error("Error saving to Firestore:", firestoreError);
-      // Even if Firestore save fails, we don't throw here since the user account was created
-      // Instead we log the error but still return the user ID
-    }
+    // Use setDoc to ensure document is created with the specific ID (uid)
+    await setDoc(userDocRef, userProfileData);
+    console.log("User profile saved successfully to Firestore");
     
     return uid;
   } catch (error) {
     console.error("Error during registration:", error);
-    throw error;
-  }
-}
-
-/**
- * Upload a document to Firebase Storage
- * 
- * @param file File to upload
- * @param userId User ID
- * @param docType Document type (e.g., 'idcard', 'passport')
- * @returns Promise resolving to the download URL
- */
-export async function uploadUserDocument(
-  file: File, 
-  userId: string, 
-  docType: string
-): Promise<string> {
-  try {
-    const fileExtension = file.name.split('.').pop();
-    const storageRef = ref(storage, `users/${userId}/documents/${docType}.${fileExtension}`);
-    await uploadBytes(storageRef, file);
-    return await getDownloadURL(storageRef);
-  } catch (error) {
-    console.error(`Error uploading ${docType}:`, error);
     throw error;
   }
 }

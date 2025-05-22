@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,24 +32,11 @@ export const registerFormSchema = z.object({
 
 export type RegisterFormValues = z.infer<typeof registerFormSchema>;
 
-interface DocumentsState {
-  certificate: File | null;
-  passport: File | null;
-  visa: File | null;
-  work_permit: File | null;
-}
-
 export function useRegisterForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
-  const [documents, setDocuments] = useState<DocumentsState>({
-    certificate: null,
-    passport: null,
-    visa: null,
-    work_permit: null,
-  });
   const [showForeignerDocs, setShowForeignerDocs] = useState(false);
 
   // Initialize form with validation schema
@@ -73,15 +60,10 @@ export function useRegisterForm() {
   });
 
   // Update document requirements when nationality changes
-  useEffect(() => {
+  useState(() => {
     const nationality = form.watch("nationality");
     setShowForeignerDocs(nationality !== "Thai");
-  }, [form.watch("nationality")]);
-
-  const handleDocumentUpload = (type: keyof DocumentsState, file: File | null) => {
-    console.log(`Document uploaded: ${type}`, file ? file.name : "null");
-    setDocuments(prev => ({ ...prev, [type]: file }));
-  };
+  });
 
   const onSubmit = async (values: RegisterFormValues) => {
     setIsSubmitting(true);
@@ -95,8 +77,7 @@ export function useRegisterForm() {
       console.log("Form submission values:", { 
         ...values, 
         dob: formattedDate, 
-        password: "[REDACTED]",
-        documents: documents ? "Documents attached" : "No documents"
+        password: "[REDACTED]"
       });
       
       // Prepare user data for registration - ensure all required fields are included
@@ -113,8 +94,7 @@ export function useRegisterForm() {
         province: values.province,
         district: values.district,
         subdistrict: values.subdistrict,
-        zip_code: values.zip_code,
-        documents: documents
+        zip_code: values.zip_code
       };
       
       // Register the user using the authService
@@ -164,9 +144,7 @@ export function useRegisterForm() {
     form,
     isSubmitting,
     errorMessage,
-    documents,
     showForeignerDocs,
-    handleDocumentUpload,
     onSubmit
   };
 }
