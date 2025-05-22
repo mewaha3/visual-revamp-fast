@@ -62,12 +62,7 @@ const StatusMatchingPage: React.FC = () => {
   };
 
   const handleViewJobDetails = (jobId: string) => {
-    navigate(`/job-detail/${jobId}`);
-  };
-
-  // Check if a match has "on_queue" status (รอการตอบรับ)
-  const isOnQueue = (status: string | undefined): boolean => {
-    return status?.toLowerCase() === 'on_queue';
+    navigate(`/match-detail/${jobId}`);
   };
 
   if (!jobId) {
@@ -153,7 +148,7 @@ const StatusMatchingPage: React.FC = () => {
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
                 showSkills={true}
-                hideButtonForStatus={['on_queue']} // Hide view button for on_queue status
+                hideButtonForStatus={['on_queue', 'declined']} // Hide view button for on_queue and declined status
               />
             )}
           </div>
