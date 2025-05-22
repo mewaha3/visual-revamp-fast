@@ -79,6 +79,7 @@ export function useRegisterForm() {
   }, [form.watch("nationality")]);
 
   const handleDocumentUpload = (type: keyof DocumentsState, file: File | null) => {
+    console.log(`Document uploaded: ${type}`, file ? file.name : "null");
     setDocuments(prev => ({ ...prev, [type]: file }));
   };
 
@@ -89,6 +90,14 @@ export function useRegisterForm() {
     try {
       // Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
+      
+      // Log what we're submitting
+      console.log("Form submission values:", { 
+        ...values, 
+        dob: formattedDate, 
+        password: "[REDACTED]",
+        documents: documents ? "Documents attached" : "No documents"
+      });
       
       // Prepare user data for registration - ensure all required fields are included
       const userData: UserRegistrationData = {
@@ -109,7 +118,8 @@ export function useRegisterForm() {
       };
       
       // Register the user using the authService
-      await registerUser(userData);
+      const userId = await registerUser(userData);
+      console.log("Registration successful, userId:", userId);
       
       toast({
         title: "ลงทะเบียนสำเร็จ",

@@ -37,7 +37,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCfgHWEJjpI5J5vvXRlpBtvp7xk8mF2HOc",
   authDomain: "fastlabor-4b8d5.firebaseapp.com",
   projectId: "fastlabor-4b8d5",
-  storageBucket: "fastlabor-4b8d5.firebaserestorage.app",
+  storageBucket: "fastlabor-4b8d5.appspot.com",
   messagingSenderId: "274887841093",
   appId: "1:274887841093:web:60da2ce23cb9bc754c1a2c",
   measurementId: "G-8W9EYTHYWT"

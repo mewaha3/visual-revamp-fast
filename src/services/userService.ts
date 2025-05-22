@@ -5,16 +5,23 @@ import { db } from "@/lib/firebase";
 // Get user profile by userId
 export async function getUserProfile(userId: string): Promise<any | null> {
   try {
-    if (!userId) return null;
+    if (!userId) {
+      console.error("Cannot get user profile: No user ID provided");
+      return null;
+    }
     
+    console.log(`Fetching user profile for user ID: ${userId}`);
     const userDocRef = doc(db, "users", userId);
     const userDoc = await getDoc(userDocRef);
     
     if (userDoc.exists()) {
+      console.log("User profile found:", userDoc.id);
       return { id: userDoc.id, ...userDoc.data() };
+    } else {
+      console.warn(`No profile found for user ID: ${userId}`);
+      return null;
     }
     
-    return null;
   } catch (error) {
     console.error("Error getting user profile:", error);
     return null;
