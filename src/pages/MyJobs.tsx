@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { TabMenu } from "@/components/TabMenu";
-import { JobResults } from "@/components/jobs/JobResults";
+import TabMenu from "@/components/TabMenu";
+import JobResults from "@/components/jobs/JobResults";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/context/AuthContext";

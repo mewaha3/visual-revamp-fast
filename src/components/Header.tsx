@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,20 @@ const Header = () => {
     }
   };
 
+  // Display name formatting function
+  const displayName = () => {
+    if (userFullName) {
+      // Split the full name to get first and last name
+      const nameParts = userFullName.split(' ');
+      if (nameParts.length >= 2) {
+        // Show first name and last name
+        return `${nameParts[0]} ${nameParts[1]}`;
+      }
+      return userFullName;
+    }
+    return userEmail;
+  };
+
   return (
     <header className="py-4 bg-white/90 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="container flex items-center justify-between">
@@ -78,7 +93,7 @@ const Header = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-fastlabor-700">
                 <User size={18} />
-                <span className="font-medium">{userFullName || userEmail}</span>
+                <span className="font-medium">{displayName()}</span>
               </div>
               <Button 
                 variant="outline" 
@@ -143,7 +158,7 @@ const Header = () => {
                 <>
                   <div className="flex items-center gap-2 text-fastlabor-700 py-2">
                     <User size={18} />
-                    <span className="font-medium">{userFullName || userEmail}</span>
+                    <span className="font-medium">{displayName()}</span>
                   </div>
                   <Button 
                     variant="outline" 

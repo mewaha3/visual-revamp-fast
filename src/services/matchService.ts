@@ -1,84 +1,76 @@
 
-import { collection, getDocs, query, where, serverTimestamp, updateDoc, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { MatchResult } from "@/types/types";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
-// Interface for match results
+// Define the JobMatch interface to match the expected fields in AIMatchingPage
 export interface JobMatch {
   id: string;
-  status: string;
-  jobId: string;
-  matchScore: number;
+  employer_name: string;
+  job_type: string;
+  district: string;
+  province: string;
+  job_date: string;
+  start_time: string;
+  end_time: string;
+  start_salary: number;
+  range_salary: number;
+  skills: string[];
+  job_id: string;
 }
 
-// Update a match result status
-export async function updateMatchStatus(matchId: string, status: "accepted" | "declined" | "on_queue"): Promise<boolean> {
+// Get job matches for a specific user
+export async function getJobMatches(userId: string): Promise<JobMatch[]> {
   try {
-    const docRef = doc(db, "match_results", matchId);
-    const docSnap = await getDoc(docRef);
+    // Mock data for testing
+    // In a real implementation, this would fetch from Firestore
+    const mockMatches: JobMatch[] = [
+      {
+        id: "match1",
+        job_id: "job123",
+        employer_name: "บริษัท เอบีซี จำกัด",
+        job_type: "แม่บ้าน",
+        district: "บางรัก",
+        province: "กรุงเทพมหานคร",
+        job_date: "2025-06-15",
+        start_time: "09:00",
+        end_time: "17:00",
+        start_salary: 400,
+        range_salary: 600,
+        skills: ["ทำความสะอาด", "ซักรีด"]
+      },
+      {
+        id: "match2",
+        job_id: "job456",
+        employer_name: "คุณสมศักดิ์ มีทรัพย์",
+        job_type: "คนสวน",
+        district: "ปทุมวัน",
+        province: "กรุงเทพมหานคร",
+        job_date: "2025-06-20",
+        start_time: "08:00",
+        end_time: "16:00",
+        start_salary: 450,
+        range_salary: 550,
+        skills: ["ตัดหญ้า", "ดูแลต้นไม้"]
+      }
+    ];
     
-    if (docSnap.exists()) {
-      await updateDoc(docRef, {
-        status: status,
-        updated_at: serverTimestamp()
-      });
-      
-      return true;
-    }
+    return mockMatches;
     
-    return false;
-  } catch (error) {
-    console.error(`Error updating match status to ${status}:`, error);
-    return false;
-  }
-}
-
-// Function to get job matches for a specific job
-export async function getJobMatches(jobId: string): Promise<JobMatch[]> {
-  try {
-    // Query match_results for the given job ID
-    const matchesQuery = query(
-      collection(db, "match_results"),
-      where("findjob_id", "==", jobId)
-    );
-    
-    const matchesSnapshot = await getDocs(matchesQuery);
-    
-    if (matchesSnapshot.empty) {
-      return [];
-    }
+    // Actual Firestore implementation would be:
+    /*
+    const matchesRef = collection(db, "matches");
+    const q = query(matchesRef, where("worker_id", "==", userId));
+    const querySnapshot = await getDocs(q);
     
     const matches: JobMatch[] = [];
-    matchesSnapshot.forEach((doc) => {
-      const data = doc.data();
-      matches.push({
-        id: doc.id,
-        status: data.status || "pending",
-        jobId: jobId,
-        matchScore: data.match_score || 0
-      });
+    querySnapshot.forEach((doc) => {
+      matches.push({ id: doc.id, ...doc.data() } as JobMatch);
     });
     
     return matches;
+    */
   } catch (error) {
-    console.error("Error getting job matches:", error);
+    console.error("Error fetching job matches:", error);
     return [];
-  }
-}
-
-// Function to check if a find job is matched
-export async function isJobMatched(jobId: string): Promise<boolean> {
-  try {
-    // Check if the job exists in match_results collection
-    const matchesQuery = query(
-      collection(db, "match_results"),
-      where("findjob_id", "==", jobId)
-    );
-    
-    const matchesSnapshot = await getDocs(matchesQuery);
-    return !matchesSnapshot.empty;
-  } catch (error) {
-    console.error("Error checking if job is matched:", error);
-    return false;
   }
 }
