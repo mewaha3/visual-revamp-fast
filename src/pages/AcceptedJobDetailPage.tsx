@@ -20,6 +20,7 @@ interface MatchJobDetail {
   last_name?: string;
   first_name_post_jobs?: string;
   last_name_post_jobs?: string;
+  gender_post_jobs?: string;
   job_type?: string;
   job_date?: string;
   start_time?: string;
@@ -264,16 +265,26 @@ const AcceptedJobDetailPage: React.FC = () => {
                 
                 <Card>
                   <CardHeader>
-                    <CardTitle>ข้อมูลนายจ้าง</CardTitle>
+                    <CardTitle>รายละเอียดนายจ้าง</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-start gap-2">
-                      <User className="text-fastlabor-600 mt-1 flex-shrink-0" size={18} />
-                      <div>
-                        <p className="font-medium">ชื่อ-นามสกุล</p>
-                        <p>{jobDetails.first_name_post_jobs && jobDetails.last_name_post_jobs ? 
-                            `${jobDetails.first_name_post_jobs} ${jobDetails.last_name_post_jobs}` : 
-                            'ไม่ระบุ'}</p>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-2">
+                        <User className="text-fastlabor-600 mt-1 flex-shrink-0" size={18} />
+                        <div>
+                          <p className="font-medium">ชื่อ-นามสกุล</p>
+                          <p>{jobDetails.first_name_post_jobs && jobDetails.last_name_post_jobs ? 
+                              `${jobDetails.first_name_post_jobs} ${jobDetails.last_name_post_jobs}` : 
+                              'ไม่ระบุ'}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-2">
+                        <User className="text-fastlabor-600 mt-1 flex-shrink-0" size={18} />
+                        <div>
+                          <p className="font-medium">เพศ</p>
+                          <p>{getFormattedGender(jobDetails.gender_post_jobs)}</p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
