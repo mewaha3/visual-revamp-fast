@@ -75,24 +75,6 @@ export interface UserProfile {
   [key: string]: any; // For any additional fields
 }
 
-// Note: We're removing the getUserProfile function here to avoid duplication
-// since we now have it in userService.ts
-
-// Helper function to update user profile data
-export async function updateUserProfile(userId: string, data: Partial<DocumentData>): Promise<boolean> {
-  try {
-    const docRef = doc(db, "users", userId);
-    await updateDoc(docRef, {
-      ...data,
-      updatedAt: new Date().toISOString()
-    });
-    return true;
-  } catch (error) {
-    console.error("Error updating user profile:", error);
-    return false;
-  }
-}
-
 // Export auth functions for easier use
 export {
   createUserWithEmailAndPassword,

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 
 export const useFindJobForm = () => {
-  const { userEmail, userFullName } = useAuth();
+  const { userEmail, userFullName, userId } = useAuth();
   const navigate = useNavigate();
   const {
     provinces,
