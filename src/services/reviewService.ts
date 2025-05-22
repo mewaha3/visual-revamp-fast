@@ -3,7 +3,7 @@ import { collection, addDoc, query, where, getDocs, doc, getDoc, updateDoc, serv
 import { db } from "@/lib/firebase";
 
 // Type definitions
-interface ReviewSubmission {
+export interface ReviewSubmission {
   match_id: string;
   employer_id: string;
   employer_name: string;
@@ -14,7 +14,7 @@ interface ReviewSubmission {
   review_type: 'worker_to_employer' | 'employer_to_worker';
 }
 
-interface Review extends ReviewSubmission {
+export interface Review extends ReviewSubmission {
   id: string;
   created_at: any;
 }
@@ -71,10 +71,18 @@ export const getUserReviews = async (userId: string, type: 'worker' | 'employer'
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       reviews.push({
         id: doc.id,
-        ...doc.data() as ReviewSubmission,
-        created_at: doc.data().created_at
+        match_id: data.match_id,
+        employer_id: data.employer_id,
+        employer_name: data.employer_name,
+        worker_id: data.worker_id,
+        worker_name: data.worker_name,
+        rating: data.rating,
+        comment: data.comment,
+        review_type: data.review_type,
+        created_at: data.created_at
       });
     });
     
@@ -93,10 +101,18 @@ export const getMatchReviews = async (matchId: string): Promise<Review[]> => {
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       reviews.push({
         id: doc.id,
-        ...doc.data() as ReviewSubmission,
-        created_at: doc.data().created_at
+        match_id: data.match_id,
+        employer_id: data.employer_id,
+        employer_name: data.employer_name,
+        worker_id: data.worker_id,
+        worker_name: data.worker_name,
+        rating: data.rating,
+        comment: data.comment,
+        review_type: data.review_type,
+        created_at: data.created_at
       });
     });
     

@@ -1,161 +1,220 @@
 
-import React, { useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, Star, Loader2 } from 'lucide-react';
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import { Star } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { submitReview } from '@/services/reviewService';
 
-// Define form schema
-const formSchema = z.object({
-  rating: z.number().min(1).max(5),
-  comment: z.string().min(1, {
-    message: "กรุณาใส่ความคิดเห็น"
-  })
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-interface LocationState {
-  jobId?: string;
-  employerName?: string;
-  jobType?: string;
+interface WorkerInfo {
+  firstName: string;
+  lastName: string;
+  userId: string;
 }
 
 const EmployerReviewPage: React.FC = () => {
-  const { jobId } = useParams<{ jobId: string }>();
-  const location = useLocation();
+  const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
-  const state = location.state as LocationState;
+  const { userId, userFullName } = useAuth();
   
-  const [ratingValue, setRatingValue] = useState<number>(3);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
+  const [workerInfo, setWorkerInfo] = useState<WorkerInfo | null>(null);
   
-  // Setup form with default values
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      rating: 3,
-      comment: ""
-    }
-  });
-  
-  const onSubmit = (values: FormValues) => {
-    // In a real app, we would submit this data to an API
-    console.log("Review submitted:", values);
+  useEffect(() => {
+    const fetchMatchDetails = async () => {
+      if (!matchId || !userId) {
+        setError('ข้อมูลไม่ครบถ้วน');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Get the match document
+        const matchDocRef = doc(db, "match_results", matchId);
+        const matchDoc = await getDoc(matchDocRef);
+        
+        if (!matchDoc.exists()) {
+          setError('ไม่พบข้อมูลงาน');
+          setLoading(false);
+          return;
+        }
+        
+        const matchData = matchDoc.data();
+        
+        // Check if this match belongs to the current user (as employer)
+        if (userId !== matchData.user_id) {
+          setError('คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้');
+          setLoading(false);
+          return;
+        }
+        
+        // Get worker info
+        setWorkerInfo({
+          firstName: matchData.first_name_find_jobs || 'ไม่ระบุชื่อ',
+          lastName: matchData.last_name_find_jobs || 'ไม่ระบุนามสกุล',
+          userId: matchData.workerId || ''
+        });
+        
+      } catch (error) {
+        console.error("Error fetching match details:", error);
+        setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Show success toast
-    toast.success("ขอบคุณสำหรับการให้คะแนน", {
-      description: `คุณให้คะแนน ${values.rating} ดาวสำหรับนายจ้างนี้`
-    });
-    
-    // Navigate to homepage after short delay
-    setTimeout(() => {
-      navigate('/', { replace: true });
-    }, 1500);
+    fetchMatchDetails();
+  }, [matchId, userId]);
+  
+  const handleRatingChange = (value: number) => {
+    setRating(value);
   };
   
+  const handleSubmitReview = async () => {
+    if (!matchId || !userId || !workerInfo) {
+      toast.error('ข้อมูลไม่ครบถ้วน กรุณาลองใหม่อีกครั้ง');
+      return;
+    }
+    
+    if (rating === 0) {
+      toast.error('กรุณาเลือกคะแนนรีวิว');
+      return;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      // Add a new review using the review service
+      const reviewData = {
+        match_id: matchId,
+        employer_id: userId,
+        employer_name: userFullName || 'Employer',
+        worker_id: workerInfo.userId,
+        worker_name: `${workerInfo.firstName} ${workerInfo.lastName}`,
+        rating: rating,
+        comment: comment,
+        review_type: 'employer_to_worker' // Employer reviewing worker
+      };
+      
+      const reviewId = await submitReview(reviewData);
+      
+      toast.success('ขอบคุณสำหรับการรีวิว');
+      
+      // Navigate back to my jobs page
+      navigate('/my-jobs');
+      
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      toast.error('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow py-8">
+      <main className="flex-grow py-6">
         <div className="container mx-auto px-4">
-          <Card className="max-w-lg mx-auto">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-2">
-                <Star className="text-yellow-400" size={32} />
+          <Button 
+            variant="outline" 
+            className="mb-4"
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            ย้อนกลับ
+          </Button>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">รีวิวผู้รับงาน</h1>
+            
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                <p>กำลังโหลดข้อมูล...</p>
               </div>
-              <CardTitle className="text-2xl">Review Employer</CardTitle>
-              <CardDescription>
-                ให้คะแนนและแสดงความคิดเห็นต่อนายจ้าง
-                {state?.employerName && (
-                  <div className="mt-2 font-medium">
-                    นายจ้าง: {state.employerName}
-                  </div>
-                )}
-                {state?.jobType && (
-                  <div className="text-sm text-muted-foreground">
-                    ประเภทงาน: {state.jobType}
-                  </div>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                  <FormField
-                    control={form.control}
-                    name="rating"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-2">
-                          <FormLabel>ให้คะแนน</FormLabel>
-                          <div className="py-4">
-                            <Slider
-                              min={1}
-                              max={5}
-                              step={1}
-                              defaultValue={[field.value]}
-                              onValueChange={(vals) => {
-                                const value = vals[0];
-                                setRatingValue(value);
-                                field.onChange(value);
-                              }}
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500">{error}</p>
+                <Button 
+                  onClick={() => navigate('/my-jobs')} 
+                  variant="outline" 
+                  className="mt-4"
+                >
+                  กลับไปยังรายการงาน
+                </Button>
+              </div>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>ให้คะแนนผู้รับงาน: {workerInfo?.firstName} {workerInfo?.lastName}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <Label htmlFor="rating" className="block text-lg mb-2">คะแนน</Label>
+                      <div className="flex items-center gap-2">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => handleRatingChange(value)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              size={32}
+                              className={value <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
                             />
-                          </div>
-                          <div className="flex justify-between">
-                            <span>แย่</span>
-                            <span className="font-bold">{ratingValue}/5</span>
-                            <span>ดีมาก</span>
-                          </div>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="comment"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>ความคิดเห็น</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="แสดงความคิดเห็นของคุณที่นี่..."
-                            className="resize-none min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex flex-col space-y-3">
-                    <Button 
-                      type="submit" 
-                      className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full"
-                    >
-                      ส่งรีวิว
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => navigate('/')}
-                    >
-                      ไปหน้าหลัก
-                    </Button>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="comment" className="block text-lg mb-2">ความคิดเห็น</Label>
+                      <Textarea
+                        id="comment"
+                        placeholder="แสดงความคิดเห็นเกี่ยวกับผู้รับงาน..."
+                        rows={5}
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div className="flex justify-center pt-4">
+                      <Button
+                        onClick={handleSubmitReview}
+                        disabled={submitting || rating === 0}
+                        className="px-8"
+                      >
+                        {submitting ? (
+                          <>
+                            <Loader2 className="animate-spin mr-2" size={18} />
+                            กำลังส่ง...
+                          </>
+                        ) : (
+                          'ส่งรีวิว'
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </main>
       <Footer />
