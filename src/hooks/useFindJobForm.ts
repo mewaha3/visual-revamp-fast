@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { addNewFindJob } from '@/services/findJobService';
+import { addFindJob } from '@/services/findJobService';
 import { FindJob } from '@/types/types';
 import { useNavigate } from 'react-router-dom';
 import useThailandLocations from './useThailandLocations';
@@ -83,7 +83,7 @@ export const useFindJobForm = () => {
 
     // Add the new job
     try {
-      await addNewFindJob(jobData);
+      await addFindJob(jobData);
       toast.success("ค้นหางานสำเร็จ!");
       
       // Navigate to the find tab of My Jobs

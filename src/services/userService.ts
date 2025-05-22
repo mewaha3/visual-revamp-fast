@@ -21,5 +21,5 @@ export async function getUserProfile(userId: string): Promise<any | null> {
   }
 }
 
-// For backward compatibility with firestoreService
-export { getUserProfile };
+// No need for the re-export here since we're already exporting the function above
+// Removing: export { getUserProfile };
