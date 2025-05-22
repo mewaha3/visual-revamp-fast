@@ -171,43 +171,47 @@ export interface MatchResultFirestore {
   skills?: string;
 }
 
-// Match result interface
 export interface MatchResult {
   id?: string;
-  job_id?: string;
-  findjob_id?: string;
-  first_name?: string;
-  last_name?: string;
-  name?: string;
+  name?: string; 
+  gender?: string;
   jobType?: string;
   job_type?: string;
   date?: string;
-  job_date?: string;
   time?: string;
-  start_time?: string;
-  end_time?: string;
-  province?: string;
-  district?: string;
-  subdistrict?: string;
-  salary?: number | string;
-  job_salary?: number;
-  status?: string;
-  skills?: string;
-  priority?: number;
-  gender?: string;
-  created_at?: any;
-  updated_at?: any;
-  // Additional fields that match the data in Firestore
-  workerId?: string;
-  userId?: string;
-  user_id?: string;
-  email?: string;
   location?: string;
+  salary?: number | string;
   aiScore?: number;
-  // Additional fields for employer/worker info
+  score?: number;
+  job_id?: string;
+  findjob_id?: string;
+  job_detail?: string;
+  findjob_name?: string;
+  findjob_gender?: string;
+  job_date?: string;
+  day_match?: boolean;
+  time_match?: boolean;
+  location_match?: boolean;
+  province_match?: boolean;
+  province?: string;
+  district?: string; // Add district
+  subdistrict?: string; // Add subdistrict
+  workerId?: string;
+  priority?: number;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  status?: string;
+  user_id?: string; // Add user_id field
+  start_time?: string; // Add start_time field
+  end_time?: string; // Add end_time field
+  first_name_post_jobs?: string;
+  last_name_post_jobs?: string;
+  gender_post_jobs?: string;
   first_name_find_jobs?: string;
   last_name_find_jobs?: string;
   gender_find_jobs?: string;
+  skills?: string; // Add skills field
 }
 
 export interface StatusResult {

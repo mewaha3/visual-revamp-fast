@@ -1,3 +1,4 @@
+
 import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MatchResult } from "@/types/types";
@@ -108,11 +109,11 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
             dataWithMetadata.gender_find_jobs = workerData.gender;
             dataWithMetadata.workerId = findJobData.user_id;
           }
-          
-          // Add skills info if available
-          if (findJobData.skills) {
-            dataWithMetadata.skills = findJobData.skills;
-          }
+        }
+        
+        // Add skills info if available
+        if (findJobData.skills) {
+          dataWithMetadata.skills = findJobData.skills;
         }
       }
     } catch (error) {
@@ -145,50 +146,6 @@ export async function updateMatchResultStatus(
   } catch (error) {
     console.error(`Error updating match status to ${status}:`, error);
     return false;
-  }
-}
-
-// Get job match details - this is the function we're adding
-export async function getJobMatchDetails(jobId: string) {
-  try {
-    const q = query(collection(db, "match_results"), where("job_id", "==", jobId));
-    const querySnapshot = await getDocs(q);
-    
-    const matches: MatchResult[] = [];
-    querySnapshot.forEach((doc) => {
-      matches.push({
-        id: doc.id,
-        job_id: doc.data().job_id,
-        findjob_id: doc.data().findjob_id,
-        first_name: doc.data().first_name,
-        last_name: doc.data().last_name,
-        name: `${doc.data().first_name || ""} ${doc.data().last_name || ""}`,
-        gender: doc.data().gender,
-        job_type: doc.data().job_type,
-        job_date: doc.data().job_date,
-        start_time: doc.data().start_time,
-        end_time: doc.data().end_time,
-        province: doc.data().province,
-        district: doc.data().district,
-        subdistrict: doc.data().subdistrict,
-        job_salary: doc.data().job_salary,
-        salary: doc.data().job_salary,
-        status: doc.data().status,
-        priority: doc.data().priority,
-        skills: doc.data().skills,
-        workerId: doc.data().workerId,
-        email: doc.data().email,
-        // Additional fields to match MatchResult interface
-        first_name_find_jobs: doc.data().first_name_find_jobs,
-        last_name_find_jobs: doc.data().last_name_find_jobs,
-        gender_find_jobs: doc.data().gender_find_jobs,
-      });
-    });
-    
-    return matches;
-  } catch (error) {
-    console.error("Error getting job match details:", error);
-    throw error;
   }
 }
 

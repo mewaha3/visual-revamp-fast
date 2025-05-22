@@ -71,18 +71,10 @@ export const getUserReviews = async (userId: string, type: 'worker' | 'employer'
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
-      const docData = doc.data();
       reviews.push({
         id: doc.id,
-        match_id: docData.match_id,
-        employer_id: docData.employer_id,
-        employer_name: docData.employer_name,
-        worker_id: docData.worker_id,
-        worker_name: docData.worker_name,
-        rating: docData.rating,
-        comment: docData.comment,
-        review_type: docData.review_type,
-        created_at: docData.created_at
+        ...doc.data() as ReviewSubmission,
+        created_at: doc.data().created_at
       });
     });
     
@@ -101,18 +93,10 @@ export const getMatchReviews = async (matchId: string): Promise<Review[]> => {
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
-      const docData = doc.data();
       reviews.push({
         id: doc.id,
-        match_id: docData.match_id,
-        employer_id: docData.employer_id,
-        employer_name: docData.employer_name,
-        worker_id: docData.worker_id,
-        worker_name: docData.worker_name,
-        rating: docData.rating,
-        comment: docData.comment,
-        review_type: docData.review_type,
-        created_at: docData.created_at
+        ...doc.data() as ReviewSubmission,
+        created_at: doc.data().created_at
       });
     });
     

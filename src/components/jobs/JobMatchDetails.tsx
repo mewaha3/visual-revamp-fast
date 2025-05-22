@@ -9,7 +9,7 @@ import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, Chevr
 interface JobMatchDetailsProps {
   matches: MatchResult[];
   showViewButton?: boolean;
-  onViewDetails?: (jobId: string, matchId?: string) => void;
+  onViewDetails?: (jobId: string) => void;
   allowRanking?: boolean;
   rankLimit?: number;
   onRankChange?: (matchId: string, newRank: number) => void;
@@ -209,22 +209,14 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                 </div>
               )}
               
-              {showViewButton && onViewDetails && 
+              {showViewButton && onViewDetails && match.job_id && 
                !shouldHideButton(match.status) && 
                match.status?.toLowerCase() !== 'declined' && 
                match.status?.toLowerCase() !== 'on_queue' && (
                 <Button 
                   variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    if (match.status?.toLowerCase() === 'accepted') {
-                      // For accepted jobs, pass the match ID to view the accepted job details
-                      onViewDetails(match.job_id || "", match.id);
-                    } else {
-                      // For other statuses, just pass the job ID
-                      onViewDetails(match.job_id || "");
-                    }
-                  }}
+                  size="sm" 
+                  onClick={() => onViewDetails(match.job_id || "")}
                   className="text-fastlabor-600 border-fastlabor-600"
                 >
                   ดูรายละเอียด

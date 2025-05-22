@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
@@ -38,11 +38,12 @@ interface MatchJobDetail {
   email?: string;
   workerId?: string;
   userId?: string;
-  user_id?: string; // Added this field as it may be used in match_results
 }
 
 const AcceptedJobDetailPage: React.FC = () => {
   const { matchId } = useParams<{ matchId: string }>();
+  const [searchParams] = useSearchParams();
+  const findjobId = searchParams.get('findjob');
   const navigate = useNavigate();
   const { userId } = useAuth();
   
@@ -63,24 +64,20 @@ const AcceptedJobDetailPage: React.FC = () => {
       setError(null);
 
       try {
-        console.log("Fetching match with ID:", matchId);
         // Get the match result document directly
         const matchDocRef = doc(db, "match_results", matchId);
         const matchDocSnap = await getDoc(matchDocRef);
 
         if (!matchDocSnap.exists()) {
-          console.error("Match document not found:", matchId);
           setError('ไม่พบข้อมูลงานที่จับคู่');
           setLoading(false);
           return;
         }
 
         const matchData = matchDocSnap.data();
-        console.log("Match data retrieved:", matchData);
         
         // Check if this match belongs to the current user
         if (userId !== matchData.workerId) {
-          console.error("User doesn't match worker ID:", userId, matchData.workerId);
           setError('คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้');
           setLoading(false);
           return;
@@ -88,7 +85,6 @@ const AcceptedJobDetailPage: React.FC = () => {
 
         // Check if the job is in the correct status
         if (matchData.status !== 'accepted') {
-          console.error("Job is not in accepted status:", matchData.status);
           setError('งานนี้ยังไม่ได้รับการยอมรับ');
           setLoading(false);
           return;
@@ -108,7 +104,7 @@ const AcceptedJobDetailPage: React.FC = () => {
     };
 
     fetchJobDetails();
-  }, [matchId, userId]);
+  }, [matchId, findjobId, userId]);
 
   const handleCompleteJob = async () => {
     if (!matchId || !jobDetails) return;

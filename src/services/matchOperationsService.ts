@@ -157,6 +157,7 @@ export const getMatchesForJob = async (jobId: string): Promise<MatchResult[]> =>
         time: `${data.start_time} - ${data.end_time}`,
         start_time: data.start_time,
         end_time: data.end_time,
+        location: `${data.province || ""}/${data.district || ""}/${data.subdistrict || ""}`,
         province: data.province,
         district: data.district,
         subdistrict: data.subdistrict,
@@ -166,11 +167,7 @@ export const getMatchesForJob = async (jobId: string): Promise<MatchResult[]> =>
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
-        workerId: data.workerId,
-        // Additional fields that were causing TypeScript errors
-        first_name_find_jobs: data.first_name_find_jobs,
-        last_name_find_jobs: data.last_name_find_jobs,
-        gender_find_jobs: data.gender_find_jobs,
+        workerId: data.workerId
       });
     });
     
