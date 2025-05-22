@@ -43,8 +43,21 @@ export default function AddressSection() {
     selectedProvince,
     selectedAmphure,
     selectedTambon,
-    userProfileLoaded
+    userProfileLoaded,
+    setInitialLocationValues
   } = useThailandLocations();
+
+  // Initialize location data from user profile
+  useEffect(() => {
+    if (provinceValue && !userProfileLoaded) {
+      console.log("Setting initial location values from user profile:", { 
+        provinceValue, 
+        districtValue, 
+        subdistrictValue 
+      });
+      setInitialLocationValues(provinceValue, districtValue, subdistrictValue);
+    }
+  }, [provinceValue, districtValue, subdistrictValue, userProfileLoaded, setInitialLocationValues]);
 
   // Update form fields when locations are selected from dropdowns
   useEffect(() => {

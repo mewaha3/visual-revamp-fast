@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -33,10 +32,11 @@ export default function ProfileEdit() {
         const userData = await getUserProfile(userId);
         
         if (userData) {
+          console.log("Loaded user profile data:", userData);
           // Format date if it exists
           const formattedDate = userData.dob ? userData.dob : "";
           
-          // Set profile data for the form
+          // Set profile data for the form including location data
           setProfileData({
             first_name: userData.first_name || "",
             last_name: userData.last_name || "",

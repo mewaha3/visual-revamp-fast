@@ -1,259 +1,183 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { Province, Amphure, Tambon } from '@/types/locationTypes';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
+import axios from 'axios';
+import { Thai_Province, Thai_Amphure, Thai_Tambon } from '@/types/locationTypes';
 
-export const useThailandLocations = () => {
-  // Auth context to get current user ID
-  const { userId } = useAuth();
+interface UseThailandLocationsReturn {
+  provinces: Thai_Province[];
+  filteredAmphures: Thai_Amphure[];
+  filteredTambons: Thai_Tambon[];
+  selectedProvince: string;
+  selectedAmphure: string;
+  selectedTambon: string;
+  zipCode: string;
+  isLoading: boolean;
+  error: string | null;
+  handleProvinceChange: (provinceName: string) => void;
+  handleAmphureChange: (amphureName: string) => void;
+  handleTambonChange: (tambonName: string) => void;
+  userProfileLoaded: boolean;
+  setInitialLocationValues: (province: string, district: string, subdistrict: string) => void;
+}
+
+const useThailandLocations = (): UseThailandLocationsReturn => {
+  // States for location data
+  const [provinces, setProvinces] = useState<Thai_Province[]>([]);
+  const [amphures, setAmphures] = useState<Thai_Amphure[]>([]);
+  const [tambons, setTambons] = useState<Thai_Tambon[]>([]);
   
-  // State for raw data
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [amphures, setAmphures] = useState<Amphure[]>([]);
-  const [tambons, setTambons] = useState<Tambon[]>([]);
+  // Selected location states
+  const [selectedProvince, setSelectedProvince] = useState<string>('');
+  const [selectedAmphure, setSelectedAmphure] = useState<string>('');
+  const [selectedTambon, setSelectedTambon] = useState<string>('');
+  const [zipCode, setZipCode] = useState<string>('');
   
-  // State for filtered data
-  const [filteredAmphures, setFilteredAmphures] = useState<Amphure[]>([]);
-  const [filteredTambons, setFilteredTambons] = useState<Tambon[]>([]);
-  
-  // Loading state
+  // UI states
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Selected values
-  const [selectedProvince, setSelectedProvince] = useState<string>("");
-  const [selectedAmphure, setSelectedAmphure] = useState<string>("");
-  const [selectedTambon, setSelectedTambon] = useState<string>("");
-  const [zipCode, setZipCode] = useState<string>("");
-  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
-  
-  // User profile data
   const [userProfileLoaded, setUserProfileLoaded] = useState<boolean>(false);
+  
+  // Filtered locations based on selections
+  const [filteredAmphures, setFilteredAmphures] = useState<Thai_Amphure[]>([]);
+  const [filteredTambons, setFilteredTambons] = useState<Thai_Tambon[]>([]);
 
-  // Fetch all data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  // Function to set initial location values from user profile
+  const setInitialLocationValues = useCallback((province: string, district: string, subdistrict: string) => {
+    console.log("Setting initial location values:", { province, district, subdistrict });
+    if (province) {
+      setSelectedProvince(province);
+      
+      // Find province by name
+      const foundProvince = provinces.find(p => p.name_th === province);
+      if (foundProvince && district) {
+        const provinceAmphures = amphures.filter(a => a.province_id === foundProvince.id);
+        setFilteredAmphures(provinceAmphures);
         
-        console.log("Fetching Thailand location data...");
-        
-        // Fetch provinces
-        const provinceResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json');
-        if (!provinceResponse.ok) {
-          throw new Error(`Failed to fetch provinces: ${provinceResponse.status}`);
-        }
-        const provinceData: Province[] = await provinceResponse.json();
-        
-        // Fetch amphures
-        const amphureResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json');
-        if (!amphureResponse.ok) {
-          throw new Error(`Failed to fetch amphures: ${amphureResponse.status}`);
-        }
-        const amphureData: Amphure[] = await amphureResponse.json();
-        
-        // Fetch tambons
-        const tambonResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json');
-        if (!tambonResponse.ok) {
-          throw new Error(`Failed to fetch tambons: ${tambonResponse.status}`);
-        }
-        const tambonData: Tambon[] = await tambonResponse.json();
-        
-        setProvinces(provinceData);
-        setAmphures(amphureData);
-        setTambons(tambonData);
-        setDataLoaded(true);
-        console.log("Thailand location data loaded successfully", {
-          provinces: provinceData.length,
-          amphures: amphureData.length,
-          tambons: tambonData.length
-        });
-        
-        // Now fetch user profile if userId is available
-        if (userId) {
-          try {
-            const userDocRef = doc(db, "users", userId);
-            const userDocSnap = await getDoc(userDocRef);
-            
-            if (userDocSnap.exists()) {
-              const userData = userDocSnap.data();
-              console.log("User data loaded:", userData);
-              
-              if (userData.province && userData.district && userData.subdistrict) {
-                console.log("Initializing locations from user profile:", {
-                  province: userData.province,
-                  district: userData.district,
-                  subdistrict: userData.subdistrict,
-                  zip_code: userData.zip_code
-                });
-                
-                // Initialize location data from user profile
-                initializeLocation(
-                  userData.province,
-                  userData.district,
-                  userData.subdistrict
-                );
-                
-                setUserProfileLoaded(true);
-              } else {
-                console.log("User has no location data saved");
-              }
-            } else {
-              console.log("No user document found");
-            }
-          } catch (userError) {
-            console.error("Error fetching user data:", userError);
+        // Find district by name
+        const foundAmphure = provinceAmphures.find(a => a.name_th === district);
+        if (foundAmphure && subdistrict) {
+          setSelectedAmphure(district);
+          
+          const amphureTambons = tambons.filter(t => t.amphure_id === foundAmphure.id);
+          setFilteredTambons(amphureTambons);
+          
+          // Find subdistrict and get zip code
+          const foundTambon = amphureTambons.find(t => t.name_th === subdistrict);
+          if (foundTambon) {
+            setSelectedTambon(subdistrict);
+            setZipCode(foundTambon.zip_code);
           }
         }
+      }
+    }
+    setUserProfileLoaded(true);
+  }, [provinces, amphures, tambons]);
+
+  // Load Thailand location data
+  useEffect(() => {
+    const fetchLocations = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // Fetch provinces
+        const provinceRes = await axios.get('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json');
+        setProvinces(provinceRes.data);
+        
+        // Fetch amphures
+        const amphureRes = await axios.get('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json');
+        setAmphures(amphureRes.data);
+        
+        // Fetch tambons
+        const tambonRes = await axios.get('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json');
+        setTambons(tambonRes.data);
+        
+        console.log("Thailand locations loaded:", {
+          provinces: provinceRes.data.length,
+          amphures: amphureRes.data.length,
+          tambons: tambonRes.data.length
+        });
       } catch (err) {
-        console.error('Error fetching location data:', err);
-        setError('Failed to load location data. Please try again later.');
+        console.error("Error fetching Thailand locations:", err);
+        setError('ไม่สามารถโหลดข้อมูลตำแหน่งได้ กรุณาลองใหม่อีกครั้ง');
       } finally {
         setIsLoading(false);
       }
     };
     
-    fetchData();
-  }, [userId]);
+    fetchLocations();
+  }, []);
 
-  // Initialize location dropdowns with saved user data
-  const initializeLocation = useCallback((provinceName: string, districtName: string, subdistrictName: string) => {
-    if (!dataLoaded || !provinces.length) {
-      console.log("Cannot initialize locations: Data not loaded yet");
-      return;
-    }
+  // Handle province selection
+  const handleProvinceChange = useCallback((provinceName: string) => {
+    setSelectedProvince(provinceName);
+    setSelectedAmphure('');
+    setSelectedTambon('');
+    setZipCode('');
     
-    console.log("Initializing with location data:", { provinceName, districtName, subdistrictName });
-    
-    try {
-      // Find province by name
-      const provinceObj = provinces.find(p => p.name_th === provinceName);
-      if (!provinceObj) {
-        console.log("Province not found:", provinceName);
-        return;
-      }
-      
-      // Set province and filter amphures
-      setSelectedProvince(provinceName);
-      const filteredAmp = amphures.filter(a => a.province_id === provinceObj.id);
-      setFilteredAmphures(filteredAmp);
-      
-      // Find amphure by name
-      const amphureObj = filteredAmp.find(a => a.name_th === districtName);
-      if (!amphureObj) {
-        console.log("Amphure not found:", districtName);
-        return;
-      }
-      
-      // Set amphure and filter tambons
-      setSelectedAmphure(districtName);
-      const filteredTmb = tambons.filter(t => t.amphure_id === amphureObj.id);
-      setFilteredTambons(filteredTmb);
-      
-      // Find tambon by name
-      const tambonObj = filteredTmb.find(t => t.name_th === subdistrictName);
-      if (!tambonObj) {
-        console.log("Tambon not found:", subdistrictName);
-        return;
-      }
-      
-      // Set tambon and zip code
-      setSelectedTambon(subdistrictName);
-      const zipCodeValue = String(tambonObj.zip_code);
-      setZipCode(zipCodeValue);
-      console.log("Location initialization complete with zip code:", zipCodeValue);
-      
-    } catch (error) {
-      console.error("Error during location initialization:", error);
-    }
-  }, [provinces, amphures, tambons, dataLoaded]);
-
-  // Filter amphures when province changes
-  const handleProvinceChange = (provinceNameTh: string) => {
-    console.log("Province changed to:", provinceNameTh);
-    
-    // Reset dependent fields
-    setSelectedProvince(provinceNameTh);
-    setSelectedAmphure("");
-    setSelectedTambon("");
-    setZipCode("");
-    setFilteredTambons([]);
-    
-    // Find the province by Thai name
-    const selectedProvObj = provinces.find(p => p.name_th === provinceNameTh);
-    
-    if (selectedProvObj) {
-      // Filter amphures by province_id
-      const filteredAmp = amphures.filter(a => a.province_id === selectedProvObj.id);
-      setFilteredAmphures(filteredAmp);
-      console.log(`Found ${filteredAmp.length} districts for province ${provinceNameTh}`);
-    } else {
-      console.log("Province not found:", provinceNameTh);
-      setFilteredAmphures([]);
-    }
-  };
-
-  // Filter tambons when amphure changes
-  const handleAmphureChange = (amphureNameTh: string) => {
-    console.log("District changed to:", amphureNameTh);
-    
-    // Reset dependent fields
-    setSelectedAmphure(amphureNameTh);
-    setSelectedTambon("");
-    setZipCode("");
-    
-    // Find the amphure by Thai name
-    const selectedAmpObj = filteredAmphures.find(a => a.name_th === amphureNameTh);
-    
-    if (selectedAmpObj) {
-      // Filter tambons by amphure_id
-      const filteredTmb = tambons.filter(t => t.amphure_id === selectedAmpObj.id);
-      setFilteredTambons(filteredTmb);
-      console.log(`Found ${filteredTmb.length} subdistricts for district ${amphureNameTh}`);
-    } else {
-      console.log("District not found:", amphureNameTh);
+    const selectedProvinceData = provinces.find(province => province.name_th === provinceName);
+    if (selectedProvinceData) {
+      const provinceAmphures = amphures.filter(amphure => amphure.province_id === selectedProvinceData.id);
+      setFilteredAmphures(provinceAmphures);
       setFilteredTambons([]);
     }
-  };
+  }, [provinces, amphures]);
 
-  // Set zip code when tambon changes
-  const handleTambonChange = (tambonNameTh: string) => {
-    console.log("Subdistrict changed to:", tambonNameTh);
-    setSelectedTambon(tambonNameTh);
+  // Handle amphure selection
+  const handleAmphureChange = useCallback((amphureName: string) => {
+    setSelectedAmphure(amphureName);
+    setSelectedTambon('');
+    setZipCode('');
     
-    // Find the tambon by Thai name within the filtered tambons
-    const selectedTmbObj = filteredTambons.find(t => t.name_th === tambonNameTh);
-    
-    if (selectedTmbObj) {
-      // Set zip code immediately - convert the numeric value to a string
-      const zipCodeValue = String(selectedTmbObj.zip_code);
-      console.log("Setting zip code to:", zipCodeValue);
-      setZipCode(zipCodeValue);
-    } else {
-      console.log("Subdistrict not found:", tambonNameTh);
-      setZipCode("");
+    const selectedProvinceData = provinces.find(province => province.name_th === selectedProvince);
+    if (selectedProvinceData) {
+      const selectedAmphureData = amphures.find(
+        amphure => amphure.name_th === amphureName && amphure.province_id === selectedProvinceData.id
+      );
+      
+      if (selectedAmphureData) {
+        const amphureTambons = tambons.filter(tambon => tambon.amphure_id === selectedAmphureData.id);
+        setFilteredTambons(amphureTambons);
+      }
     }
-  };
+  }, [selectedProvince, provinces, amphures, tambons]);
+
+  // Handle tambon selection
+  const handleTambonChange = useCallback((tambonName: string) => {
+    setSelectedTambon(tambonName);
+    
+    const selectedProvinceData = provinces.find(province => province.name_th === selectedProvince);
+    if (selectedProvinceData) {
+      const selectedAmphureData = amphures.find(
+        amphure => amphure.name_th === selectedAmphure && amphure.province_id === selectedProvinceData.id
+      );
+      
+      if (selectedAmphureData) {
+        const selectedTambonData = tambons.find(
+          tambon => tambon.name_th === tambonName && tambon.amphure_id === selectedAmphureData.id
+        );
+        
+        if (selectedTambonData) {
+          setZipCode(selectedTambonData.zip_code);
+        }
+      }
+    }
+  }, [selectedProvince, selectedAmphure, provinces, amphures, tambons]);
 
   return {
     provinces,
     filteredAmphures,
     filteredTambons,
-    isLoading,
-    error,
     selectedProvince,
     selectedAmphure,
     selectedTambon,
     zipCode,
+    isLoading,
+    error,
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
-    initializeLocation,
-    dataLoaded,
-    userProfileLoaded
+    userProfileLoaded,
+    setInitialLocationValues
   };
 };
 
