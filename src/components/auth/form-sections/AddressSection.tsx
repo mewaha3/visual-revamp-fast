@@ -6,15 +6,16 @@ import { MapPin, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
 import useThailandLocations from "@/hooks/useThailandLocations";
+import { useEffect } from "react";
 
 const AddressSection = () => {
   const form = useFormContext();
   
   // Use the Thailand locations hook
   const {
-    provinces = [],
-    filteredAmphures = [],
-    filteredTambons = [],
+    provinces,
+    filteredAmphures,
+    filteredTambons,
     isLoading,
     error,
     zipCode,
@@ -29,7 +30,7 @@ const AddressSection = () => {
     form.setValue("subdistrict", value);
     
     // Find the selected tambon to get its zip code
-    if (filteredTambons && filteredTambons.length > 0) {
+    if (filteredTambons.length > 0) {
       const selectedTambon = filteredTambons.find(t => t.name_th === value);
       if (selectedTambon && selectedTambon.zip_code) {
         // Fix: Convert zip_code to string explicitly
@@ -88,15 +89,11 @@ const AddressSection = () => {
               <SelectContent>
                 {isLoading ? (
                   <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
-                ) : provinces && provinces.length > 0 ? (
-                  provinces.map((province) => (
-                    <SelectItem key={province.id} value={province.name_th}>
-                      {province.name_th}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
-                )}
+                ) : provinces.map((province) => (
+                  <SelectItem key={province.id} value={province.name_th}>
+                    {province.name_th}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
@@ -131,15 +128,13 @@ const AddressSection = () => {
               <SelectContent>
                 {!form.getValues("province") ? (
                   <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-                ) : filteredAmphures && filteredAmphures.length > 0 ? (
-                  filteredAmphures.map((amphure) => (
-                    <SelectItem key={amphure.id} value={amphure.name_th}>
-                      {amphure.name_th}
-                    </SelectItem>
-                  ))
-                ) : (
+                ) : filteredAmphures.length === 0 ? (
                   <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                )}
+                ) : filteredAmphures.map((amphure) => (
+                  <SelectItem key={amphure.id} value={amphure.name_th}>
+                    {amphure.name_th}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -167,15 +162,13 @@ const AddressSection = () => {
               <SelectContent>
                 {!form.getValues("district") ? (
                   <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-                ) : filteredTambons && filteredTambons.length > 0 ? (
-                  filteredTambons.map((tambon) => (
-                    <SelectItem key={tambon.id} value={tambon.name_th}>
-                      {tambon.name_th}
-                    </SelectItem>
-                  ))
-                ) : (
+                ) : filteredTambons.length === 0 ? (
                   <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                )}
+                ) : filteredTambons.map((tambon) => (
+                  <SelectItem key={tambon.id} value={tambon.name_th}>
+                    {tambon.name_th}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormMessage />
@@ -196,8 +189,7 @@ const AddressSection = () => {
                   className="pl-10" 
                   {...field} 
                   placeholder="เช่น 10110" 
-                  readOnly
-                  style={{ backgroundColor: "#f3f4f6" }}
+                  style={zipCode ? { backgroundColor: "#f3f4f6" } : {}}
                 />
                 <MapPin
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"

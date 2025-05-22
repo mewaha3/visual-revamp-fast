@@ -47,13 +47,14 @@ const LocationDetailsForm = ({
   
   // Find the selected tambon to get its zip code
   useEffect(() => {
-    if (subdistrict && subdistricts && subdistricts.length > 0) {
+    if (subdistrict && subdistricts.length > 0) {
       const selectedTambon = subdistricts.find(
         (t) => t.name_th === subdistrict
       );
       
       if (selectedTambon && selectedTambon.zip_code) {
         // Create a synthetic event to update the postal code
+        // Fix: Convert the zip_code number to string and cast the event to the correct type
         const event = {
           target: {
             name: 'postalCode',
@@ -82,14 +83,19 @@ const LocationDetailsForm = ({
           <SelectContent>
             {isLoading ? (
               <SelectItem value="loading-province" disabled>กำลังโหลดข้อมูล...</SelectItem>
-            ) : provinces && provinces.length > 0 ? (
+            ) : provinces.length > 0 ? (
               provinces.map((prov) => (
                 <SelectItem key={prov.id} value={prov.name_th}>
                   {prov.name_th}
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
+              <>
+                <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
+                <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
+                <SelectItem value="phuket">ภูเก็ต</SelectItem>
+                <SelectItem value="chonburi">ชลบุรี</SelectItem>
+              </>
             )}
           </SelectContent>
         </Select>
@@ -109,14 +115,19 @@ const LocationDetailsForm = ({
           <SelectContent>
             {!province ? (
               <SelectItem value="select-province-first" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-            ) : districts && districts.length > 0 ? (
+            ) : districts.length > 0 ? (
               districts.map((dist) => (
                 <SelectItem key={dist.id} value={dist.name_th}>
                   {dist.name_th}
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+              <>
+                <SelectItem value="district1">เขตพระนคร</SelectItem>
+                <SelectItem value="district2">เขตดุสิต</SelectItem>
+                <SelectItem value="district3">เขตหนองจอก</SelectItem>
+                <SelectItem value="district4">เขตบางรัก</SelectItem>
+              </>
             )}
           </SelectContent>
         </Select>
@@ -135,14 +146,19 @@ const LocationDetailsForm = ({
           <SelectContent>
             {!district ? (
               <SelectItem value="select-district-first" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-            ) : subdistricts && subdistricts.length > 0 ? (
+            ) : subdistricts.length > 0 ? (
               subdistricts.map((tambon) => (
                 <SelectItem key={tambon.id} value={tambon.name_th}>
                   {tambon.name_th}
                 </SelectItem>
               ))
             ) : (
-              <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+              <>
+                <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
+                <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
+                <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
+                <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
+              </>
             )}
           </SelectContent>
         </Select>

@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProfileFormValues } from "@/pages/ProfileEdit";
-import { nationalities } from "@/data/nationalities";
 
 export default function PersonalInfoSection({ userEmail }: { userEmail: string | null }) {
   const { control } = useFormContext<ProfileFormValues>();
@@ -98,7 +97,7 @@ export default function PersonalInfoSection({ userEmail }: { userEmail: string |
           )}
         />
 
-        {/* Gender - with "Other" option removed */}
+        {/* Gender */}
         <FormField
           control={control}
           name="gender"
@@ -118,6 +117,7 @@ export default function PersonalInfoSection({ userEmail }: { userEmail: string |
                 <SelectContent>
                   <SelectItem value="Male">ชาย</SelectItem>
                   <SelectItem value="Female">หญิง</SelectItem>
+                  <SelectItem value="Other">อื่นๆ</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -125,7 +125,7 @@ export default function PersonalInfoSection({ userEmail }: { userEmail: string |
           )}
         />
 
-        {/* Nationality - updated to use full list like in registration */}
+        {/* Nationality */}
         <FormField
           control={control}
           name="nationality"
@@ -142,12 +142,13 @@ export default function PersonalInfoSection({ userEmail }: { userEmail: string |
                     <SelectValue placeholder="เลือกสัญชาติ" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="max-h-[200px]">
-                  {nationalities.map((nationality) => (
-                    <SelectItem key={nationality} value={nationality}>
-                      {nationality}
-                    </SelectItem>
-                  ))}
+                <SelectContent>
+                  <SelectItem value="Thai">ไทย</SelectItem>
+                  <SelectItem value="Myanmar">เมียนมาร์</SelectItem>
+                  <SelectItem value="Laos">ลาว</SelectItem>
+                  <SelectItem value="Cambodia">กัมพูชา</SelectItem>
+                  <SelectItem value="Vietnam">เวียดนาม</SelectItem>
+                  <SelectItem value="Other">อื่นๆ</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
