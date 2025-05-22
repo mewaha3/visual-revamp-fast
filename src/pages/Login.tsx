@@ -1,6 +1,6 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AuthCard from "@/components/auth/AuthCard";
@@ -10,13 +10,22 @@ import { useAuth } from "@/context/AuthContext";
 const Login = () => {
   const { userEmail, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [redirectPath, setRedirectPath] = useState("/");
+  
+  // Extract redirect path from location state
+  useEffect(() => {
+    if (location.state && location.state.from) {
+      setRedirectPath(location.state.from);
+    }
+  }, [location]);
   
   // Redirect if user is already logged in
   useEffect(() => {
     if (!isLoading && userEmail) {
-      navigate('/');
+      navigate(redirectPath);
     }
-  }, [userEmail, navigate, isLoading]);
+  }, [userEmail, navigate, isLoading, redirectPath]);
 
   // Don't render content until authentication state is determined
   if (isLoading) {
@@ -40,7 +49,7 @@ const Login = () => {
       <main className="flex-grow py-16">
         <div className="container max-w-md mx-auto">
           <AuthCard title="เข้าสู่ระบบ">
-            <LoginForm />
+            <LoginForm redirectPath={redirectPath} />
           </AuthCard>
         </div>
       </main>

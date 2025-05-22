@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -15,6 +15,18 @@ import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
 const FindJob = () => {
+  const navigate = useNavigate();
+  const { userProfile, userId, userEmail, isLoading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Authentication check - redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !userEmail) {
+      toast.error("กรุณาเข้าสู่ระบบก่อนใช้งาน");
+      navigate('/login', { state: { from: '/find-job' } });
+    }
+  }, [userEmail, navigate, isLoading]);
+
   const {
     jobType,
     setJobType,
@@ -36,7 +48,7 @@ const FindJob = () => {
     provinces,
     filteredAmphures,
     filteredTambons,
-    isLoading,
+    isLoading: locationsLoading,
     error,
     zipCode,
     selectedProvince,
@@ -47,9 +59,21 @@ const FindJob = () => {
     handleTambonChange,
   } = useFindJobForm();
 
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { userProfile, userId } = useAuth();
+  // If still checking authentication or not logged in, show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow py-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fastlabor-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">กำลังตรวจสอบข้อมูลผู้ใช้...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -160,7 +184,7 @@ const FindJob = () => {
                 provinces={provinces}
                 districts={filteredAmphures}
                 subdistricts={filteredTambons}
-                isLoading={isLoading}
+                isLoading={locationsLoading}
                 error={error}
                 zipCodeReadOnly={true}
               />
