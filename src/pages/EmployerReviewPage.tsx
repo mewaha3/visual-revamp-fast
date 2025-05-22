@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
@@ -42,32 +43,74 @@ const EmployerReviewPage: React.FC = () => {
       }
 
       try {
+        console.log("Fetching match details for matchId:", matchId);
+        
         // Get the match document
         const matchDocRef = doc(db, "match_results", matchId);
         const matchDoc = await getDoc(matchDocRef);
         
         if (!matchDoc.exists()) {
+          console.log("Match document not found");
           setError('ไม่พบข้อมูลงาน');
           setLoading(false);
           return;
         }
         
         const matchData = matchDoc.data();
+        console.log("Match data retrieved:", matchData);
         
         // Check if this match belongs to the current user (as employer)
         if (userId !== matchData.user_id) {
+          console.log("User ID mismatch. Current:", userId, "Expected:", matchData.user_id);
           setError('คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้');
           setLoading(false);
           return;
         }
         
-        // Get worker info - use the correct fields from the match data
-        setWorkerInfo({
-          firstName: matchData.first_name_find_jobs || 'ไม่ระบุชื่อ',
-          lastName: matchData.last_name_find_jobs || 'ไม่ระบุนามสกุล',
-          userId: matchData.workerId || '',
-          jobType: matchData.job_type || ''
-        });
+        // Try to get worker name from match data
+        // First check for accepted or completed status worker
+        if (matchData.status === 'accepted' || matchData.status === 'completed') {
+          console.log("Found accepted/completed match, using worker data directly");
+          setWorkerInfo({
+            firstName: matchData.first_name_find_jobs || matchData.first_name || 'ไม่ระบุชื่อ',
+            lastName: matchData.last_name_find_jobs || matchData.last_name || 'ไม่ระบุนามสกุล',
+            userId: matchData.workerId || '',
+            jobType: matchData.job_type || ''
+          });
+        } else {
+          // If not accepted yet, try to find an accepted match for this job
+          console.log("Match not accepted/completed, searching for accepted matches for this job");
+          const matchesRef = collection(db, "match_results");
+          const q = query(
+            matchesRef, 
+            where("job_id", "==", matchData.job_id),
+            where("status", "in", ["accepted", "completed"])
+          );
+          
+          const matchesSnapshot = await getDocs(q);
+          
+          if (!matchesSnapshot.empty) {
+            // Use the first accepted/completed match
+            const acceptedMatch = matchesSnapshot.docs[0].data();
+            console.log("Found accepted/completed match:", acceptedMatch);
+            
+            setWorkerInfo({
+              firstName: acceptedMatch.first_name_find_jobs || acceptedMatch.first_name || 'ไม่ระบุชื่อ',
+              lastName: acceptedMatch.last_name_find_jobs || acceptedMatch.last_name || 'ไม่ระบุนามสกุล',
+              userId: acceptedMatch.workerId || '',
+              jobType: acceptedMatch.job_type || ''
+            });
+          } else {
+            // Fall back to original match
+            console.log("No accepted/completed matches found, using original data");
+            setWorkerInfo({
+              firstName: matchData.first_name_find_jobs || matchData.first_name || 'ไม่ระบุชื่อ',
+              lastName: matchData.last_name_find_jobs || matchData.last_name || 'ไม่ระบุนามสกุล',
+              userId: matchData.workerId || '',
+              jobType: matchData.job_type || ''
+            });
+          }
+        }
         
       } catch (error) {
         console.error("Error fetching match details:", error);
@@ -134,7 +177,7 @@ const EmployerReviewPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex flex-col items-center mb-6">
                 <Star className="text-yellow-400 w-10 h-10" />
-                <h1 className="text-2xl font-bold text-center mt-2">Review Employee</h1>
+                <h1 className="text-2xl font-bold text-center mt-2">Review Worker</h1>
                 <p className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</p>
                 
                 {!loading && !error && workerInfo && (
