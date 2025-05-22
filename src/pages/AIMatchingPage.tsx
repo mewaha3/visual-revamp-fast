@@ -165,12 +165,12 @@ const AIMatchingPage: React.FC = () => {
             <EmployerCard 
               employer={{
                 id: job.job_id || "",
-                name: `${job.first_name || ""} ${job.last_name || ""}`.trim() || "ไม่ระบุชื่อ",
-                email: job.email || "",
-                first_name: job.first_name || "",
-                last_name: job.last_name || "",
-                rating: job.rating || 0,
-                reviews: job.reviews || 0
+                name: "นายจ้าง",
+                email: "",
+                first_name: "",
+                last_name: "",
+                rating: 0,
+                reviews: 0
               }} 
             />
           )}

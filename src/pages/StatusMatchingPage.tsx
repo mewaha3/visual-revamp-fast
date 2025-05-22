@@ -92,7 +92,16 @@ const StatusMatchingPage: React.FC = () => {
             <div className="mb-6">
               <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
               {job && (
-                <p className="text-gray-600">ประเภทงาน: {job.job_type}</p>
+                <div className="flex flex-col gap-1 mt-2">
+                  <p className="text-gray-600">ประเภทงาน: {job.job_type}</p>
+                  <Button
+                    variant="outline"
+                    className="w-fit mt-2 text-fastlabor-600 border-fastlabor-600"
+                    onClick={() => navigate(`/job-detail/${jobId}`)}
+                  >
+                    ดูรายละเอียดงาน
+                  </Button>
+                </div>
               )}
             </div>
             
@@ -127,16 +136,38 @@ const StatusMatchingPage: React.FC = () => {
                 <Info className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">ยังไม่ได้ยืนยันผลการจับคู่</h3>
                 <p className="text-gray-600 mb-4">กรุณายืนยันผลการจับคู่ที่หน้า AI Matching ก่อน</p>
-                <Button 
-                  onClick={() => navigate(`/matching/${jobId}`)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                >
-                  ไปยังหน้า AI Matching
-                </Button>
+                <div className="space-y-3">
+                  <Button 
+                    onClick={() => navigate(`/matching/${jobId}`)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  >
+                    ไปยังหน้า AI Matching
+                  </Button>
+                  {job && (
+                    <div className="mt-3">
+                      <Button
+                        variant="outline"
+                        className="text-fastlabor-600 border-fastlabor-600"
+                        onClick={() => navigate(`/job-detail/${jobId}`)}
+                      >
+                        ดูรายละเอียดงาน
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : statusResults.length === 0 ? (
               <div className="text-center py-8">
                 <p>ไม่พบข้อมูลการจับคู่แรงงาน</p>
+                {job && (
+                  <Button
+                    variant="outline"
+                    className="mt-4 text-fastlabor-600 border-fastlabor-600"
+                    onClick={() => navigate(`/job-detail/${jobId}`)}
+                  >
+                    ดูรายละเอียดงาน
+                  </Button>
+                )}
               </div>
             ) : (
               <JobMatchDetails 
