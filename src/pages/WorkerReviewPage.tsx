@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitReview } from '@/services/reviewService';
+import { Slider } from "@/components/ui/slider";
 
 interface EmployerInfo {
   firstName: string;
@@ -80,8 +81,8 @@ const WorkerReviewPage: React.FC = () => {
     fetchMatchDetails();
   }, [matchId, userId]);
   
-  const handleRatingChange = (value: number) => {
-    setRating(value);
+  const handleRatingChange = (value: number[]) => {
+    setRating(value[0]);
   };
   
   const handleSubmitReview = async () => {
@@ -134,7 +135,7 @@ const WorkerReviewPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex flex-col items-center mb-6">
                 <Star className="text-yellow-400 w-10 h-10" />
-                <h1 className="text-2xl font-bold text-center mt-2">Review Employee</h1>
+                <h1 className="text-2xl font-bold text-center mt-2">Review Employer</h1>
                 <p className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</p>
                 
                 {!loading && !error && employerInfo && (
@@ -165,21 +166,20 @@ const WorkerReviewPage: React.FC = () => {
                 <div className="space-y-6">
                   <div>
                     <Label htmlFor="rating" className="block mb-2">ให้คะแนน</Label>
-                    <div className="relative mb-2">
-                      <div className="w-full bg-gray-200 h-2 rounded-full">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full" 
-                          style={{ width: `${rating * 20}%` }}
-                        ></div>
+                    <div className="py-4">
+                      <Slider
+                        defaultValue={[rating]}
+                        max={5}
+                        step={1}
+                        onValueChange={handleRatingChange}
+                        value={[rating]}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-sm">แย่</span>
+                        <span className="text-sm font-medium">{rating}/5</span>
+                        <span className="text-sm">ดีมาก</span>
                       </div>
-                      <div className="absolute -top-1 -ml-2" style={{ left: `${rating * 20}%` }}>
-                        <div className="w-4 h-4 bg-white border border-blue-500 rounded-full"></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-sm">แย่</span>
-                      <span className="text-sm font-medium">{rating}/5</span>
-                      <span className="text-sm">ดีมาก</span>
                     </div>
                     
                     <div className="flex items-center justify-center gap-2 mt-4">
@@ -187,7 +187,7 @@ const WorkerReviewPage: React.FC = () => {
                         <button
                           key={value}
                           type="button"
-                          onClick={() => handleRatingChange(value)}
+                          onClick={() => handleRatingChange([value])}
                           className="focus:outline-none"
                         >
                           <Star

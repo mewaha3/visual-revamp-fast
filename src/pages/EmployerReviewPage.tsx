@@ -6,13 +6,14 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Star, Loader2 } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { submitReview } from '@/services/reviewService';
+import { Slider } from "@/components/ui/slider";
 
 interface WorkerInfo {
   firstName: string;
@@ -61,7 +62,7 @@ const EmployerReviewPage: React.FC = () => {
           return;
         }
         
-        // Get worker info
+        // Get worker info - use the correct fields from the match data
         setWorkerInfo({
           firstName: matchData.first_name_find_jobs || 'ไม่ระบุชื่อ',
           lastName: matchData.last_name_find_jobs || 'ไม่ระบุนามสกุล',
@@ -80,8 +81,8 @@ const EmployerReviewPage: React.FC = () => {
     fetchMatchDetails();
   }, [matchId, userId]);
   
-  const handleRatingChange = (value: number) => {
-    setRating(value);
+  const handleRatingChange = (value: number[]) => {
+    setRating(value[0]);
   };
   
   const handleSubmitReview = async () => {
@@ -139,7 +140,7 @@ const EmployerReviewPage: React.FC = () => {
                 
                 {!loading && !error && workerInfo && (
                   <div className="mt-3 text-center">
-                    <p className="font-medium">ช่าง: {workerInfo.firstName} {workerInfo.lastName}</p>
+                    <p className="font-medium">แรงงาน: {workerInfo.firstName} {workerInfo.lastName}</p>
                     <p className="text-sm text-gray-500">ประเภทงาน: {workerInfo.jobType || 'ไม่ระบุ'}</p>
                   </div>
                 )}
@@ -165,21 +166,20 @@ const EmployerReviewPage: React.FC = () => {
                 <div className="space-y-6">
                   <div>
                     <Label htmlFor="rating" className="block mb-2">ให้คะแนน</Label>
-                    <div className="relative mb-2">
-                      <div className="w-full bg-gray-200 h-2 rounded-full">
-                        <div 
-                          className="bg-blue-500 h-2 rounded-full" 
-                          style={{ width: `${rating * 20}%` }}
-                        ></div>
+                    <div className="py-4">
+                      <Slider
+                        defaultValue={[rating]}
+                        max={5}
+                        step={1}
+                        onValueChange={handleRatingChange}
+                        value={[rating]}
+                        className="mb-2"
+                      />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-sm">แย่</span>
+                        <span className="text-sm font-medium">{rating}/5</span>
+                        <span className="text-sm">ดีมาก</span>
                       </div>
-                      <div className="absolute -top-1 -ml-2" style={{ left: `${rating * 20}%` }}>
-                        <div className="w-4 h-4 bg-white border border-blue-500 rounded-full"></div>
-                      </div>
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-sm">แย่</span>
-                      <span className="text-sm font-medium">{rating}/5</span>
-                      <span className="text-sm">ดีมาก</span>
                     </div>
                     
                     <div className="flex items-center justify-center gap-2 mt-4">
@@ -187,7 +187,7 @@ const EmployerReviewPage: React.FC = () => {
                         <button
                           key={value}
                           type="button"
-                          onClick={() => handleRatingChange(value)}
+                          onClick={() => handleRatingChange([value])}
                           className="focus:outline-none"
                         >
                           <Star
