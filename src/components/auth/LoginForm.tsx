@@ -60,6 +60,7 @@ const LoginForm = ({ redirectPath = "/" }: LoginFormProps) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full"
+            placeholder="รหัสผ่านของคุณ"
             required
           />
         </div>
