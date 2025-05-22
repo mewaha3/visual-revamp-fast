@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import useThailandLocations from "@/hooks/useThailandLocations";
 import { ProfileFormValues } from "@/pages/ProfileEdit";
-import { useEffect } from "react";
 
 export default function AddressSection() {
   const { control, setValue, getValues, watch } = useFormContext<ProfileFormValues>();
@@ -49,7 +49,7 @@ export default function AddressSection() {
     }
   }, [zipCode, setValue]);
 
-  // Initialize selected locations when form values are loaded
+  // Initialize selected locations when form values are loaded and data is ready
   useEffect(() => {
     const province = getValues("province");
     const district = getValues("district");
@@ -90,8 +90,7 @@ export default function AddressSection() {
           <FormItem>
             <FormLabel>จังหวัด</FormLabel>
             <Select 
-              value={field.value || undefined}
-              defaultValue={field.value}
+              value={field.value || ""}
               onValueChange={(value) => {
                 field.onChange(value);
                 handleProvinceChange(value);
@@ -106,7 +105,7 @@ export default function AddressSection() {
                   <SelectValue placeholder="เลือกจังหวัด" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-white">
+              <SelectContent className="bg-white max-h-[300px]">
                 {isLocationLoading ? (
                   <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
                 ) : provinces.map((province) => (
@@ -131,8 +130,7 @@ export default function AddressSection() {
             <FormItem>
               <FormLabel>อำเภอ/เขต</FormLabel>
               <Select 
-                value={field.value || undefined}
-                defaultValue={field.value}
+                value={field.value || ""}
                 onValueChange={(value) => {
                   field.onChange(value);
                   handleAmphureChange(value);
@@ -147,7 +145,7 @@ export default function AddressSection() {
                     <SelectValue placeholder="เลือกอำเภอ/เขต" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white max-h-[300px]">
                   {!provinceValue ? (
                     <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
                   ) : filteredAmphures.length === 0 ? (
@@ -172,8 +170,7 @@ export default function AddressSection() {
             <FormItem>
               <FormLabel>ตำบล/แขวง</FormLabel>
               <Select 
-                value={field.value || undefined}
-                defaultValue={field.value}
+                value={field.value || ""}
                 onValueChange={(value) => {
                   field.onChange(value);
                   handleTambonChange(value);
@@ -185,7 +182,7 @@ export default function AddressSection() {
                     <SelectValue placeholder="เลือกตำบล/แขวง" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-white">
+                <SelectContent className="bg-white max-h-[300px]">
                   {!districtValue ? (
                     <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
                   ) : filteredTambons.length === 0 ? (

@@ -32,20 +32,30 @@ export const useThailandLocations = () => {
         
         // Fetch provinces
         const provinceResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json');
+        if (!provinceResponse.ok) {
+          throw new Error(`Failed to fetch provinces: ${provinceResponse.status}`);
+        }
         const provinceData: Province[] = await provinceResponse.json();
         
         // Fetch amphures
         const amphureResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json');
+        if (!amphureResponse.ok) {
+          throw new Error(`Failed to fetch amphures: ${amphureResponse.status}`);
+        }
         const amphureData: Amphure[] = await amphureResponse.json();
         
         // Fetch tambons
         const tambonResponse = await fetch('https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_tambon.json');
+        if (!tambonResponse.ok) {
+          throw new Error(`Failed to fetch tambons: ${tambonResponse.status}`);
+        }
         const tambonData: Tambon[] = await tambonResponse.json();
         
         setProvinces(provinceData);
         setAmphures(amphureData);
         setTambons(tambonData);
         setDataLoaded(true);
+        console.log("Thailand location data loaded successfully");
       } catch (err) {
         console.error('Error fetching location data:', err);
         setError('Failed to load location data. Please try again later.');
@@ -59,48 +69,56 @@ export const useThailandLocations = () => {
 
   // Initialize location dropdowns with saved user data
   const initializeLocation = useCallback((provinceName: string, districtName: string, subdistrictName: string) => {
-    if (!dataLoaded || !provinceName || !districtName || !subdistrictName) {
-      console.log("Data not loaded yet or missing location values");
+    if (!dataLoaded || !provinces.length || !amphures.length || !tambons.length) {
+      console.log("Data not loaded yet or missing location data arrays");
+      return;
+    }
+    
+    if (!provinceName || !districtName || !subdistrictName) {
+      console.log("Missing location values", { provinceName, districtName, subdistrictName });
       return;
     }
     
     console.log("Initializing location with:", { provinceName, districtName, subdistrictName });
     
-    // Find province by name and filter amphures
-    const selectedProvObj = provinces.find(p => p.name_th === provinceName);
-    
-    if (selectedProvObj) {
-      setSelectedProvince(provinceName);
-      const filteredAmp = amphures.filter(a => a.province_id === selectedProvObj.id);
-      setFilteredAmphures(filteredAmp);
+    try {
+      // Find province by name and filter amphures
+      const selectedProvObj = provinces.find(p => p.name_th === provinceName);
       
-      // Find district/amphure by name and filter tambons
-      const selectedAmpObj = filteredAmp.find(a => a.name_th === districtName);
-      
-      if (selectedAmpObj) {
-        setSelectedAmphure(districtName);
-        const filteredTmb = tambons.filter(t => t.amphure_id === selectedAmpObj.id);
-        setFilteredTambons(filteredTmb);
+      if (selectedProvObj) {
+        setSelectedProvince(provinceName);
+        const filteredAmp = amphures.filter(a => a.province_id === selectedProvObj.id);
+        setFilteredAmphures(filteredAmp);
         
-        // Find subdistrict/tambon by name and set zip code
-        const selectedTmbObj = filteredTmb.find(t => t.name_th === subdistrictName);
+        // Find district/amphure by name and filter tambons
+        const selectedAmpObj = filteredAmp.find(a => a.name_th === districtName);
         
-        if (selectedTmbObj) {
-          setSelectedTambon(subdistrictName);
-          const zipCodeValue = String(selectedTmbObj.zip_code);
-          console.log("Setting zip code to:", zipCodeValue);
-          setZipCode(zipCodeValue);
+        if (selectedAmpObj) {
+          setSelectedAmphure(districtName);
+          const filteredTmb = tambons.filter(t => t.amphure_id === selectedAmpObj.id);
+          setFilteredTambons(filteredTmb);
+          
+          // Find subdistrict/tambon by name and set zip code
+          const selectedTmbObj = filteredTmb.find(t => t.name_th === subdistrictName);
+          
+          if (selectedTmbObj) {
+            setSelectedTambon(subdistrictName);
+            const zipCodeValue = String(selectedTmbObj.zip_code);
+            console.log("Setting zip code to:", zipCodeValue);
+            setZipCode(zipCodeValue);
+          } else {
+            console.log("Tambon not found:", subdistrictName);
+          }
+        } else {
+          console.log("Amphure not found:", districtName);
         }
+      } else {
+        console.log("Province not found:", provinceName);
       }
+    } catch (err) {
+      console.error("Error initializing location data:", err);
     }
   }, [provinces, amphures, tambons, dataLoaded]);
-
-  // Effect to monitor data loading status
-  useEffect(() => {
-    if (dataLoaded) {
-      console.log("Thailand location data loaded successfully");
-    }
-  }, [dataLoaded]);
 
   // Filter amphures when province changes
   const handleProvinceChange = (provinceNameTh: string) => {
