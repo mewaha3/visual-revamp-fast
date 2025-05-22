@@ -201,6 +201,13 @@ export interface MatchResult {
   workerId?: string;
   userId?: string;
   user_id?: string;
+  email?: string;
+  location?: string;
+  aiScore?: number;
+  // Additional fields for employer/worker info
+  first_name_find_jobs?: string;
+  last_name_find_jobs?: string;
+  gender_find_jobs?: string;
 }
 
 export interface StatusResult {

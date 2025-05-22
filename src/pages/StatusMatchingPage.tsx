@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -41,7 +42,9 @@ const StatusMatchingPage = () => {
           return;
         }
 
-        if (job.user_id !== userId) {
+        // Check if the job belongs to the current user
+        // We need to check both user_id and userId fields to be compatible with different data structures
+        if (job.user_id !== userId && job.userId !== userId) {
           setError("คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้");
           setIsLoading(false);
           return;
