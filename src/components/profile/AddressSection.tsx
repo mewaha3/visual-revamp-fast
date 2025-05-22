@@ -21,11 +21,12 @@ import useThailandLocations from "@/hooks/useThailandLocations";
 import { ProfileFormValues } from "@/pages/ProfileEdit";
 
 export default function AddressSection() {
-  const { control, setValue, getValues, watch } = useFormContext<ProfileFormValues>();
+  const { control, setValue, watch } = useFormContext<ProfileFormValues>();
   
   const provinceValue = watch("province");
   const districtValue = watch("district");
   const subdistrictValue = watch("subdistrict");
+  const zipCodeValue = watch("zip_code");
   
   // Initialize Thailand locations hook
   const {
@@ -39,7 +40,10 @@ export default function AddressSection() {
     handleTambonChange,
     zipCode,
     initializeLocation,
-    dataLoaded
+    dataLoaded,
+    selectedProvince,
+    selectedAmphure,
+    selectedTambon
   } = useThailandLocations();
 
   // Update zip_code when tambon changes
@@ -49,17 +53,48 @@ export default function AddressSection() {
     }
   }, [zipCode, setValue]);
 
-  // Initialize selected locations when form values are loaded and data is ready
+  // Initialize selected locations when form values and data are loaded
   useEffect(() => {
-    const province = getValues("province");
-    const district = getValues("district");
-    const subdistrict = getValues("subdistrict");
-    
-    if (dataLoaded && province && district && subdistrict) {
-      console.log("Initializing location data with:", { province, district, subdistrict });
-      initializeLocation(province, district, subdistrict);
+    if (dataLoaded && provinceValue && districtValue && subdistrictValue) {
+      console.log("Initializing address from form values:", {
+        province: provinceValue,
+        district: districtValue,
+        subdistrict: subdistrictValue
+      });
+      
+      // Only initialize if the hook's selected values don't match the form values
+      if (
+        selectedProvince !== provinceValue ||
+        selectedAmphure !== districtValue ||
+        selectedTambon !== subdistrictValue
+      ) {
+        initializeLocation(provinceValue, districtValue, subdistrictValue);
+      }
     }
-  }, [getValues, initializeLocation, dataLoaded]);
+  }, [
+    dataLoaded,
+    provinceValue,
+    districtValue,
+    subdistrictValue,
+    initializeLocation,
+    selectedProvince,
+    selectedAmphure,
+    selectedTambon
+  ]);
+
+  console.log("Current address values:", {
+    provinceValue,
+    districtValue,
+    subdistrictValue,
+    zipCodeValue,
+    dataLoaded,
+    selectedProvince,
+    selectedAmphure,
+    selectedTambon,
+    provincesCount: provinces.length,
+    filteredAmphuresCount: filteredAmphures.length,
+    filteredTambonsCount: filteredTambons.length
+  });
 
   return (
     <div className="space-y-6">
@@ -105,14 +140,18 @@ export default function AddressSection() {
                   <SelectValue placeholder="เลือกจังหวัด" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-white max-h-[300px]">
+              <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
                 {isLocationLoading ? (
                   <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
-                ) : provinces.map((province) => (
-                  <SelectItem key={province.id} value={province.name_th}>
-                    {province.name_th}
-                  </SelectItem>
-                ))}
+                ) : provinces.length === 0 ? (
+                  <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
+                ) : (
+                  provinces.map((province) => (
+                    <SelectItem key={province.id} value={province.name_th}>
+                      {province.name_th}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {locationError && <p className="text-sm text-red-500 mt-1">{locationError}</p>}
@@ -138,23 +177,25 @@ export default function AddressSection() {
                   setValue("subdistrict", "");
                   setValue("zip_code", "");
                 }}
-                disabled={!provinceValue}
+                disabled={!provinceValue || isLocationLoading}
               >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกอำเภอ/เขต" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-white max-h-[300px]">
+                <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
                   {!provinceValue ? (
                     <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
                   ) : filteredAmphures.length === 0 ? (
                     <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                  ) : filteredAmphures.map((amphure) => (
-                    <SelectItem key={amphure.id} value={amphure.name_th}>
-                      {amphure.name_th}
-                    </SelectItem>
-                  ))}
+                  ) : (
+                    filteredAmphures.map((amphure) => (
+                      <SelectItem key={amphure.id} value={amphure.name_th}>
+                        {amphure.name_th}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -175,23 +216,25 @@ export default function AddressSection() {
                   field.onChange(value);
                   handleTambonChange(value);
                 }}
-                disabled={!districtValue}
+                disabled={!districtValue || isLocationLoading}
               >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกตำบล/แขวง" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="bg-white max-h-[300px]">
+                <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
                   {!districtValue ? (
                     <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
                   ) : filteredTambons.length === 0 ? (
                     <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                  ) : filteredTambons.map((tambon) => (
-                    <SelectItem key={tambon.id} value={tambon.name_th}>
-                      {tambon.name_th}
-                    </SelectItem>
-                  ))}
+                  ) : (
+                    filteredTambons.map((tambon) => (
+                      <SelectItem key={tambon.id} value={tambon.name_th}>
+                        {tambon.name_th}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -210,8 +253,8 @@ export default function AddressSection() {
                 <Input 
                   placeholder="รหัสไปรษณีย์" 
                   {...field} 
-                  readOnly={!!zipCode}
-                  className={zipCode ? "bg-gray-50" : ""}
+                  readOnly={!!subdistrictValue}
+                  className={subdistrictValue ? "bg-gray-50" : ""}
                 />
               </FormControl>
               <FormMessage />
