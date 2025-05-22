@@ -71,10 +71,11 @@ export const getUserReviews = async (userId: string, type: 'worker' | 'employer'
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       reviews.push({
         id: doc.id,
         ...doc.data() as ReviewSubmission,
-        created_at: doc.data().created_at
+        created_at: data.created_at // Fixed: Properly access created_at from data
       });
     });
     
@@ -93,10 +94,11 @@ export const getMatchReviews = async (matchId: string): Promise<Review[]> => {
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       reviews.push({
         id: doc.id,
         ...doc.data() as ReviewSubmission,
-        created_at: doc.data().created_at
+        created_at: data.created_at // Fixed: Properly access created_at from data
       });
     });
     

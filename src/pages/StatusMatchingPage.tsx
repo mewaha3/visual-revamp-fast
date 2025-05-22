@@ -1,156 +1,104 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/button";
-import { getPostJobById } from '@/services/firestoreService';
-import { getMatchesForJob } from '@/services/matchOperationsService';
-import { PostJob, MatchResult } from '@/types/types';
-import { BarChart, ArrowLeft, Info, RefreshCw } from 'lucide-react';
-import JobMatchDetails from '@/components/jobs/JobMatchDetails';
+import { useAuth } from "@/context/AuthContext";
+import { getJobById } from "@/services/jobService";
+import { getJobMatchDetails } from "@/services/matchingService";
+import JobHeader from "@/components/jobs/JobHeader";
+import JobDetailsCard from "@/components/jobs/JobDetailsCard";
+import JobMatchDetails from "@/components/jobs/JobMatchDetails";
+import { toast } from "sonner";
 
-const StatusMatchingPage: React.FC = () => {
+const StatusMatchingPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
-  const [job, setJob] = useState<PostJob | null>(null);
-  const [statusResults, setStatusResults] = useState<MatchResult[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { userId } = useAuth();
+  const [jobDetails, setJobDetails] = useState<any>(null);
+  const [matches, setMatches] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isConfirmed, setIsConfirmed] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!jobId) return;
-      
-      setLoading(true);
+    const fetchJobAndMatches = async () => {
+      if (!jobId || !userId) {
+        setError("ไม่พบข้อมูลงานหรือผู้ใช้");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
       setError(null);
-      
+
       try {
-        // Get job details from Firestore
-        const jobDetails = await getPostJobById(jobId);
-        if (!jobDetails) {
+        // Get the job details first
+        const job = await getJobById(jobId);
+        
+        // Check if the job exists and belongs to the current user
+        if (!job) {
           setError("ไม่พบข้อมูลงาน");
+          setIsLoading(false);
           return;
         }
-        
-        setJob(jobDetails as PostJob);
-        
-        // Get matching results using our service
-        const matchResults = await getMatchesForJob(jobId);
-        
-        if (matchResults.length > 0) {
-          setIsConfirmed(true);
-          setStatusResults(matchResults);
-        } else {
-          setIsConfirmed(false);
+
+        if (job.user_id !== userId) {
+          setError("คุณไม่มีสิทธิ์เข้าถึงข้อมูลนี้");
+          setIsLoading(false);
+          return;
         }
+
+        setJobDetails(job);
+
+        // Get the match details for this job
+        const matchResults = await getJobMatchDetails(jobId);
+        setMatches(matchResults || []);
       } catch (error) {
-        console.error("Error fetching status results:", error);
-        setError("ไม่สามารถโหลดข้อมูลได้");
+        console.error("Error fetching job and matches:", error);
+        setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
-    fetchData();
-  }, [jobId]);
-  
-  const handleRefresh = () => {
-    window.location.reload();
-  };
 
-  const handleViewJobDetails = (jobId: string) => {
-    navigate(`/job-detail/${jobId}`);
-  };
+    fetchJobAndMatches();
+  }, [jobId, userId]);
 
-  if (!jobId) {
-    return <div>Invalid job ID</div>;
-  }
+  const handleViewDetails = (jobId: string, matchId?: string) => {
+    if (matchId) {
+      // If we have a matchId, go to the accepted job detail page
+      navigate(`/accepted-job/${matchId}`);
+    } else {
+      // Otherwise go to the standard job detail page
+      navigate(`/job-detail/${jobId}`);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-grow py-6">
         <div className="container mx-auto px-4">
-          <Button 
-            variant="outline" 
-            className="mb-4"
-            onClick={() => navigate('/my-jobs')}
-          >
-            <ArrowLeft size={16} className="mr-2" />
-            กลับไปยังรายการงาน
-          </Button>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">Status Matching</h1>
+          <JobHeader backTo="/my-jobs" backLabel="กลับไปยังรายการงานของฉัน" />
+
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p>กำลังโหลดข้อมูล...</p>
             </div>
-            
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
-              {job && (
-                <div className="flex flex-col gap-1 mt-2">
-                  <p className="text-gray-600">ประเภทงาน: {job.job_type}</p>
-                </div>
-              )}
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-500">{error}</p>
             </div>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <p>กำลังโหลดข้อมูล...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-500">{error}</p>
-                <div className="mt-4 flex flex-col gap-3">
-                  <Button 
-                    onClick={handleRefresh} 
-                    variant="outline" 
-                    className="mx-auto"
-                  >
-                    <RefreshCw className="mr-2" size={18} />
-                    ลองใหม่อีกครั้ง
-                  </Button>
-                  
-                  <Button 
-                    onClick={() => navigate("/my-jobs")} 
-                    variant="outline" 
-                    className="mx-auto"
-                  >
-                    กลับไปยังรายการงาน
-                  </Button>
-                </div>
-              </div>
-            ) : !isConfirmed ? (
-              <div className="text-center py-8 bg-yellow-50 rounded-lg p-6 border border-yellow-200">
-                <Info className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">ยังไม่ได้ยืนยันผลการจับคู่</h3>
-                <p className="text-gray-600 mb-4">กรุณายืนยันผลการจับคู่ที่หน้า AI Matching ก่อน</p>
-                <div className="space-y-3">
-                  <Button 
-                    onClick={() => navigate(`/matching/${jobId}`)}
-                    className="bg-yellow-500 hover:bg-yellow-600 text-white"
-                  >
-                    ไปยังหน้า AI Matching
-                  </Button>
-                </div>
-              </div>
-            ) : statusResults.length === 0 ? (
-              <div className="text-center py-8">
-                <p>ไม่พบข้อมูลการจับคู่แรงงาน</p>
-              </div>
-            ) : (
+          ) : (
+            <>
+              {jobDetails && <JobDetailsCard jobDetails={jobDetails} />}
               <JobMatchDetails 
-                matches={statusResults} 
-                showViewButton={true}
-                onViewDetails={handleViewJobDetails}
-                showSkills={true}
-                hideButtonForStatus={['on_queue', 'declined']} // Hide view button for on_queue and declined status
+                matches={matches} 
+                showViewButton={true} 
+                onViewDetails={handleViewDetails}
+                hideButtonForStatus={["declined", "on_queue"]}
               />
-            )}
-          </div>
+            </>
+          )}
         </div>
       </main>
       <Footer />
