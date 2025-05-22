@@ -126,7 +126,7 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {/* Worker Information Card */}
+              {/* Worker Information Card - Enhanced with find job details */}
               {matchDetails && matchDetails.length > 0 && (
                 <Card className="mb-6">
                   <CardHeader>
@@ -136,12 +136,18 @@ const JobDetailPage: React.FC = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <Avatar className="h-16 w-16">
                         <AvatarFallback className="bg-fastlabor-100 text-fastlabor-600 text-xl">
-                          {matchDetails[0].first_name?.charAt(0) || matchDetails[0].name?.charAt(0) || 'W'}
+                          {matchDetails[0].first_name_find_jobs?.charAt(0) || 
+                           matchDetails[0].first_name?.charAt(0) || 
+                           matchDetails[0].name?.charAt(0) || 'W'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="text-xl font-medium">
-                          {matchDetails[0].name || `${matchDetails[0].first_name || ''} ${matchDetails[0].last_name || ''}`.trim() || 'ไม่ระบุชื่อ'}
+                          {(matchDetails[0].first_name_find_jobs && matchDetails[0].last_name_find_jobs) ? 
+                            `${matchDetails[0].first_name_find_jobs} ${matchDetails[0].last_name_find_jobs}` : 
+                            (matchDetails[0].first_name && matchDetails[0].last_name) ? 
+                              `${matchDetails[0].first_name} ${matchDetails[0].last_name}` : 
+                              matchDetails[0].name || 'ไม่ระบุชื่อ'}
                         </h3>
                         <p className="text-gray-500">{matchDetails[0].email || ''}</p>
                       </div>
@@ -150,7 +156,7 @@ const JobDetailPage: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div>
                         <h4 className="text-sm text-gray-500">เพศ</h4>
-                        <p>{matchDetails[0].gender || 'ไม่ระบุ'}</p>
+                        <p>{matchDetails[0].gender_find_jobs || matchDetails[0].gender || 'ไม่ระบุ'}</p>
                       </div>
                       
                       <div>
@@ -173,7 +179,8 @@ const JobDetailPage: React.FC = () => {
                       
                       <div className="col-span-2">
                         <h4 className="text-sm text-gray-500">สถานะ</h4>
-                        <Badge variant={matchDetails[0].status === 'accepted' ? 'success' : 'default'}>
+                        <Badge variant={matchDetails[0].status === 'accepted' ? 'outline' : 'default'} 
+                               className={matchDetails[0].status === 'accepted' ? 'bg-green-100 text-green-800' : ''}>
                           {matchDetails[0].status === 'accepted' ? 'ยอมรับแล้ว' : matchDetails[0].status}
                         </Badge>
                       </div>
@@ -192,6 +199,7 @@ const JobDetailPage: React.FC = () => {
                     phone: employer.phone,
                     rating: employer.rating,
                     reviews: employer.reviews,
+                    profile_image: employer.profile_image,
                     name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ'
                   }}
                 />

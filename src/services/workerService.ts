@@ -60,7 +60,7 @@ export const getWorkerById = async (workerId: string): Promise<any> => {
     }
 
     // Try to find worker in findJobs data based on workerId
-    const worker = findJobs.find(w => w.findjob_id === workerId || w.user_id === workerId);
+    const worker = findJobs.find(w => w.findjob_id === workerId);
     
     if (worker) {
       const workerData = {
