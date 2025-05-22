@@ -12,8 +12,8 @@ const Footer = () => {
       { name: "ร่วมงานกับเรา", href: "#" },
     ],
     services: [
-      { name: "หาแรงงาน", href: "/find-worker" },
-      { name: "สมัครเป็นแรงงาน", href: "#" },
+      { name: "ลงประกาศงาน", href: "/find-worker" },
+      { name: "ค้นหางาน", href: "#" },
       { name: "ค่าบริการ", href: "/services" },
       { name: "วิธีการทำงาน", href: "#" },
     ],
