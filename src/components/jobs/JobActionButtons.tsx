@@ -10,15 +10,17 @@ export interface JobActionButtonsProps {
   workerId?: string;
   hasPaid?: boolean;
   fromPayment?: boolean;
+  onOpenPaymentModal?: () => void;
 }
 
 const JobActionButtons: React.FC<JobActionButtonsProps> = ({ 
   onAccept, 
   onDecline,
-  jobId, // Added these props even though they're not used in this component
-  workerId, // to satisfy the TypeScript interface
+  jobId,
+  workerId,
   hasPaid,
-  fromPayment
+  fromPayment,
+  onOpenPaymentModal
 }) => {
   return (
     <div className="flex gap-4 justify-center mt-4">
