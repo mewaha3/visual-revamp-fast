@@ -25,7 +25,6 @@ import ReviewPage from "./pages/ReviewPage";
 import WorkerJobDetailPage from "./pages/WorkerJobDetailPage";
 import EmployerReviewPage from "./pages/EmployerReviewPage";
 import AIMatchingDetailPage from './pages/AIMatchingDetailPage';
-import MatchDetailPage from './pages/MatchDetailPage';
 
 /* 
  * Note about the TS6305 errors:
@@ -76,8 +75,6 @@ const App = () => (
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
             <Route path="/jobs/:jobId" element={<JobDetailPage />} />
-            {/* New route for match details */}
-            <Route path="/match-detail/:jobId" element={<MatchDetailPage />} />
             {/* Review routes */}
             <Route path="/review/:jobId" element={<ReviewPage />} />
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
