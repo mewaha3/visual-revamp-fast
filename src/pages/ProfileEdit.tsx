@@ -26,8 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import useThailandLocations from "@/hooks/useThailandLocations";
 
 // Define form validation schema
 const profileFormSchema = z.object({
@@ -52,6 +54,19 @@ export default function ProfileEdit() {
   const { userId, userEmail } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Initialize Thailand locations hook
+  const {
+    provinces,
+    filteredAmphures,
+    filteredTambons,
+    isLoading: isLocationLoading,
+    error: locationError,
+    handleProvinceChange,
+    handleAmphureChange,
+    handleTambonChange,
+    zipCode,
+  } = useThailandLocations();
 
   // Initialize form
   const form = useForm<ProfileFormValues>({
@@ -100,6 +115,19 @@ export default function ProfileEdit() {
             subdistrict: userData.subdistrict || "",
             zip_code: userData.zip_code || "",
           });
+          
+          // Initialize cascading location dropdowns with existing values
+          if (userData.province) {
+            handleProvinceChange(userData.province);
+            
+            if (userData.district) {
+              handleAmphureChange(userData.district);
+              
+              if (userData.subdistrict) {
+                handleTambonChange(userData.subdistrict);
+              }
+            }
+          }
         } else {
           toast({
             title: "ไม่พบข้อมูลผู้ใช้",
@@ -120,7 +148,7 @@ export default function ProfileEdit() {
     }
 
     loadUserProfile();
-  }, [userId, navigate, toast, form]);
+  }, [userId, navigate, toast, form, handleProvinceChange, handleAmphureChange, handleTambonChange]);
 
   // Handle form submission
   async function onSubmit(values: ProfileFormValues) {
@@ -169,6 +197,13 @@ export default function ProfileEdit() {
       setIsSaving(false);
     }
   }
+
+  // Update zip_code when tambon changes
+  useEffect(() => {
+    if (zipCode) {
+      form.setValue("zip_code", zipCode);
+    }
+  }, [zipCode, form]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -272,7 +307,7 @@ export default function ProfileEdit() {
                           <FormLabel>เพศ</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -280,9 +315,9 @@ export default function ProfileEdit() {
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="male">ชาย</SelectItem>
-                              <SelectItem value="female">หญิง</SelectItem>
-                              <SelectItem value="other">อื่นๆ</SelectItem>
+                              <SelectItem value="Male">ชาย</SelectItem>
+                              <SelectItem value="Female">หญิง</SelectItem>
+                              <SelectItem value="Other">อื่นๆ</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -299,7 +334,7 @@ export default function ProfileEdit() {
                           <FormLabel>สัญชาติ</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            defaultValue={field.value}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -329,29 +364,57 @@ export default function ProfileEdit() {
                       <FormItem>
                         <FormLabel>ที่อยู่</FormLabel>
                         <FormControl>
-                          <Input placeholder="บ้านเลขที่ หมู่ ซอย ถนน" {...field} />
+                          <Textarea 
+                            placeholder="บ้านเลขที่ หมู่ ซอย ถนน" 
+                            {...field}
+                            className="min-h-[80px]"  
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    {/* Province */}
-                    <FormField
-                      control={form.control}
-                      name="province"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>จังหวัด</FormLabel>
+                  {/* Province */}
+                  <FormField
+                    control={form.control}
+                    name="province"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>จังหวัด</FormLabel>
+                        <Select 
+                          value={field.value}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            handleProvinceChange(value);
+                            // Clear dependent fields
+                            form.setValue("district", "");
+                            form.setValue("subdistrict", "");
+                            form.setValue("zip_code", "");
+                          }}
+                        >
                           <FormControl>
-                            <Input placeholder="จังหวัด" {...field} />
+                            <SelectTrigger>
+                              <SelectValue placeholder="เลือกจังหวัด" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                          <SelectContent>
+                            {isLocationLoading ? (
+                              <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
+                            ) : provinces.map((province) => (
+                              <SelectItem key={province.id} value={province.name_th}>
+                                {province.name_th}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {locationError && <p className="text-sm text-red-500 mt-1">{locationError}</p>}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* District */}
                     <FormField
                       control={form.control}
@@ -359,9 +422,34 @@ export default function ProfileEdit() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>อำเภอ/เขต</FormLabel>
-                          <FormControl>
-                            <Input placeholder="อำเภอ/เขต" {...field} />
-                          </FormControl>
+                          <Select 
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleAmphureChange(value);
+                              // Clear dependent fields
+                              form.setValue("subdistrict", "");
+                              form.setValue("zip_code", "");
+                            }}
+                            disabled={!form.getValues("province")}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="เลือกอำเภอ/เขต" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {!form.getValues("province") ? (
+                                <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
+                              ) : filteredAmphures.length === 0 ? (
+                                <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                              ) : filteredAmphures.map((amphure) => (
+                                <SelectItem key={amphure.id} value={amphure.name_th}>
+                                  {amphure.name_th}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -374,9 +462,31 @@ export default function ProfileEdit() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>ตำบล/แขวง</FormLabel>
-                          <FormControl>
-                            <Input placeholder="ตำบล/แขวง" {...field} />
-                          </FormControl>
+                          <Select 
+                            value={field.value}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleTambonChange(value);
+                            }}
+                            disabled={!form.getValues("district")}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="เลือกตำบล/แขวง" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {!form.getValues("district") ? (
+                                <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
+                              ) : filteredTambons.length === 0 ? (
+                                <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
+                              ) : filteredTambons.map((tambon) => (
+                                <SelectItem key={tambon.id} value={tambon.name_th}>
+                                  {tambon.name_th}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -390,7 +500,12 @@ export default function ProfileEdit() {
                         <FormItem>
                           <FormLabel>รหัสไปรษณีย์</FormLabel>
                           <FormControl>
-                            <Input placeholder="รหัสไปรษณีย์" {...field} />
+                            <Input 
+                              placeholder="รหัสไปรษณีย์" 
+                              {...field} 
+                              readOnly={!!zipCode}
+                              className={zipCode ? "bg-gray-50" : ""}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
