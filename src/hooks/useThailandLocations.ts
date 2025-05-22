@@ -1,8 +1,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Province, Amphure, Tambon } from '@/types/locationTypes';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/context/AuthContext';
 
 export const useThailandLocations = () => {
+  // Auth context to get current user ID
+  const { userId } = useAuth();
+  
   // State for raw data
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [amphures, setAmphures] = useState<Amphure[]>([]);
@@ -22,6 +28,9 @@ export const useThailandLocations = () => {
   const [selectedTambon, setSelectedTambon] = useState<string>("");
   const [zipCode, setZipCode] = useState<string>("");
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+  
+  // User profile data
+  const [userProfileLoaded, setUserProfileLoaded] = useState<boolean>(false);
 
   // Fetch all data on component mount
   useEffect(() => {
@@ -62,6 +71,43 @@ export const useThailandLocations = () => {
           amphures: amphureData.length,
           tambons: tambonData.length
         });
+        
+        // Now fetch user profile if userId is available
+        if (userId) {
+          try {
+            const userDocRef = doc(db, "users", userId);
+            const userDocSnap = await getDoc(userDocRef);
+            
+            if (userDocSnap.exists()) {
+              const userData = userDocSnap.data();
+              console.log("User data loaded:", userData);
+              
+              if (userData.province && userData.district && userData.subdistrict) {
+                console.log("Initializing locations from user profile:", {
+                  province: userData.province,
+                  district: userData.district,
+                  subdistrict: userData.subdistrict,
+                  zip_code: userData.zip_code
+                });
+                
+                // Initialize location data from user profile
+                initializeLocation(
+                  userData.province,
+                  userData.district,
+                  userData.subdistrict
+                );
+                
+                setUserProfileLoaded(true);
+              } else {
+                console.log("User has no location data saved");
+              }
+            } else {
+              console.log("No user document found");
+            }
+          } catch (userError) {
+            console.error("Error fetching user data:", userError);
+          }
+        }
       } catch (err) {
         console.error('Error fetching location data:', err);
         setError('Failed to load location data. Please try again later.');
@@ -71,7 +117,7 @@ export const useThailandLocations = () => {
     };
     
     fetchData();
-  }, []);
+  }, [userId]);
 
   // Initialize location dropdowns with saved user data
   const initializeLocation = useCallback((provinceName: string, districtName: string, subdistrictName: string) => {
@@ -206,7 +252,8 @@ export const useThailandLocations = () => {
     handleAmphureChange,
     handleTambonChange,
     initializeLocation,
-    dataLoaded
+    dataLoaded,
+    userProfileLoaded
   };
 };
 
