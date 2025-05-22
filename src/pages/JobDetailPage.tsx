@@ -5,7 +5,6 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
-import EmployerCard from '@/components/jobs/EmployerCard';
 import { Button } from "@/components/ui/button";
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { usePayment } from '@/hooks/usePayment';
@@ -63,7 +62,6 @@ const JobDetailPage: React.FC = () => {
   // For debugging
   console.log("Job Detail Page - Job ID:", jobId);
   console.log("Job Details:", jobDetails);
-  console.log("Employer:", employer);
   console.log("Match Details:", matchDetails);
   console.log("Worker Details:", workerDetails);
   
@@ -126,7 +124,7 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {/* Worker Information Card - Enhanced with all worker details */}
+              {/* Worker Information Card - Only showing the required information */}
               {matchDetails && matchDetails.length > 0 && (
                 <Card className="mb-6">
                   <CardHeader>
@@ -176,33 +174,9 @@ const JobDetailPage: React.FC = () => {
                           </div>
                         </div>
                       )}
-                      
-                      <div className="col-span-2">
-                        <h4 className="text-sm text-gray-500">สถานะ</h4>
-                        <Badge variant={matchDetails[0].status === 'accepted' ? 'outline' : 'default'} 
-                               className={matchDetails[0].status === 'accepted' ? 'bg-green-100 text-green-800' : ''}>
-                          {matchDetails[0].status === 'accepted' ? 'ยอมรับแล้ว' : matchDetails[0].status}
-                        </Badge>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
-              
-              {employer && (
-                <EmployerCard 
-                  employer={{
-                    id: employer.id,
-                    first_name: employer.first_name,
-                    last_name: employer.last_name,
-                    email: employer.email,
-                    phone: employer.phone,
-                    rating: employer.rating,
-                    reviews: employer.reviews,
-                    profile_image: employer.profile_image,
-                    name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ'
-                  }}
-                />
               )}
               
               <div className="mt-6 space-y-4">
