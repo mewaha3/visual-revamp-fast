@@ -1,7 +1,7 @@
 
-import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc, getDoc, Firestore } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { FindJob, PostJob } from "@/types/types";
+import { FindJob, PostJob, MatchResult } from "@/types/types";
 
 // Interface for match result submission
 export interface MatchResultSubmission {
@@ -50,7 +50,7 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
 
     // First, try to get the post job to include employer info
     try {
-      let postJobData = { id: '' };
+      let postJobData: Record<string, any> = { id: '' };
       
       // Try to find by job_id field
       const postJobQuery = query(collection(db, "post_jobs"), 
@@ -82,7 +82,7 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
     
     // Then, try to get the find job to include worker info
     try {
-      let findJobData = { id: '' };
+      let findJobData: Record<string, any> = { id: '' };
       
       // Try to find by findjob_id field
       const findJobQuery = query(collection(db, "find_jobs"), 
@@ -162,3 +162,12 @@ export async function getMatchResultsByJobId(jobId: string) {
     throw error;
   }
 }
+
+// Aliases for backward compatibility
+export const getMatchResultsForJob = getMatchResultsByJobId;
+export const saveMatchResults = addMatchResult;
+export const matchJobWithWorkers = async () => {
+  // This function was likely used elsewhere but is now deprecated
+  console.warn("matchJobWithWorkers is deprecated, please update your code");
+  return [];
+};
