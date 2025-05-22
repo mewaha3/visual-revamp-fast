@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -65,7 +64,7 @@ const Header = () => {
     }
   };
 
-  // Display name formatting function
+  // Display name formatting function - prioritize full name
   const displayName = () => {
     if (userFullName) {
       return userFullName;
