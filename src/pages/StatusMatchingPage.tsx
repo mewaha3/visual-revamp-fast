@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
 import { getMatchesForJob } from '@/services/matchOperationsService';
 import { PostJob, MatchResult } from '@/types/types';
@@ -63,11 +62,6 @@ const StatusMatchingPage: React.FC = () => {
 
   const handleViewJobDetails = (jobId: string) => {
     navigate(`/job-detail/${jobId}`);
-  };
-
-  // Check if a match has "on_queue" status (รอการตอบรับ)
-  const isOnQueue = (status: string | undefined): boolean => {
-    return status?.toLowerCase() === 'on_queue';
   };
 
   if (!jobId) {
@@ -153,7 +147,7 @@ const StatusMatchingPage: React.FC = () => {
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
                 showSkills={true}
-                hideButtonForStatus={['on_queue']} // Hide view button for on_queue status
+                hideButtonForStatus={['on_queue', 'declined']} // Hide view button for on_queue and declined status
               />
             )}
           </div>

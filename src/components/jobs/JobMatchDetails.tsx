@@ -209,7 +209,10 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                 </div>
               )}
               
-              {showViewButton && onViewDetails && match.job_id && !shouldHideButton(match.status) && (
+              {showViewButton && onViewDetails && match.job_id && 
+               !shouldHideButton(match.status) && 
+               match.status?.toLowerCase() !== 'declined' && 
+               match.status?.toLowerCase() !== 'on_queue' && (
                 <Button 
                   variant="outline" 
                   size="sm" 
