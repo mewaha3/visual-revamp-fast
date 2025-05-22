@@ -1,6 +1,7 @@
 
 import { getUnmatchedFindJobs } from "./findJobService";
 import { getJobMatches } from "./matchService";
+import { getMatchesForJob } from "./matchOperationsService"; // Add this import
 import type { JobMatch } from "./matchService";
 import { FindJob } from "@/types/types";
 
@@ -10,12 +11,17 @@ export async function fetchUnmatchedFindJobs(userId: string): Promise<FindJob[]>
 }
 
 // Re-export functions for backward compatibility
-export { getJobMatches };
+export { getJobMatches, getMatchesForJob };
 export type { JobMatch };
 
 // Add a mock function for isJobMatched since it's referenced but doesn't exist
 export const isJobMatched = async (jobId: string): Promise<boolean> => {
-  console.log(`Checking if job ${jobId} is matched`);
-  // In a real implementation, this would check if the job is matched
-  return Promise.resolve(false);
+  // Check if the job has at least one accepted match
+  try {
+    const matches = await getMatchesForJob(jobId);
+    return matches.some(match => match.status === "accepted");
+  } catch (error) {
+    console.error(`Error checking if job ${jobId} is matched:`, error);
+    return false;
+  }
 };

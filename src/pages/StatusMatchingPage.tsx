@@ -7,16 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
-import { getMatchResultsForJob } from '@/services/matchingService';
-import { PostJob, StatusResult } from '@/types/types';
-import { BarChart, ArrowLeft, Info, Check, X, ArrowRight, RefreshCw } from 'lucide-react';
+import { getMatchesForJob } from '@/services/matchOperationsService';
+import { PostJob, MatchResult } from '@/types/types';
+import { BarChart, ArrowLeft, Info, Check, X, RefreshCw } from 'lucide-react';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
   const [job, setJob] = useState<PostJob | null>(null);
-  const [statusResults, setStatusResults] = useState<StatusResult[]>([]);
+  const [statusResults, setStatusResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -38,8 +38,8 @@ const StatusMatchingPage: React.FC = () => {
         
         setJob(jobDetails as PostJob);
         
-        // Get matching results from Firestore
-        const matchResults = await getMatchResultsForJob(jobId);
+        // Get matching results using our service
+        const matchResults = await getMatchesForJob(jobId);
         
         if (matchResults.length > 0) {
           setIsConfirmed(true);
@@ -61,42 +61,10 @@ const StatusMatchingPage: React.FC = () => {
   const handleRefresh = () => {
     window.location.reload();
   };
-  
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'on_queue':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-500">On Queue</Badge>;
-      case 'accepted':
-        return <Badge className="bg-green-500 hover:bg-green-500 flex items-center gap-1"><Check size={14} /> Accepted</Badge>;
-      case 'declined':
-        return <Badge className="bg-red-500 hover:bg-red-500 flex items-center gap-1"><X size={14} /> Declined</Badge>;
-      default:
-        return <Badge>Unknown</Badge>;
-    }
-  };
-  
-  const handleViewJobDetail = (workerId: string) => {
-    // Navigate to job detail page with jobId and workerId
-    navigate(`/job-detail/${jobId}?workerId=${workerId}`);
-  };
-  
+
   if (!jobId) {
     return <div>Invalid job ID</div>;
   }
-
-  // Convert statusResults to match the format expected by JobMatchDetails
-  const formattedResults = statusResults.map(result => ({
-    ...result,
-    jobType: result.jobType,
-    gender: result.gender,
-    date: result.date,
-    time: result.time,
-    location: result.location,
-    salary: result.salary,
-    first_name: result.first_name,
-    last_name: result.last_name,
-    name: result.name
-  }));
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -165,7 +133,7 @@ const StatusMatchingPage: React.FC = () => {
                 <p>ไม่พบข้อมูลสถานะการจับคู่</p>
               </div>
             ) : (
-              <JobMatchDetails matches={formattedResults} />
+              <JobMatchDetails matches={statusResults} />
             )}
           </div>
         </div>

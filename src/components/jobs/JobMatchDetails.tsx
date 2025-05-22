@@ -82,7 +82,12 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches, rankLimit })
                 </div>
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.time || `${match.start_time || ""} - ${match.end_time || ""}`}</span>
+                  <span className="text-gray-700">
+                    {match.time || 
+                     (match.start_time && match.end_time ? 
+                      `${match.start_time} - ${match.end_time}` : 
+                      "ไม่ระบุเวลา")}
+                  </span>
                 </div>
               </div>
               

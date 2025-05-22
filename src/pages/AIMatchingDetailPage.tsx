@@ -11,7 +11,7 @@ import { getPostJobById } from '@/services/firestoreService';
 import { PostJob, MatchResult } from '@/types/types';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs } from 'firebase/firestore';
 import { saveMatchResults } from '@/services/matchingService';
 
 const AIMatchingDetailPage: React.FC = () => {
@@ -40,44 +40,78 @@ const AIMatchingDetailPage: React.FC = () => {
         
         setJob(jobData);
         
-        // Mock AI matching results for demonstration
-        // In a real implementation, this would come from an AI matching service
+        // Fetch real find_job data from Firestore
         const findJobsRef = collection(db, "find_jobs");
         const findJobsSnapshot = await getDocs(findJobsRef);
         
-        let mockMatches: MatchResult[] = [];
+        let matches: MatchResult[] = [];
         
-        // Create matches from find_jobs
+        // Create matches from find_jobs with scoring
         findJobsSnapshot.forEach(doc => {
           const findJobData = doc.data();
           
-          // Calculate a mock AI score (random for demo)
-          const aiScore = Math.random();
+          // Calculate match score based on multiple factors
+          let matchScore = 0;
           
-          mockMatches.push({
+          // Job type match (high weight)
+          if (findJobData.job_type === jobData.job_type) {
+            matchScore += 0.4;
+          }
+          
+          // Location match (medium weight)
+          if (findJobData.province === jobData.province) {
+            matchScore += 0.2;
+            
+            if (findJobData.district === jobData.district) {
+              matchScore += 0.1;
+              
+              if (findJobData.subdistrict === jobData.subdistrict) {
+                matchScore += 0.1;
+              }
+            }
+          }
+          
+          // Time preference match (medium weight)
+          const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
+          const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
+          const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
+          const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
+          
+          // If time ranges overlap
+          if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
+            matchScore += 0.2;
+          }
+          
+          // Create the match object
+          matches.push({
             id: doc.id,
             findjob_id: findJobData.findjob_id || doc.id,
             job_id: jobId,
-            name: findJobData.name || "ไม่ระบุชื่อ",
+            name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim() || "ไม่ระบุชื่อ",
             first_name: findJobData.first_name,
             last_name: findJobData.last_name,
             gender: findJobData.gender || "ไม่ระบุ",
             jobType: findJobData.job_type,
             date: findJobData.job_date || findJobData.start_date,
             time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
+            start_time: findJobData.start_time,
+            end_time: findJobData.end_time,
             location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
-            salary: findJobData.expected_salary || 0,
+            salary: findJobData.expected_salary || findJobData.start_salary || 0,
             email: findJobData.email || "",
-            aiScore: aiScore,
+            aiScore: matchScore,
             workerId: findJobData.user_id,
-            user_id: findJobData.user_id
+            user_id: findJobData.user_id,
+            province: findJobData.province,
+            district: findJobData.district,
+            subdistrict: findJobData.subdistrict
           });
         });
         
         // Sort by AI score descending
-        mockMatches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+        matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
         
-        setMatchResults(mockMatches);
+        setMatchResults(matches);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
@@ -123,7 +157,7 @@ const AIMatchingDetailPage: React.FC = () => {
           last_name: match.last_name || '',
           gender: match.gender || '',
           email: match.email || '',
-          workerId: match.workerId || match.user_id || ''
+          workerId: match.workerId || ''
         });
       }
       

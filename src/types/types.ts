@@ -119,7 +119,7 @@ export interface Employer {
   rating?: number;
   reviews?: number;
   profile_image?: string;
-  name?: string;
+  name: string; // Make name required to fix type errors
 }
 
 export interface Job {
@@ -197,6 +197,9 @@ export interface MatchResult {
   last_name?: string;
   email?: string;
   status?: string;
+  user_id?: string; // Add user_id field
+  start_time?: string; // Add start_time field
+  end_time?: string; // Add end_time field
   first_name_post_jobs?: string;
   last_name_post_jobs?: string;
   gender_post_jobs?: string;

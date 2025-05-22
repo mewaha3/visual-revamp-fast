@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -70,7 +71,7 @@ const App = () => (
             <Route path="/my-jobs/find" element={<MyJobsPage />} />
             {/* Job matching system routes */}
             <Route path="/my-jobs-page" element={<MyJobsPage />} />
-            <Route path="/matching/:jobId" element={<AIMatchingPage />} />
+            <Route path="/matching/:jobId" element={<AIMatchingDetailPage />} />
             <Route path="/status/:jobId" element={<StatusMatchingPage />} />
             <Route path="/job-detail/:jobId" element={<JobDetailPage />} />
             <Route path="/jobs/:jobId" element={<JobDetailPage />} />
