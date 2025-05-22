@@ -38,7 +38,8 @@ export default function AddressSection() {
     handleAmphureChange,
     handleTambonChange,
     zipCode,
-    initializeLocation
+    initializeLocation,
+    dataLoaded
   } = useThailandLocations();
 
   // Update zip_code when tambon changes
@@ -54,11 +55,11 @@ export default function AddressSection() {
     const district = getValues("district");
     const subdistrict = getValues("subdistrict");
     
-    if (province && district && subdistrict) {
-      console.log("Initializing location with:", { province, district, subdistrict });
+    if (dataLoaded && province && district && subdistrict) {
+      console.log("Initializing location data with:", { province, district, subdistrict });
       initializeLocation(province, district, subdistrict);
     }
-  }, [getValues, initializeLocation]);
+  }, [getValues, initializeLocation, dataLoaded]);
 
   return (
     <div className="space-y-6">
@@ -105,7 +106,7 @@ export default function AddressSection() {
                   <SelectValue placeholder="เลือกจังหวัด" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 {isLocationLoading ? (
                   <SelectItem value="loading" disabled>กำลังโหลดข้อมูล...</SelectItem>
                 ) : provinces.map((province) => (
@@ -146,7 +147,7 @@ export default function AddressSection() {
                     <SelectValue placeholder="เลือกอำเภอ/เขต" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {!provinceValue ? (
                     <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
                   ) : filteredAmphures.length === 0 ? (
@@ -184,7 +185,7 @@ export default function AddressSection() {
                     <SelectValue placeholder="เลือกตำบล/แขวง" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="bg-white">
                   {!districtValue ? (
                     <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
                   ) : filteredTambons.length === 0 ? (

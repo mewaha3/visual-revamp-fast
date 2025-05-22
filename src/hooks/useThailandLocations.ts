@@ -59,34 +59,34 @@ export const useThailandLocations = () => {
 
   // Initialize location dropdowns with saved user data
   const initializeLocation = useCallback((provinceName: string, districtName: string, subdistrictName: string) => {
-    if (!dataLoaded) {
-      console.log("Data not loaded yet, will initialize later");
+    if (!dataLoaded || !provinceName || !districtName || !subdistrictName) {
+      console.log("Data not loaded yet or missing location values");
       return;
     }
     
     console.log("Initializing location with:", { provinceName, districtName, subdistrictName });
     
-    // Set province and filter amphures
-    setSelectedProvince(provinceName);
+    // Find province by name and filter amphures
     const selectedProvObj = provinces.find(p => p.name_th === provinceName);
     
     if (selectedProvObj) {
+      setSelectedProvince(provinceName);
       const filteredAmp = amphures.filter(a => a.province_id === selectedProvObj.id);
       setFilteredAmphures(filteredAmp);
       
-      // Set amphure and filter tambons
-      setSelectedAmphure(districtName);
+      // Find district/amphure by name and filter tambons
       const selectedAmpObj = filteredAmp.find(a => a.name_th === districtName);
       
       if (selectedAmpObj) {
+        setSelectedAmphure(districtName);
         const filteredTmb = tambons.filter(t => t.amphure_id === selectedAmpObj.id);
         setFilteredTambons(filteredTmb);
         
-        // Set tambon and zipcode
-        setSelectedTambon(subdistrictName);
+        // Find subdistrict/tambon by name and set zip code
         const selectedTmbObj = filteredTmb.find(t => t.name_th === subdistrictName);
         
         if (selectedTmbObj) {
+          setSelectedTambon(subdistrictName);
           const zipCodeValue = String(selectedTmbObj.zip_code);
           console.log("Setting zip code to:", zipCodeValue);
           setZipCode(zipCodeValue);
@@ -95,12 +95,12 @@ export const useThailandLocations = () => {
     }
   }, [provinces, amphures, tambons, dataLoaded]);
 
-  // Effect to initialize when data is loaded
+  // Effect to monitor data loading status
   useEffect(() => {
-    if (dataLoaded && selectedProvince && selectedAmphure && selectedTambon) {
-      initializeLocation(selectedProvince, selectedAmphure, selectedTambon);
+    if (dataLoaded) {
+      console.log("Thailand location data loaded successfully");
     }
-  }, [dataLoaded, initializeLocation, selectedProvince, selectedAmphure, selectedTambon]);
+  }, [dataLoaded]);
 
   // Filter amphures when province changes
   const handleProvinceChange = (provinceNameTh: string) => {
@@ -172,7 +172,8 @@ export const useThailandLocations = () => {
     handleProvinceChange,
     handleAmphureChange,
     handleTambonChange,
-    initializeLocation
+    initializeLocation,
+    dataLoaded
   };
 };
 
