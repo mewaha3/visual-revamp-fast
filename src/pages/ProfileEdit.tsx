@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
-import { format } from "date-fns";
 import useThailandLocations from "@/hooks/useThailandLocations";
 
 // Define form validation schema
@@ -231,6 +230,7 @@ export default function ProfileEdit() {
                       type="email"
                       value={userEmail || ""}
                       readOnly
+                      disabled
                       className="bg-gray-50"
                     />
                   </FormItem>
@@ -307,7 +307,8 @@ export default function ProfileEdit() {
                           <FormLabel>เพศ</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            value={field.value}
+                            value={field.value || undefined}
+                            defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -334,7 +335,8 @@ export default function ProfileEdit() {
                           <FormLabel>สัญชาติ</FormLabel>
                           <Select
                             onValueChange={field.onChange}
-                            value={field.value}
+                            value={field.value || undefined}
+                            defaultValue={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -383,7 +385,8 @@ export default function ProfileEdit() {
                       <FormItem>
                         <FormLabel>จังหวัด</FormLabel>
                         <Select 
-                          value={field.value}
+                          value={field.value || undefined}
+                          defaultValue={field.value}
                           onValueChange={(value) => {
                             field.onChange(value);
                             handleProvinceChange(value);
@@ -423,7 +426,8 @@ export default function ProfileEdit() {
                         <FormItem>
                           <FormLabel>อำเภอ/เขต</FormLabel>
                           <Select 
-                            value={field.value}
+                            value={field.value || undefined}
+                            defaultValue={field.value}
                             onValueChange={(value) => {
                               field.onChange(value);
                               handleAmphureChange(value);
@@ -463,7 +467,8 @@ export default function ProfileEdit() {
                         <FormItem>
                           <FormLabel>ตำบล/แขวง</FormLabel>
                           <Select 
-                            value={field.value}
+                            value={field.value || undefined}
+                            defaultValue={field.value}
                             onValueChange={(value) => {
                               field.onChange(value);
                               handleTambonChange(value);
