@@ -25,6 +25,8 @@ import ReviewPage from "./pages/ReviewPage";
 import WorkerJobDetailPage from "./pages/WorkerJobDetailPage";
 import EmployerReviewPage from "./pages/EmployerReviewPage";
 import AIMatchingDetailPage from './pages/AIMatchingDetailPage';
+import AcceptedJobDetailPage from './pages/AcceptedJobDetailPage';
+import WorkerReviewPage from './pages/WorkerReviewPage';
 
 /* 
  * Note about the TS6305 errors:
@@ -78,9 +80,12 @@ const App = () => (
             {/* Review routes */}
             <Route path="/review/:jobId" element={<ReviewPage />} />
             <Route path="/jobs/:jobId/review" element={<ReviewPage />} />
-            {/* New worker job detail and employer review routes */}
+            {/* Worker job detail and employer review routes */}
             <Route path="/worker/jobs/:jobId" element={<WorkerJobDetailPage />} />
             <Route path="/employer-review/:jobId" element={<EmployerReviewPage />} />
+            {/* New routes for accepted jobs and worker reviews */}
+            <Route path="/accepted-job/:matchId" element={<AcceptedJobDetailPage />} />
+            <Route path="/worker-review/:matchId" element={<WorkerReviewPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

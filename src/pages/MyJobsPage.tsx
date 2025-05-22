@@ -134,7 +134,7 @@ const MyJobsPage: React.FC = () => {
     toast.success("อัปเดตข้อมูลล่าสุด");
   };
   
-  const handleAcceptJob = async (matchId: string, jobId: string) => {
+  const handleAcceptJob = async (matchId: string, jobId: string, findjobId: string) => {
     try {
       // Update the status to accepted
       const success = await updateMatchResultStatus(matchId, "accepted");
@@ -145,8 +145,8 @@ const MyJobsPage: React.FC = () => {
         // Remove this job from the list
         setMatches(matches.filter(match => match.id !== matchId));
         
-        // Navigate to worker job detail page
-        navigate(`/worker/jobs/${jobId}`);
+        // Navigate to accepted job detail page with match ID and findjob ID
+        navigate(`/accepted-job/${matchId}?findjob=${findjobId}`);
       } else {
         toast.error("ไม่สามารถรับงานได้ กรุณาลองใหม่อีกครั้ง");
       }
@@ -426,7 +426,7 @@ const MyJobsPage: React.FC = () => {
                               <Button 
                                 className="text-xs bg-green-600 hover:bg-green-700 flex items-center gap-1"
                                 size="sm"
-                                onClick={() => handleAcceptJob(match.id, match.job_id || '')}
+                                onClick={() => handleAcceptJob(match.id, match.job_id || '', match.findjob_id || '')}
                               >
                                 <Check size={16} /> รับงาน
                               </Button>
