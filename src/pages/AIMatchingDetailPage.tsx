@@ -7,13 +7,13 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, BarChart, Check } from 'lucide-react';
+import { ArrowLeft, BarChart, Check, RefreshCw } from 'lucide-react';
 import { getPostJobById } from '@/services/firestoreService';
 import { PostJob, MatchResult } from '@/types/types';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { db } from '@/lib/firebase';
-import { collection, query, getDocs } from 'firebase/firestore';
-import { saveMatchResults } from '@/services/matchingService';
+import { collection, query, getDocs, where } from 'firebase/firestore';
+import { saveMatchResults, getMatchResultsByJobId } from '@/services/matchingService';
 
 const AIMatchingDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -24,123 +24,147 @@ const AIMatchingDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasExistingMatches, setHasExistingMatches] = useState(false);
 
-  useEffect(() => {
-    const fetchJobAndMatches = async () => {
-      if (!jobId) return;
-      
+  const fetchJobAndMatches = async (forceRefresh = false) => {
+    if (!jobId) return;
+    
+    if (forceRefresh) {
+      setRefreshing(true);
+    } else {
       setLoading(true);
-      setError(null);
+    }
+    setError(null);
+    
+    try {
+      // Get job details
+      const jobData = await getPostJobById(jobId);
+      if (!jobData) {
+        setError("ไม่พบข้อมูลงาน");
+        return;
+      }
       
-      try {
-        // Get job details
-        const jobData = await getPostJobById(jobId);
-        if (!jobData) {
-          setError("ไม่พบข้อมูลงาน");
+      setJob(jobData);
+
+      // Check if there are already confirmed matches for this job
+      const existingMatches = await getMatchResultsByJobId(jobId);
+      setHasExistingMatches(existingMatches.length > 0);
+      
+      // Fetch real find_job data from Firestore
+      const findJobsRef = collection(db, "find_jobs");
+      const findJobsSnapshot = await getDocs(findJobsRef);
+      
+      let matches: MatchResult[] = [];
+      
+      // Create matches from find_jobs with scoring
+      findJobsSnapshot.forEach(doc => {
+        const findJobData = doc.data();
+
+        // Skip users matching with their own jobs
+        if (findJobData.user_id === userId) {
+          console.log(`Skipping job ${doc.id} as it belongs to the current user`);
           return;
         }
         
-        setJob(jobData);
+        // Calculate match score based on multiple factors
+        let matchScore = 0;
         
-        // Fetch real find_job data from Firestore
-        const findJobsRef = collection(db, "find_jobs");
-        const findJobsSnapshot = await getDocs(findJobsRef);
+        // Job type match (high weight)
+        if (findJobData.job_type === jobData.job_type) {
+          matchScore += 0.4;
+        }
         
-        let matches: MatchResult[] = [];
-        
-        // Create matches from find_jobs with scoring
-        findJobsSnapshot.forEach(doc => {
-          const findJobData = doc.data();
-
-          // Skip users matching with their own jobs
-          if (findJobData.user_id === userId) {
-            console.log(`Skipping job ${doc.id} as it belongs to the current user`);
-            return;
-          }
+        // Location match (medium weight)
+        if (findJobData.province === jobData.province) {
+          matchScore += 0.2;
           
-          // Calculate match score based on multiple factors
-          let matchScore = 0;
-          
-          // Job type match (high weight)
-          if (findJobData.job_type === jobData.job_type) {
-            matchScore += 0.4;
-          }
-          
-          // Location match (medium weight)
-          if (findJobData.province === jobData.province) {
-            matchScore += 0.2;
+          if (findJobData.district === jobData.district) {
+            matchScore += 0.1;
             
-            if (findJobData.district === jobData.district) {
+            if (findJobData.subdistrict === jobData.subdistrict) {
               matchScore += 0.1;
-              
-              if (findJobData.subdistrict === jobData.subdistrict) {
-                matchScore += 0.1;
-              }
             }
           }
-          
-          // Time preference match (medium weight)
-          const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
-          const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
-          const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
-          const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
-          
-          // If time ranges overlap
-          if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
-            matchScore += 0.2;
-          }
-          
-          // Create the match object
-          matches.push({
-            id: doc.id,
-            findjob_id: findJobData.findjob_id || doc.id,
-            job_id: jobId,
-            name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim() || "ไม่ระบุชื่อ",
-            first_name: findJobData.first_name,
-            last_name: findJobData.last_name,
-            gender: findJobData.gender || "ไม่ระบุ",
-            jobType: findJobData.job_type,
-            job_type: findJobData.job_type,
-            date: findJobData.job_date || findJobData.start_date,
-            time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
-            start_time: findJobData.start_time,
-            end_time: findJobData.end_time,
-            location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
-            salary: findJobData.expected_salary || findJobData.start_salary || 0,
-            email: findJobData.email || "",
-            aiScore: matchScore,
-            workerId: findJobData.user_id,
-            user_id: findJobData.user_id,
-            province: findJobData.province,
-            district: findJobData.district,
-            subdistrict: findJobData.subdistrict,
-            skills: findJobData.skills || ""
-          });
+        }
+        
+        // Time preference match (medium weight)
+        const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
+        const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
+        const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
+        const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
+        
+        // If time ranges overlap
+        if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
+          matchScore += 0.2;
+        }
+
+        // Add a slight random factor for refresh variance (small weight)
+        if (forceRefresh) {
+          matchScore += (Math.random() * 0.2) - 0.1; // -0.1 to +0.1 variance
+        }
+        
+        // Create the match object
+        matches.push({
+          id: doc.id,
+          findjob_id: findJobData.findjob_id || doc.id,
+          job_id: jobId,
+          name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim() || "ไม่ระบุชื่อ",
+          first_name: findJobData.first_name,
+          last_name: findJobData.last_name,
+          gender: findJobData.gender || "ไม่ระบุ",
+          jobType: findJobData.job_type,
+          job_type: findJobData.job_type,
+          date: findJobData.job_date || findJobData.start_date,
+          time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
+          start_time: findJobData.start_time,
+          end_time: findJobData.end_time,
+          location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
+          salary: findJobData.expected_salary || findJobData.start_salary || 0,
+          email: findJobData.email || "",
+          aiScore: matchScore,
+          workerId: findJobData.user_id,
+          user_id: findJobData.user_id,
+          province: findJobData.province,
+          district: findJobData.district,
+          subdistrict: findJobData.subdistrict,
+          skills: findJobData.skills || ""
         });
-        
-        // Sort by AI score descending
-        matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
-        
-        // Take only top 5 matches
-        matches = matches.slice(0, 5);
-        
-        // Assign initial priority values based on AI score order
-        matches = matches.map((match, index) => ({
-          ...match,
-          priority: index + 1
-        }));
-        
-        setMatchResults(matches);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
-      } finally {
-        setLoading(false);
+      });
+      
+      // Sort by AI score descending
+      matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+      
+      // Take only top 5 matches
+      matches = matches.slice(0, 5);
+      
+      // Assign initial priority values based on AI score order
+      matches = matches.map((match, index) => ({
+        ...match,
+        priority: index + 1
+      }));
+      
+      setMatchResults(matches);
+      
+      if (forceRefresh) {
+        toast.success("จับคู่งานใหม่เรียบร้อยแล้ว");
       }
-    };
-    
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchJobAndMatches();
   }, [jobId, userId]);
+
+  const handleRefresh = () => {
+    fetchJobAndMatches(true);
+  };
 
   const handleRankChange = (matchId: string, newRank: number) => {
     // Update the local matches array with the new rank
@@ -264,9 +288,20 @@ const AIMatchingDetailPage: React.FC = () => {
           
           <Card className="mb-6">
             <CardHeader>
-              <div className="flex items-center gap-2">
-                <BarChart className="h-6 w-6 text-fastlabor-600" />
-                <CardTitle className="text-2xl">AI Matching</CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BarChart className="h-6 w-6 text-fastlabor-600" />
+                  <CardTitle className="text-2xl">AI Matching</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={handleRefresh} 
+                  disabled={refreshing}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw size={16} className={`${refreshing ? 'animate-spin' : ''}`} />
+                  {refreshing ? "กำลังจับคู่ใหม่..." : "จับคู่ใหม่"}
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -307,13 +342,24 @@ const AIMatchingDetailPage: React.FC = () => {
               <div className="flex justify-center mt-6">
                 <Button 
                   onClick={handleConfirmMatch}
-                  disabled={submitting || matchResults.length === 0}
+                  disabled={submitting || matchResults.length === 0 || hasExistingMatches}
                   className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white font-medium px-6"
                 >
                   <Check size={20} className="mr-2" />
-                  {submitting ? "กำลังบันทึกข้อมูล..." : "ยืนยันการจับคู่"}
+                  {hasExistingMatches 
+                    ? "ได้ยืนยันการจับคู่แล้ว" 
+                    : submitting 
+                      ? "กำลังบันทึกข้อมูล..." 
+                      : "ยืนยันการจับคู่"
+                  }
                 </Button>
               </div>
+              
+              {hasExistingMatches && (
+                <p className="text-center mt-4 text-sm text-amber-600">
+                  คุณได้ยืนยันการจับคู่ไปแล้ว ดูผลการจับคู่ได้ที่หน้า Status Matching
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>

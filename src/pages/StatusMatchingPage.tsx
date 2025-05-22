@@ -16,48 +16,54 @@ const StatusMatchingPage: React.FC = () => {
   const [job, setJob] = useState<PostJob | null>(null);
   const [statusResults, setStatusResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!jobId) return;
-      
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Get job details from Firestore
-        const jobDetails = await getPostJobById(jobId);
-        if (!jobDetails) {
-          setError("ไม่พบข้อมูลงาน");
-          return;
-        }
-        
-        setJob(jobDetails as PostJob);
-        
-        // Get matching results using our service
-        const matchResults = await getMatchesForJob(jobId);
-        
-        if (matchResults.length > 0) {
-          setIsConfirmed(true);
-          setStatusResults(matchResults);
-        } else {
-          setIsConfirmed(false);
-        }
-      } catch (error) {
-        console.error("Error fetching status results:", error);
-        setError("ไม่สามารถโหลดข้อมูลได้");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async (isRefreshing = false) => {
+    if (!jobId) return;
     
+    if (isRefreshing) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    setError(null);
+    
+    try {
+      // Get job details from Firestore
+      const jobDetails = await getPostJobById(jobId);
+      if (!jobDetails) {
+        setError("ไม่พบข้อมูลงาน");
+        return;
+      }
+      
+      setJob(jobDetails as PostJob);
+      
+      // Get matching results using our service
+      const matchResults = await getMatchesForJob(jobId);
+      
+      if (matchResults.length > 0) {
+        setIsConfirmed(true);
+        setStatusResults(matchResults);
+      } else {
+        setIsConfirmed(false);
+      }
+    } catch (error) {
+      console.error("Error fetching status results:", error);
+      setError("ไม่สามารถโหลดข้อมูลได้");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchData();
   }, [jobId]);
   
   const handleRefresh = () => {
-    window.location.reload();
+    fetchData(true);
   };
 
   const handleViewJobDetails = (jobId: string) => {
@@ -83,9 +89,21 @@ const StatusMatchingPage: React.FC = () => {
           </Button>
           
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">Status Matching</h1>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <BarChart className="h-6 w-6 text-fastlabor-600" />
+                <h1 className="text-2xl font-bold text-gray-800">Status Matching</h1>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleRefresh}
+                disabled={refreshing}
+              >
+                <RefreshCw size={16} className={`mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                {refreshing ? "กำลังรีเฟรช..." : "รีเฟรช"}
+              </Button>
             </div>
             
             <div className="mb-6">
