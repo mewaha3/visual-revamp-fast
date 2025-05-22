@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
@@ -5,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Loader2 } from 'lucide-react';
 import { Label } from "@/components/ui/label";
@@ -131,20 +132,21 @@ const EmployerReviewPage: React.FC = () => {
       <main className="flex-grow py-6">
         <div className="container mx-auto px-4 max-w-md">
           <Card className="shadow-md">
-            <CardContent className="p-6">
-              <div className="flex flex-col items-center mb-6">
+            <CardHeader className="text-center p-6">
+              <div className="flex flex-col items-center mb-2">
                 <Star className="text-yellow-400 w-10 h-10" />
-                <h1 className="text-2xl font-bold text-center mt-2">Review Employee</h1>
-                <p className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</p>
+                <CardTitle className="text-2xl font-bold text-center mt-2">Review Employee</CardTitle>
+                <CardDescription className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</CardDescription>
                 
                 {!loading && !error && workerInfo && (
-                  <div className="mt-3 text-center">
-                    <p className="font-medium">แรงงาน: {workerInfo.firstName} {workerInfo.lastName}</p>
-                    <p className="text-sm text-gray-500">ประเภทงาน: {workerInfo.jobType || 'ไม่ระบุ'}</p>
+                  <div className="mt-2 text-sm text-gray-500">
+                    <p>ประเภทงาน: {workerInfo.jobType || 'ไม่ระบุ'}</p>
                   </div>
                 )}
               </div>
-              
+            </CardHeader>
+            
+            <CardContent className="p-6">
               {loading ? (
                 <div className="text-center py-8">
                   <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
@@ -206,7 +208,7 @@ const EmployerReviewPage: React.FC = () => {
                       rows={5}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className="w-full"
+                      className="w-full resize-none min-h-[120px]"
                     />
                   </div>
                   

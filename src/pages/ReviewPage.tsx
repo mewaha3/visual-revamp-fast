@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -28,7 +28,6 @@ interface LocationState {
   jobId?: string;
   workerId?: string;
   jobType?: string;
-  workerName?: string;
 }
 
 const ReviewPage: React.FC = () => {
@@ -74,21 +73,16 @@ const ReviewPage: React.FC = () => {
       <Header />
       <main className="flex-grow py-8">
         <div className="container mx-auto px-4">
-          <Card className="max-w-lg mx-auto">
+          <Card className="max-w-lg mx-auto shadow-md">
             <CardHeader className="text-center">
               <div className="flex justify-center mb-2">
                 <Star className="text-yellow-400" size={32} />
               </div>
-              <CardTitle className="text-2xl">Review Employee</CardTitle>
+              <CardTitle className="text-2xl">Review Employer</CardTitle>
               <CardDescription>
                 ให้คะแนนและแสดงความคิดเห็น
-                {state?.workerName && (
-                  <div className="mt-2 font-medium">
-                    แรงงาน: {state.workerName}
-                  </div>
-                )}
                 {state?.jobType && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground mt-2">
                     ประเภทงาน: {state.jobType}
                   </div>
                 )}
@@ -123,6 +117,25 @@ const ReviewPage: React.FC = () => {
                             <span>ดีมาก</span>
                           </div>
                         </div>
+                        
+                        <div className="flex items-center justify-center gap-2 mt-4">
+                          {[1, 2, 3, 4, 5].map((value) => (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => {
+                                setRatingValue(value);
+                                field.onChange(value);
+                              }}
+                              className="focus:outline-none"
+                            >
+                              <Star
+                                size={32}
+                                className={value <= ratingValue ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                              />
+                            </button>
+                          ))}
+                        </div>
                       </FormItem>
                     )}
                   />
@@ -147,7 +160,7 @@ const ReviewPage: React.FC = () => {
                   <div className="flex flex-col space-y-3">
                     <Button 
                       type="submit" 
-                      className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full"
+                      className="bg-blue-500 hover:bg-blue-600 text-white w-full"
                     >
                       Submit Review
                     </Button>
