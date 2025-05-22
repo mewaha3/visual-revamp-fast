@@ -3,6 +3,7 @@ import { FormProvider } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import { useRegisterForm } from "@/hooks/useRegisterForm";
+import { useNavigate } from "react-router-dom";
 
 // Import modular form sections
 import PersonalInfoSection from "./form-sections/PersonalInfoSection";
@@ -14,12 +15,14 @@ const RegisterForm = () => {
     form,
     isSubmitting,
     errorMessage,
-    onSubmit
+    handleContinueToUpload
   } = useRegisterForm();
+  
+  const navigate = useNavigate();
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleContinueToUpload)} className="space-y-4">
         <div className="bg-blue-50 p-4 rounded-lg mb-6">
           <div className="flex items-start">
             <Info className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
@@ -44,13 +47,13 @@ const RegisterForm = () => {
           <div className="text-sm font-medium text-destructive">{errorMessage}</div>
         )}
 
-        {/* Submit button */}
+        {/* Continue button */}
         <Button
           type="submit"
           className="w-full bg-fastlabor-600 hover:bg-fastlabor-700"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "กำลังสมัครสมาชิก..." : "สมัครสมาชิก"}
+          {isSubmitting ? "กำลังดำเนินการ..." : "อัพโหลดเอกสาร"}
         </Button>
 
         {/* Login link */}

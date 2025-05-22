@@ -1,13 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { registerUser } from "@/services/authService";
-import { UserRegistrationData } from "@/services/authService"; 
 
 // Define form validation schema
 export const registerFormSchema = z.object({
@@ -60,79 +58,42 @@ export function useRegisterForm() {
   });
 
   // Update document requirements when nationality changes
-  useState(() => {
-    const nationality = form.watch("nationality");
-    setShowForeignerDocs(nationality !== "Thai");
-  });
-
-  const onSubmit = async (values: RegisterFormValues) => {
-    setIsSubmitting(true);
-    setErrorMessage(null);
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'nationality') {
+        setShowForeignerDocs(value.nationality !== "Thai");
+      }
+    });
     
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
+  const handleContinueToUpload = async (values: RegisterFormValues) => {
     try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      
       // Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
       
-      // Log what we're submitting
-      console.log("Form submission values:", { 
-        ...values, 
-        dob: formattedDate, 
-        password: "[REDACTED]"
-      });
-      
-      // Prepare user data for registration - ensure all required fields are included
-      const userData: UserRegistrationData = {
-        first_name: values.first_name,
-        last_name: values.last_name,
-        email: values.email,
-        password: values.password,
-        national_id: values.national_id,
+      // Store form data in session storage to retrieve on upload page
+      const userData = {
+        ...values,
         dob: formattedDate,
-        gender: values.gender,
-        nationality: values.nationality,
-        address: values.address,
-        province: values.province,
-        district: values.district,
-        subdistrict: values.subdistrict,
-        zip_code: values.zip_code
       };
       
-      // Register the user using the authService
-      const userId = await registerUser(userData);
-      console.log("Registration successful, userId:", userId);
+      sessionStorage.setItem('registerFormData', JSON.stringify(userData));
       
-      toast({
-        title: "ลงทะเบียนสำเร็จ",
-        description: "บัญชีผู้ใช้ถูกสร้างเรียบร้อยแล้ว",
-      });
-
-      // Redirect to home page after successful registration
-      navigate("/");
+      // Navigate to the document upload page
+      navigate("/upload-documents");
+      
     } catch (err: any) {
-      console.error("Registration error:", err);
-      
-      let errorMsg = "เกิดข้อผิดพลาดในการลงทะเบียน โปรดลองอีกครั้ง";
-      
-      // Handle specific Firebase auth errors
-      if (err.code === 'auth/email-already-in-use') {
-        errorMsg = "อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น";
-      } else if (err.code === 'auth/invalid-email') {
-        errorMsg = "รูปแบบอีเมลไม่ถูกต้อง";
-      } else if (err.code === 'auth/weak-password') {
-        errorMsg = "รหัสผ่านไม่ปลอดภัย กรุณาใช้รหัสผ่านที่มีความซับซ้อนมากขึ้น";
-      } else if (err.code === 'auth/operation-not-allowed') {
-        errorMsg = "การลงทะเบียนถูกปิดใช้งานชั่วคราว กรุณาติดต่อผู้ดูแลระบบ";
-      } else if (err.code === 'auth/network-request-failed') {
-        errorMsg = "เกิดปัญหาในการเชื่อมต่อเครือข่าย กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต";
-      } else if (err.code === 'firestore/permission-denied') {
-        errorMsg = "คุณไม่มีสิทธิ์ในการเข้าถึงข้อมูล กรุณาติดต่อผู้ดูแลระบบ";
-      }
-      
-      setErrorMessage(errorMsg);
+      console.error("Form validation error:", err);
+      setErrorMessage("เกิดข้อผิดพลาดในการตรวจสอบข้อมูล กรุณาลองใหม่อีกครั้ง");
       
       toast({
         title: "เกิดข้อผิดพลาด",
-        description: errorMsg,
+        description: "กรุณาตรวจสอบข้อมูลที่กรอกให้ถูกต้องและครบถ้วน",
         variant: "destructive",
       });
     } finally {
@@ -145,6 +106,6 @@ export function useRegisterForm() {
     isSubmitting,
     errorMessage,
     showForeignerDocs,
-    onSubmit
+    handleContinueToUpload
   };
 }
