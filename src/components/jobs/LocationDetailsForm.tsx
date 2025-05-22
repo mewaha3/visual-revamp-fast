@@ -54,7 +54,6 @@ const LocationDetailsForm = ({
       
       if (selectedTambon && selectedTambon.zip_code) {
         // Create a synthetic event to update the postal code
-        // Fix: Convert the zip_code number to string and cast the event to the correct type
         const event = {
           target: {
             name: 'postalCode',
@@ -90,9 +89,7 @@ const LocationDetailsForm = ({
                 </SelectItem>
               ))
             ) : (
-              <>
-                <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
-              </>
+              <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
             )}
           </SelectContent>
         </Select>

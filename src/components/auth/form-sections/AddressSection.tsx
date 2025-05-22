@@ -6,7 +6,6 @@ import { MapPin, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFormContext } from "react-hook-form";
 import useThailandLocations from "@/hooks/useThailandLocations";
-import { useEffect } from "react";
 
 const AddressSection = () => {
   const form = useFormContext();
