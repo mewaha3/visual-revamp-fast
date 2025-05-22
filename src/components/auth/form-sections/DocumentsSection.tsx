@@ -1,7 +1,6 @@
-
 import { useFormContext } from "react-hook-form";
 import DocumentUpload from "@/components/upload/DocumentUpload";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DocumentsState {
   id_card: File | null;
@@ -10,14 +9,31 @@ interface DocumentsState {
   work_permit: File | null;
 }
 
+interface DocumentsSectionProps {
+  onDocumentUpload: (type: keyof DocumentsState, file: File | null) => void;
+  nationality?: string; // Make nationality optional and allow it to be passed directly
+}
+
 const DocumentsSection = ({ 
-  onDocumentUpload 
-}: { 
-  onDocumentUpload: (type: keyof DocumentsState, file: File | null) => void 
-}) => {
-  const form = useFormContext();
-  const nationality = form.watch("nationality");
-  const isThai = nationality === "Thai";
+  onDocumentUpload,
+  nationality: externalNationality 
+}: DocumentsSectionProps) => {
+  // Try to use the form context if available
+  const formContext = useFormContext();
+  
+  // Get nationality from form if available, otherwise use the prop
+  const [isThai, setIsThai] = useState<boolean>(false);
+  
+  useEffect(() => {
+    // If we have form context, use it to watch nationality
+    if (formContext) {
+      const nationality = formContext.watch("nationality");
+      setIsThai(nationality === "Thai");
+    } else if (externalNationality) {
+      // Otherwise use the prop directly
+      setIsThai(externalNationality === "Thai");
+    }
+  }, [formContext, externalNationality]);
   
   return (
     <div className="space-y-4">

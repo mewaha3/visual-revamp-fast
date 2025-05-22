@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileText, Check, Passport } from "lucide-react";
+import { Upload, FileText, Check } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -172,7 +172,10 @@ export default function UploadDocuments() {
               </p>
             </div>
             
-            <DocumentsSection onDocumentUpload={handleDocumentUpload} />
+            <DocumentsSection 
+              onDocumentUpload={handleDocumentUpload}
+              nationality={formData.nationality}
+            />
 
             <div className="mt-8 flex flex-col gap-4">
               <Button 
