@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -10,265 +10,181 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import useThailandLocations from "@/hooks/useThailandLocations";
 import { ProfileFormValues } from "@/pages/ProfileEdit";
 import { Loader2 } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AddressSection() {
   const { control, setValue, watch } = useFormContext<ProfileFormValues>();
+  const { userId } = useAuth();
   
+  // Address field values
+  const addressValue = watch("address");
   const provinceValue = watch("province");
   const districtValue = watch("district");
   const subdistrictValue = watch("subdistrict");
   const zipCodeValue = watch("zip_code");
   
-  // Initialize Thailand locations hook
-  const {
-    provinces,
-    filteredAmphures,
-    filteredTambons,
-    isLoading: isLocationLoading,
-    error: locationError,
-    handleProvinceChange,
-    handleAmphureChange,
-    handleTambonChange,
-    zipCode,
-    selectedProvince,
-    selectedAmphure,
-    selectedTambon,
-    userProfileLoaded
-  } = useThailandLocations();
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Update form fields when locations are selected from dropdowns
+  // Load user profile data from Firestore
   useEffect(() => {
-    if (selectedProvince && selectedProvince !== provinceValue) {
-      console.log("Setting province form value:", selectedProvince);
-      setValue("province", selectedProvince);
-    }
-  }, [selectedProvince, setValue, provinceValue]);
-
-  useEffect(() => {
-    if (selectedAmphure && selectedAmphure !== districtValue) {
-      console.log("Setting district form value:", selectedAmphure);
-      setValue("district", selectedAmphure);
-    }
-  }, [selectedAmphure, setValue, districtValue]);
-
-  useEffect(() => {
-    if (selectedTambon && selectedTambon !== subdistrictValue) {
-      console.log("Setting subdistrict form value:", selectedTambon);
-      setValue("subdistrict", selectedTambon);
-    }
-  }, [selectedTambon, setValue, subdistrictValue]);
-
-  // Update zip_code when tambon changes
-  useEffect(() => {
-    if (zipCode && zipCode !== zipCodeValue) {
-      console.log("Setting zip_code form value:", zipCode);
-      setValue("zip_code", zipCode);
-    }
-  }, [zipCode, setValue, zipCodeValue]);
-
-  console.log("Current address values:", {
-    provinceValue,
-    districtValue,
-    subdistrictValue,
-    zipCodeValue,
-    selectedProvince,
-    selectedAmphure,
-    selectedTambon,
-    provincesCount: provinces.length,
-    filteredAmphuresCount: filteredAmphures.length,
-    filteredTambonsCount: filteredTambons.length,
-    userProfileLoaded
-  });
+    const fetchUserProfile = async () => {
+      if (!userId) return;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        console.log("Fetching user profile data from Firestore...");
+        const userDocRef = doc(db, "users", userId);
+        const userDocSnap = await getDoc(userDocRef);
+        
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          console.log("User data loaded:", userData);
+          
+          // Set form values with user data
+          if (userData.address) setValue("address", userData.address);
+          if (userData.province) setValue("province", userData.province);
+          if (userData.district) setValue("district", userData.district);
+          if (userData.subdistrict) setValue("subdistrict", userData.subdistrict);
+          if (userData.zip_code) setValue("zip_code", userData.zip_code);
+        } else {
+          console.log("No user document found");
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+        setError("ไม่สามารถโหลดข้อมูลที่อยู่ได้");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [userId, setValue]);
 
   return (
     <div className="space-y-6">
-      {/* Address */}
-      <FormField
-        control={control}
-        name="address"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>ที่อยู่</FormLabel>
-            <FormControl>
-              <Textarea 
-                placeholder="บ้านเลขที่ หมู่ ซอย ถนน" 
-                {...field}
-                className="min-h-[80px]"  
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* Province */}
-      <FormField
-        control={control}
-        name="province"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>จังหวัด</FormLabel>
-            <Select 
-              value={field.value || ""}
-              onValueChange={(value) => {
-                field.onChange(value);
-                handleProvinceChange(value);
-                // Clear dependent fields
-                setValue("district", "");
-                setValue("subdistrict", "");
-                setValue("zip_code", "");
-              }}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="เลือกจังหวัด" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
-                {isLocationLoading ? (
-                  <div className="flex items-center justify-center py-2">
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    <span>กำลังโหลดข้อมูล...</span>
-                  </div>
-                ) : provinces.length === 0 ? (
-                  <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
-                ) : (
-                  provinces.map((province) => (
-                    <SelectItem key={province.id} value={province.name_th}>
-                      {province.name_th}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-            {locationError && <p className="text-sm text-red-500 mt-1">{locationError}</p>}
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* District */}
-        <FormField
-          control={control}
-          name="district"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>อำเภอ/เขต</FormLabel>
-              <Select 
-                value={field.value || ""}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  handleAmphureChange(value);
-                  // Clear dependent fields
-                  setValue("subdistrict", "");
-                  setValue("zip_code", "");
-                }}
-                disabled={!provinceValue || isLocationLoading}
-              >
+      {isLoading ? (
+        <div className="flex items-center justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-fastlabor-600 mr-2" />
+          <span className="text-fastlabor-700">กำลังโหลดข้อมูลที่อยู่...</span>
+        </div>
+      ) : (
+        <>
+          {error && (
+            <div className="p-4 bg-red-50 text-red-800 rounded-md mb-4">
+              {error}
+            </div>
+          )}
+          
+          {/* Address */}
+          <FormField
+            control={control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ที่อยู่</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกอำเภอ/เขต" />
-                  </SelectTrigger>
+                  <Textarea 
+                    placeholder="บ้านเลขที่ หมู่ ซอย ถนน" 
+                    {...field}
+                    className="min-h-[80px]"  
+                  />
                 </FormControl>
-                <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
-                  {isLocationLoading ? (
-                    <div className="flex items-center justify-center py-2">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span>กำลังโหลดข้อมูล...</span>
-                    </div>
-                  ) : !provinceValue ? (
-                    <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-                  ) : filteredAmphures.length === 0 ? (
-                    <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                  ) : (
-                    filteredAmphures.map((amphure) => (
-                      <SelectItem key={amphure.id} value={amphure.name_th}>
-                        {amphure.name_th}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Subdistrict */}
-        <FormField
-          control={control}
-          name="subdistrict"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>ตำบล/แขวง</FormLabel>
-              <Select 
-                value={field.value || ""}
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  handleTambonChange(value);
-                }}
-                disabled={!districtValue || isLocationLoading}
-              >
+          {/* Province */}
+          <FormField
+            control={control}
+            name="province"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>จังหวัด</FormLabel>
                 <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกตำบล/แขวง" />
-                  </SelectTrigger>
+                  <Input 
+                    {...field}
+                    readOnly
+                    className="bg-gray-50"
+                    placeholder="ไม่มีข้อมูล"
+                  />
                 </FormControl>
-                <SelectContent className="max-h-[300px] overflow-y-auto bg-white">
-                  {isLocationLoading ? (
-                    <div className="flex items-center justify-center py-2">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span>กำลังโหลดข้อมูล...</span>
-                    </div>
-                  ) : !districtValue ? (
-                    <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-                  ) : filteredTambons.length === 0 ? (
-                    <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                  ) : (
-                    filteredTambons.map((tambon) => (
-                      <SelectItem key={tambon.id} value={tambon.name_th}>
-                        {tambon.name_th}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {/* Zip Code */}
-        <FormField
-          control={control}
-          name="zip_code"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>รหัสไปรษณีย์</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="รหัสไปรษณีย์" 
-                  {...field} 
-                  readOnly={!!subdistrictValue}
-                  className={subdistrictValue ? "bg-gray-50" : ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* District */}
+            <FormField
+              control={control}
+              name="district"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>อำเภอ/เขต</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      readOnly
+                      className="bg-gray-50"
+                      placeholder="ไม่มีข้อมูล"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Subdistrict */}
+            <FormField
+              control={control}
+              name="subdistrict"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>ตำบล/แขวง</FormLabel>
+                  <FormControl>
+                    <Input 
+                      {...field}
+                      readOnly
+                      className="bg-gray-50"
+                      placeholder="ไม่มีข้อมูล"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Zip Code */}
+            <FormField
+              control={control}
+              name="zip_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>รหัสไปรษณีย์</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="รหัสไปรษณีย์" 
+                      {...field}
+                      readOnly
+                      className="bg-gray-50"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }
