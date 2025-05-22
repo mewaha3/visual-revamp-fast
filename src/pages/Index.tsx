@@ -33,14 +33,14 @@ const Index = () => {
       <main className="flex-grow">
         <Hero />
         
-        {/* Job Action Buttons - Updated text labels */}
+        {/* Job Action Buttons - Translated to Thai */}
         <div className="container mx-auto px-4 py-8 text-center">
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-4">
             <Button 
               className="w-full sm:w-auto bg-fastlabor-600 hover:bg-fastlabor-700 text-white text-lg py-6 px-8"
               onClick={handlePostJob}
             >
-              🚀 ลงประกาศหางาน
+              🚀 ลงประกาศงาน
             </Button>
             <Button 
               className="w-full sm:w-auto bg-fastlabor-600 hover:bg-fastlabor-700 text-white text-lg py-6 px-8"
