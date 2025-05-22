@@ -18,6 +18,7 @@ interface WorkerInfo {
   firstName: string;
   lastName: string;
   userId: string;
+  jobType?: string;
 }
 
 const EmployerReviewPage: React.FC = () => {
@@ -64,7 +65,8 @@ const EmployerReviewPage: React.FC = () => {
         setWorkerInfo({
           firstName: matchData.first_name_find_jobs || 'ไม่ระบุชื่อ',
           lastName: matchData.last_name_find_jobs || 'ไม่ระบุนามสกุล',
-          userId: matchData.workerId || ''
+          userId: matchData.workerId || '',
+          jobType: matchData.job_type || ''
         });
         
       } catch (error) {
@@ -105,7 +107,7 @@ const EmployerReviewPage: React.FC = () => {
         worker_name: `${workerInfo.firstName} ${workerInfo.lastName}`,
         rating: rating,
         comment: comment,
-        review_type: 'employer_to_worker' // Employer reviewing worker
+        review_type: 'employer_to_worker' as const
       };
       
       const reviewId = await submitReview(reviewData);
@@ -124,97 +126,119 @@ const EmployerReviewPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       <main className="flex-grow py-6">
-        <div className="container mx-auto px-4">
-          <Button 
-            variant="outline" 
-            className="mb-4"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft size={16} className="mr-2" />
-            ย้อนกลับ
-          </Button>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <h1 className="text-2xl font-bold text-gray-800 mb-6">รีวิวผู้รับงาน</h1>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-                <p>กำลังโหลดข้อมูล...</p>
+        <div className="container mx-auto px-4 max-w-md">
+          <Card className="shadow-md">
+            <CardContent className="p-6">
+              <div className="flex flex-col items-center mb-6">
+                <Star className="text-yellow-400 w-10 h-10" />
+                <h1 className="text-2xl font-bold text-center mt-2">Review Employee</h1>
+                <p className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</p>
+                
+                {!loading && !error && workerInfo && (
+                  <div className="mt-3 text-center">
+                    <p className="font-medium">ช่าง: {workerInfo.firstName} {workerInfo.lastName}</p>
+                    <p className="text-sm text-gray-500">ประเภทงาน: {workerInfo.jobType || 'ไม่ระบุ'}</p>
+                  </div>
+                )}
               </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <p className="text-red-500">{error}</p>
-                <Button 
-                  onClick={() => navigate('/my-jobs')} 
-                  variant="outline" 
-                  className="mt-4"
-                >
-                  กลับไปยังรายการงาน
-                </Button>
-              </div>
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>ให้คะแนนผู้รับงาน: {workerInfo?.firstName} {workerInfo?.lastName}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    <div>
-                      <Label htmlFor="rating" className="block text-lg mb-2">คะแนน</Label>
-                      <div className="flex items-center gap-2">
-                        {[1, 2, 3, 4, 5].map((value) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => handleRatingChange(value)}
-                            className="focus:outline-none"
-                          >
-                            <Star
-                              size={32}
-                              className={value <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
-                            />
-                          </button>
-                        ))}
+              
+              {loading ? (
+                <div className="text-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p>กำลังโหลดข้อมูล...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500">{error}</p>
+                  <Button 
+                    onClick={() => navigate('/my-jobs')} 
+                    variant="outline" 
+                    className="mt-4"
+                  >
+                    กลับไปยังรายการงาน
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="rating" className="block mb-2">ให้คะแนน</Label>
+                    <div className="relative mb-2">
+                      <div className="w-full bg-gray-200 h-2 rounded-full">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full" 
+                          style={{ width: `${rating * 20}%` }}
+                        ></div>
+                      </div>
+                      <div className="absolute -top-1 -ml-2" style={{ left: `${rating * 20}%` }}>
+                        <div className="w-4 h-4 bg-white border border-blue-500 rounded-full"></div>
                       </div>
                     </div>
-                    
-                    <div>
-                      <Label htmlFor="comment" className="block text-lg mb-2">ความคิดเห็น</Label>
-                      <Textarea
-                        id="comment"
-                        placeholder="แสดงความคิดเห็นเกี่ยวกับผู้รับงาน..."
-                        rows={5}
-                        value={comment}
-                        onChange={(e) => setComment(e.target.value)}
-                        className="w-full"
-                      />
+                    <div className="flex justify-between mt-1">
+                      <span className="text-sm">แย่</span>
+                      <span className="text-sm font-medium">{rating}/5</span>
+                      <span className="text-sm">ดีมาก</span>
                     </div>
                     
-                    <div className="flex justify-center pt-4">
-                      <Button
-                        onClick={handleSubmitReview}
-                        disabled={submitting || rating === 0}
-                        className="px-8"
-                      >
-                        {submitting ? (
-                          <>
-                            <Loader2 className="animate-spin mr-2" size={18} />
-                            กำลังส่ง...
-                          </>
-                        ) : (
-                          'ส่งรีวิว'
-                        )}
-                      </Button>
+                    <div className="flex items-center justify-center gap-2 mt-4">
+                      {[1, 2, 3, 4, 5].map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => handleRatingChange(value)}
+                          className="focus:outline-none"
+                        >
+                          <Star
+                            size={32}
+                            className={value <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+                          />
+                        </button>
+                      ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                  
+                  <div>
+                    <Label htmlFor="comment" className="block mb-2">ความคิดเห็น</Label>
+                    <Textarea
+                      id="comment"
+                      placeholder="แสดงความคิดเห็นของคุณที่นี่..."
+                      rows={5}
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  
+                  <div className="pt-4">
+                    <Button
+                      onClick={handleSubmitReview}
+                      disabled={submitting || rating === 0}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 className="animate-spin mr-2" size={18} />
+                          กำลังส่ง...
+                        </>
+                      ) : (
+                        'Submit Review'
+                      )}
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-3"
+                      onClick={() => navigate('/my-jobs')}
+                    >
+                      Go to Homepage
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
       <Footer />

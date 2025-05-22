@@ -290,20 +290,20 @@ const AcceptedJobDetailPage: React.FC = () => {
                   </CardContent>
                 </Card>
                 
-                <div className="mt-8 flex justify-center">
+                <div className="pt-4">
                   <Button 
-                    className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 px-8"
+                    className="bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 w-full py-3 text-lg"
                     onClick={handleCompleteJob}
                     disabled={completing || jobDetails.status === 'completed'}
                   >
                     {completing ? (
                       <>
-                        <Loader2 className="animate-spin" size={18} />
+                        <Loader2 className="animate-spin" size={22} />
                         กำลังดำเนินการ...
                       </>
                     ) : (
                       <>
-                        <CheckCircle size={18} />
+                        <CheckCircle size={22} />
                         งานเสร็จสิ้น
                       </>
                     )}

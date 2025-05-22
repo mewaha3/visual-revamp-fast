@@ -71,7 +71,7 @@ export const getUserReviews = async (userId: string, type: 'worker' | 'employer'
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() as ReviewSubmission & { created_at: any };
       reviews.push({
         id: doc.id,
         match_id: data.match_id,
@@ -101,7 +101,7 @@ export const getMatchReviews = async (matchId: string): Promise<Review[]> => {
     const reviews: Review[] = [];
     
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() as ReviewSubmission & { created_at: any };
       reviews.push({
         id: doc.id,
         match_id: data.match_id,
