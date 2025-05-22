@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -52,6 +52,10 @@ const JobDetailPage: React.FC = () => {
   const handleAccept = () => {};
   const handleDecline = () => {};
 
+  const handleViewDetails = (jobId: string) => {
+    navigate(`/job-detail/${jobId}`);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -89,10 +93,14 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {employer && <EmployerCard employer={{...employer, name: `${employer.first_name} ${employer.last_name}`.trim()}} />}
+              {employer && <EmployerCard employer={employer} />}
               
-              {/* Show job match details */}
-              <JobMatchDetails matches={matchDetails} />
+              {/* Show job match details with view button */}
+              <JobMatchDetails 
+                matches={matchDetails} 
+                showViewButton={true}
+                onViewDetails={handleViewDetails}
+              />
               
               <JobActionButtons 
                 jobId={jobId || ""}

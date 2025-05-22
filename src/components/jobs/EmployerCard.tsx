@@ -11,22 +11,14 @@ export interface Employer {
 }
 
 export interface EmployerCardProps {
-  name: string;
-  rating?: number;
-  reviews?: number;
   employer?: Employer;
 }
 
-const EmployerCard: React.FC<EmployerCardProps> = ({ 
-  name, 
-  rating = 0, 
-  reviews = 0,
-  employer
-}) => {
+const EmployerCard: React.FC<EmployerCardProps> = ({ employer }) => {
   // If employer is provided, use its properties
-  const displayName = employer?.name || name;
-  const displayRating = employer?.rating || rating;
-  const displayReviews = employer?.reviews || reviews;
+  const displayName = employer?.name || "ไม่ระบุชื่อ";
+  const displayRating = employer?.rating || 0;
+  const displayReviews = employer?.reviews || 0;
 
   return (
     <Card className="p-4">
