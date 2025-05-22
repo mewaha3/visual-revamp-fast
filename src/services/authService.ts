@@ -58,13 +58,13 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     const user = userCredential.user;
     const uid = user.uid;
     
-    console.log("User created in Firebase Auth:", uid);
+    console.log("User created in Firebase Auth with UID:", uid);
 
     // Step 2: Update the user's display name
     await updateProfile(user, {
       displayName: `${userData.first_name} ${userData.last_name}`
     });
-    console.log("User display name updated");
+    console.log("User display name updated successfully");
 
     // Step 3: Upload documents if available
     const documentUrls: Record<string, string | null> = {
@@ -75,15 +75,20 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     };
 
     if (userData.documents) {
-      console.log("Uploading user documents...");
+      console.log("Processing user documents for upload...");
       for (const [docType, file] of Object.entries(userData.documents)) {
         if (file) {
           console.log(`Uploading ${docType} document:`, file.name);
-          const fileExtension = file.name.split('.').pop();
-          const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
-          await uploadBytes(storageRef, file);
-          documentUrls[docType] = await getDownloadURL(storageRef);
-          console.log(`Document ${docType} uploaded successfully. URL:`, documentUrls[docType]);
+          try {
+            const fileExtension = file.name.split('.').pop();
+            const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
+            await uploadBytes(storageRef, file);
+            documentUrls[docType] = await getDownloadURL(storageRef);
+            console.log(`Document ${docType} uploaded successfully. URL:`, documentUrls[docType]);
+          } catch (uploadError) {
+            console.error(`Error uploading ${docType} document:`, uploadError);
+            // Continue with registration even if document upload fails
+          }
         }
       }
     }
@@ -123,9 +128,10 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       user_id: uid
     };
     
-    console.log("Saving user profile to Firestore:", uid);
+    console.log("Attempting to save user profile to Firestore with uid:", uid);
     
     try {
+      // Force setDoc to create the document, not just update it
       await setDoc(userDocRef, userProfileData);
       console.log("User profile saved successfully to Firestore");
     } catch (firestoreError) {
