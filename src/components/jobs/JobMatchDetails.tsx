@@ -14,6 +14,7 @@ interface JobMatchDetailsProps {
   rankLimit?: number;
   onRankChange?: (matchId: string, newRank: number) => void;
   showSkills?: boolean;
+  hideButtonForStatus?: string[];
 }
 
 const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ 
@@ -23,7 +24,8 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
   allowRanking = false,
   rankLimit = 5,
   onRankChange,
-  showSkills = false
+  showSkills = false,
+  hideButtonForStatus = []
 }) => {
   if (!matches || matches.length === 0) {
     return (
@@ -86,6 +88,12 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
       default:
         return gender;
     }
+  };
+
+  // Check if view button should be hidden for this status
+  const shouldHideButton = (status: string | undefined) => {
+    if (!status || !hideButtonForStatus.length) return false;
+    return hideButtonForStatus.includes(status.toLowerCase());
   };
 
   return (
@@ -201,7 +209,7 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                 </div>
               )}
               
-              {showViewButton && onViewDetails && match.job_id && (
+              {showViewButton && onViewDetails && match.job_id && !shouldHideButton(match.status) && (
                 <Button 
                   variant="outline" 
                   size="sm" 

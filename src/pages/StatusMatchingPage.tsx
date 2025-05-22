@@ -65,6 +65,11 @@ const StatusMatchingPage: React.FC = () => {
     navigate(`/job-detail/${jobId}`);
   };
 
+  // Check if a match has "on_queue" status (รอการตอบรับ)
+  const isOnQueue = (status: string | undefined): boolean => {
+    return status?.toLowerCase() === 'on_queue';
+  };
+
   if (!jobId) {
     return <div>Invalid job ID</div>;
   }
@@ -94,13 +99,6 @@ const StatusMatchingPage: React.FC = () => {
               {job && (
                 <div className="flex flex-col gap-1 mt-2">
                   <p className="text-gray-600">ประเภทงาน: {job.job_type}</p>
-                  <Button
-                    variant="outline"
-                    className="w-fit mt-2 text-fastlabor-600 border-fastlabor-600"
-                    onClick={() => navigate(`/job-detail/${jobId}`)}
-                  >
-                    ดูรายละเอียดงาน
-                  </Button>
                 </div>
               )}
             </div>
@@ -143,31 +141,11 @@ const StatusMatchingPage: React.FC = () => {
                   >
                     ไปยังหน้า AI Matching
                   </Button>
-                  {job && (
-                    <div className="mt-3">
-                      <Button
-                        variant="outline"
-                        className="text-fastlabor-600 border-fastlabor-600"
-                        onClick={() => navigate(`/job-detail/${jobId}`)}
-                      >
-                        ดูรายละเอียดงาน
-                      </Button>
-                    </div>
-                  )}
                 </div>
               </div>
             ) : statusResults.length === 0 ? (
               <div className="text-center py-8">
                 <p>ไม่พบข้อมูลการจับคู่แรงงาน</p>
-                {job && (
-                  <Button
-                    variant="outline"
-                    className="mt-4 text-fastlabor-600 border-fastlabor-600"
-                    onClick={() => navigate(`/job-detail/${jobId}`)}
-                  >
-                    ดูรายละเอียดงาน
-                  </Button>
-                )}
               </div>
             ) : (
               <JobMatchDetails 
@@ -175,6 +153,7 @@ const StatusMatchingPage: React.FC = () => {
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
                 showSkills={true}
+                hideButtonForStatus={['on_queue']} // Hide view button for on_queue status
               />
             )}
           </div>
