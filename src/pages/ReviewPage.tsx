@@ -84,7 +84,7 @@ const ReviewPage: React.FC = () => {
                 ให้คะแนนและแสดงความคิดเห็น
                 {state?.workerName && (
                   <div className="mt-2 font-medium">
-                    ช่าง: {state.workerName}
+                    แรงงาน: {state.workerName}
                   </div>
                 )}
                 {state?.jobType && (
