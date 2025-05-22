@@ -41,6 +41,7 @@ export const useJobDetails = (jobId?: string) => {
             id: jobId,
             job_id: matchData.job_id,
             job_type: matchData.job_type || "",
+            detail: matchData.job_detail || "",
             job_detail: matchData.job_detail || "",
             job_date: matchData.job_date || "",
             start_time: matchData.start_time || "",
@@ -87,6 +88,12 @@ export const useJobDetails = (jobId?: string) => {
           // Get employer details
           const employerInfo = await getEmployerDetails(jobId);
           console.log("Employer details fetched:", employerInfo);
+          
+          // Make sure we have a name property
+          if (employerInfo) {
+            employerInfo.name = `${employerInfo.first_name || ""} ${employerInfo.last_name || ""}`.trim() || "ไม่ระบุชื่อ";
+          }
+          
           setEmployer(employerInfo);
         }
         

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Fix import
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';

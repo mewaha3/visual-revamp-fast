@@ -1,195 +1,131 @@
 
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { MatchResult } from '@/types/types';
-import { User, Calendar, Clock, MapPin, Briefcase, Star, ArrowUp, ArrowDown } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { MatchResult } from '@/types/types';
+import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight } from 'lucide-react';
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
-  rankLimit?: number;
-  allowRanking?: boolean;
-  onRankChange?: (id: string, newRank: number) => void;
   showViewButton?: boolean;
   onViewDetails?: (jobId: string) => void;
 }
 
 const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ 
-  matches, 
-  rankLimit,
-  allowRanking = false,
-  onRankChange,
+  matches,
   showViewButton = false,
   onViewDetails 
 }) => {
-  // If rankLimit is provided, only show that many matches
-  const [displayMatches, setDisplayMatches] = useState<MatchResult[]>(
-    rankLimit ? matches.slice(0, rankLimit) : matches
-  );
-  
-  const handleRankUp = (index: number) => {
-    if (!allowRanking || index === 0 || !onRankChange) return;
-    
-    const newMatches = [...displayMatches];
-    const temp = newMatches[index];
-    newMatches[index] = newMatches[index - 1];
-    newMatches[index - 1] = temp;
-    
-    // Update priority based on new positions
-    if (temp.id && onRankChange) {
-      onRankChange(temp.id, index);
-    }
-    
-    setDisplayMatches(newMatches);
-  };
-  
-  const handleRankDown = (index: number) => {
-    if (!allowRanking || index === displayMatches.length - 1 || !onRankChange) return;
-    
-    const newMatches = [...displayMatches];
-    const temp = newMatches[index];
-    newMatches[index] = newMatches[index + 1];
-    newMatches[index + 1] = temp;
-    
-    // Update priority based on new positions
-    if (temp.id && onRankChange) {
-      onRankChange(temp.id, index + 2);
-    }
-    
-    setDisplayMatches(newMatches);
-  };
-  
   if (!matches || matches.length === 0) {
     return (
-      <Card className="mb-6">
-        <CardHeader className="pb-2">
+      <Card className="mt-6">
+        <CardHeader>
           <CardTitle className="text-xl">รายละเอียดการจับคู่</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500 text-center py-4">
-            ยังไม่มีข้อมูลการจับคู่สำหรับงานนี้
-          </p>
+          <p className="text-center text-gray-500">ไม่พบข้อมูลการจับคู่</p>
         </CardContent>
       </Card>
     );
   }
 
+  // Function to get status badge color
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'accepted':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'declined':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'paid':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'completed':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'on_queue':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  // Function to get readable status in Thai
+  const getStatusText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'accepted':
+        return 'ยอมรับ';
+      case 'declined':
+        return 'ปฏิเสธ';
+      case 'paid':
+        return 'ชำระเงินแล้ว';
+      case 'completed':
+        return 'เสร็จสิ้น';
+      case 'on_queue':
+        return 'รอการตอบรับ';
+      default:
+        return status || 'ไม่ระบุ';
+    }
+  };
+
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-2">
+    <Card className="mt-6">
+      <CardHeader>
         <CardTitle className="text-xl">รายละเอียดการจับคู่</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          {displayMatches.map((match, index) => (
-            <div key={match.id || index} className="border p-4 rounded-lg bg-gray-50 relative">
-              {/* Rank indicator */}
-              {rankLimit && (
-                <Badge className="absolute top-2 right-2 bg-fastlabor-600">
-                  อันดับ {index + 1}
-                </Badge>
-              )}
-              
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-medium text-lg flex items-center">
-                  <User className="h-5 w-5 mr-2 text-gray-500" />
-                  {(match.first_name && match.last_name) ? 
-                    `${match.first_name} ${match.last_name}` : 
-                    match.name || "ไม่ระบุชื่อ"}
-                </h3>
-                {match.status && (
-                  <Badge 
-                    className={`${
-                      match.status === "accepted" ? "bg-green-500" :
-                      match.status === "declined" ? "bg-red-500" :
-                      "bg-amber-500"
-                    }`}
-                  >
-                    {match.status === "accepted" ? "รับงานแล้ว" :
-                     match.status === "declined" ? "ปฏิเสธงาน" :
-                     "รอตอบรับ"}
+      <CardContent className="space-y-4">
+        {matches.map((match, index) => (
+          <div key={match.id || index} className="border rounded-md p-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-medium flex items-center gap-2">
+                <User size={18} className="text-fastlabor-600" />
+                {match.name}
+                {match.gender && (
+                  <Badge variant="outline" className="ml-2">
+                    {match.gender === 'male' ? 'ชาย' : match.gender === 'female' ? 'หญิง' : match.gender}
                   </Badge>
                 )}
-              </div>
-              
-              <div className="grid grid-cols-2 gap-2 text-sm mb-2">
-                <div className="flex items-center">
-                  <Briefcase className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
-                </div>
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.gender || "ไม่ระบุเพศ"}</span>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
-                </div>
-                <div className="flex items-center">
-                  <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">
-                    {match.time || 
-                     (match.start_time && match.end_time ? 
-                      `${match.start_time} - ${match.end_time}` : 
-                      "ไม่ระบุเวลา")}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex items-start mt-2">
-                <MapPin className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
-                <span className="text-gray-700 text-sm">
-                  {match.location || 
-                   (match.province || match.district || match.subdistrict ? 
-                    `${match.province || "ไม่ระบุจังหวัด"} / ${match.district || "ไม่ระบุเขต"} / ${match.subdistrict || "ไม่ระบุแขวง"}` : 
-                    "ไม่ระบุสถานที่")}
-                </span>
-              </div>
-              
-              {match.email && (
-                <div className="mt-2 text-sm text-gray-600">
-                  <span className="font-medium">อีเมล:</span> {match.email}
-                </div>
-              )}
-              
-              {/* Ranking buttons shown only when allowed */}
-              {allowRanking && index > 0 && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="absolute left-2 top-1/2 transform -translate-y-1/2"
-                  onClick={() => handleRankUp(index)}
-                >
-                  <ArrowUp size={16} />
-                </Button>
-              )}
-              
-              {allowRanking && index < displayMatches.length - 1 && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                  onClick={() => handleRankDown(index)}
-                >
-                  <ArrowDown size={16} />
-                </Button>
-              )}
-              
-              {/* View details button */}
-              {showViewButton && match.status === "accepted" && onViewDetails && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="mt-3 w-full"
-                  onClick={() => onViewDetails(match.job_id || "")}
-                >
-                  ดูรายละเอียดงาน
-                </Button>
-              )}
+              </h3>
+              <Badge className={getStatusColor(match.status)}>
+                {getStatusText(match.status)}
+              </Badge>
             </div>
-          ))}
-        </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.province || "ไม่ระบุจังหวัด"}/{match.district || "ไม่ระบุเขต"}/{match.subdistrict || "ไม่ระบุแขวง"}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.date || "ไม่ระบุวันที่"}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.time || `${match.start_time || ""} - ${match.end_time || ""}`}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <DollarSign size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.salary ? `${match.salary} บาท` : "ไม่ระบุค่าจ้าง"}</span>
+              </div>
+            </div>
+            
+            {showViewButton && onViewDetails && (
+              <div className="mt-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onViewDetails(match.job_id || "")}
+                  className="w-full text-fastlabor-600 border-fastlabor-600"
+                >
+                  ดูรายละเอียด
+                  <ArrowRight size={16} className="ml-2" />
+                </Button>
+              </div>
+            )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

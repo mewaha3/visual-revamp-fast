@@ -6,14 +6,12 @@ import Footer from '@/components/Footer';
 import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
-import JobMatchDetails from '@/components/jobs/JobMatchDetails';
-import JobActionButtons from '@/components/jobs/JobActionButtons';
 import { Button } from "@/components/ui/button";
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { usePayment } from '@/hooks/usePayment';
 import PaymentModal from '@/components/payment/PaymentModal';
 import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, CreditCard } from 'lucide-react';
 
 const JobDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -46,14 +44,6 @@ const JobDetailPage: React.FC = () => {
   
   const handleRetry = () => {
     window.location.reload();
-  };
-  
-  // Dummy functions for JobActionButtons props
-  const handleAccept = () => {};
-  const handleDecline = () => {};
-
-  const handleViewDetails = (jobId: string) => {
-    navigate(`/job-detail/${jobId}`);
   };
 
   return (
@@ -95,22 +85,17 @@ const JobDetailPage: React.FC = () => {
               
               {employer && <EmployerCard employer={employer} />}
               
-              {/* Show job match details with view button */}
-              <JobMatchDetails 
-                matches={matchDetails} 
-                showViewButton={true}
-                onViewDetails={handleViewDetails}
-              />
-              
-              <JobActionButtons 
-                jobId={jobId || ""}
-                workerId={workerId || ""}
-                hasPaid={hasPaid}
-                fromPayment={fromPaymentState}
-                onOpenPaymentModal={handleOpenPaymentModal}
-                onAccept={handleAccept}
-                onDecline={handleDecline}
-              />
+              {/* Replace job match details with payment button */}
+              <div className="mt-6 space-y-4">
+                <Button 
+                  onClick={handleOpenPaymentModal} 
+                  className="w-full bg-fastlabor-600 hover:bg-fastlabor-700 text-white"
+                  disabled={hasPaid}
+                >
+                  <CreditCard className="mr-2" size={18} />
+                  {hasPaid ? "ชำระเงินแล้ว" : "ชำระเงิน"}
+                </Button>
+              </div>
             </>
           ) : (
             <div className="text-center py-8">

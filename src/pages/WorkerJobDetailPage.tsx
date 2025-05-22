@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import JobHeader from '@/components/jobs/JobHeader';
 import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
-import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { Button } from "@/components/ui/button";
 import { useJobDetails } from '@/hooks/useJobDetails';
 import { CheckCircle, RefreshCcw } from 'lucide-react';
@@ -39,10 +38,6 @@ const WorkerJobDetailPage: React.FC = () => {
 
   const handleRetry = () => {
     window.location.reload();
-  };
-
-  const handleViewDetails = (jobId: string) => {
-    navigate(`/job-detail/${jobId}`);
   };
 
   return (
@@ -83,13 +78,6 @@ const WorkerJobDetailPage: React.FC = () => {
               <JobDetailsCard jobDetails={jobDetails} />
               
               {employer && <EmployerCard employer={employer} />}
-              
-              {/* Show job match details with view button */}
-              <JobMatchDetails 
-                matches={matchDetails}
-                showViewButton={true}
-                onViewDetails={handleViewDetails}
-              />
               
               <div className="mt-6 space-y-4">
                 <Button 
