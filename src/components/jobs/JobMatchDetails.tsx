@@ -2,14 +2,18 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MatchResult } from '@/types/types';
-import { User, Calendar, Clock, MapPin, Briefcase } from 'lucide-react';
+import { User, Calendar, Clock, MapPin, Briefcase, Star } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
+  rankLimit?: number;
 }
 
-const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches }) => {
+const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches, rankLimit }) => {
+  // If rankLimit is provided, only show that many matches
+  const displayMatches = rankLimit ? matches.slice(0, rankLimit) : matches;
+  
   if (!matches || matches.length === 0) {
     return (
       <Card className="mb-6">
@@ -32,49 +36,67 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ matches }) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {matches.map((match) => (
-            <div key={match.id} className="border p-4 rounded-lg bg-gray-50">
+          {displayMatches.map((match, index) => (
+            <div key={match.id || index} className="border p-4 rounded-lg bg-gray-50 relative">
+              {/* Rank indicator */}
+              {rankLimit && (
+                <Badge className="absolute top-2 right-2 bg-fastlabor-600">
+                  อันดับ {index + 1}
+                </Badge>
+              )}
+              
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-medium text-lg flex items-center">
                   <User className="h-5 w-5 mr-2 text-gray-500" />
-                  {match.first_name} {match.last_name}
+                  {(match.first_name && match.last_name) ? 
+                    `${match.first_name} ${match.last_name}` : 
+                    match.name || "ไม่ระบุชื่อ"}
                 </h3>
-                <Badge 
-                  className={`${
-                    match.status === "accepted" ? "bg-green-500" :
-                    match.status === "declined" ? "bg-red-500" :
-                    "bg-amber-500"
-                  }`}
-                >
-                  {match.status === "accepted" ? "รับงานแล้ว" :
-                   match.status === "declined" ? "ปฏิเสธงาน" :
-                   "รอตอบรับ"}
-                </Badge>
+                {match.status && (
+                  <Badge 
+                    className={`${
+                      match.status === "accepted" ? "bg-green-500" :
+                      match.status === "declined" ? "bg-red-500" :
+                      "bg-amber-500"
+                    }`}
+                  >
+                    {match.status === "accepted" ? "รับงานแล้ว" :
+                     match.status === "declined" ? "ปฏิเสธงาน" :
+                     "รอตอบรับ"}
+                  </Badge>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-2 text-sm mb-2">
                 <div className="flex items-center">
                   <Briefcase className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.jobType}</span>
+                  <span className="text-gray-700">{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
                 </div>
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.gender}</span>
+                  <span className="text-gray-700">{match.gender || "ไม่ระบุเพศ"}</span>
                 </div>
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.date}</span>
+                  <span className="text-gray-700">{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
                 </div>
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                  <span className="text-gray-700">{match.time}</span>
+                  <span className="text-gray-700">{match.time || `${match.start_time || ""} - ${match.end_time || ""}`}</span>
                 </div>
               </div>
               
               <div className="flex items-start mt-2">
                 <MapPin className="h-4 w-4 mr-2 text-gray-500 mt-0.5" />
-                <span className="text-gray-700 text-sm">{match.location}</span>
+                <span className="text-gray-700 text-sm">{match.location || match.province || "ไม่ระบุสถานที่"}</span>
               </div>
+              
+              {match.aiScore !== undefined && (
+                <div className="mt-2 flex items-center">
+                  <Star className="h-4 w-4 mr-2 text-amber-500" />
+                  <span className="font-medium">AI Score: {match.aiScore.toFixed(2)}</span>
+                </div>
+              )}
               
               {match.email && (
                 <div className="mt-2 text-sm text-gray-600">

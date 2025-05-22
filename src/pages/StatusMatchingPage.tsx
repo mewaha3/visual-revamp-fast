@@ -10,6 +10,7 @@ import { getPostJobById } from '@/services/firestoreService';
 import { getMatchResultsForJob } from '@/services/matchingService';
 import { PostJob, StatusResult } from '@/types/types';
 import { BarChart, ArrowLeft, Info, Check, X, ArrowRight, RefreshCw } from 'lucide-react';
+import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 
 const StatusMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -64,11 +65,11 @@ const StatusMatchingPage: React.FC = () => {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'on_queue':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">On Queue</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-500">On Queue</Badge>;
       case 'accepted':
-        return <Badge className="bg-green-500 hover:bg-green-600 flex items-center gap-1"><Check size={14} /> Accepted</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-500 flex items-center gap-1"><Check size={14} /> Accepted</Badge>;
       case 'declined':
-        return <Badge className="bg-red-500 hover:bg-red-600 flex items-center gap-1"><X size={14} /> Declined</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-500 flex items-center gap-1"><X size={14} /> Declined</Badge>;
       default:
         return <Badge>Unknown</Badge>;
     }
@@ -82,6 +83,20 @@ const StatusMatchingPage: React.FC = () => {
   if (!jobId) {
     return <div>Invalid job ID</div>;
   }
+
+  // Convert statusResults to match the format expected by JobMatchDetails
+  const formattedResults = statusResults.map(result => ({
+    ...result,
+    jobType: result.jobType,
+    gender: result.gender,
+    date: result.date,
+    time: result.time,
+    location: result.location,
+    salary: result.salary,
+    first_name: result.first_name,
+    last_name: result.last_name,
+    name: result.name
+  }));
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -150,55 +165,7 @@ const StatusMatchingPage: React.FC = () => {
                 <p>ไม่พบข้อมูลสถานะการจับคู่</p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {statusResults.map((status, index) => (
-                  <div key={index} className="border-b border-gray-100 pb-8 last:border-b-0">
-                    <h3 className="font-medium text-lg mb-1">Match No.{status.priority || index + 1}</h3>
-                    <div className="space-y-2 pl-6">
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Name: {status.name}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Gender: {status.gender}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Job Type: {status.jobType}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Date: {status.date}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Time: {status.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Location: {status.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-fastlabor-600">•</span>
-                        <span>Salary: {status.salary}</span>
-                      </div>
-                    </div>
-                    <div className="mt-4 ml-6 flex items-center gap-3">
-                      {getStatusBadge(status.status)}
-                      
-                      {status.status === 'accepted' && status.workerId && (
-                        <Button 
-                          onClick={() => handleViewJobDetail(status.workerId || '')}
-                          className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white flex items-center gap-1"
-                        >
-                          รายละเอียดงาน <ArrowRight size={16} />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <JobMatchDetails matches={formattedResults} />
             )}
           </div>
         </div>

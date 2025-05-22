@@ -1,0 +1,242 @@
+
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { toast } from "sonner";
+import { ArrowLeft, BarChart, Check } from 'lucide-react';
+import { getPostJobById } from '@/services/firestoreService';
+import { PostJob, MatchResult } from '@/types/types';
+import JobMatchDetails from '@/components/jobs/JobMatchDetails';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { saveMatchResults } from '@/services/matchingService';
+
+const AIMatchingDetailPage: React.FC = () => {
+  const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
+  const [job, setJob] = useState<PostJob | null>(null);
+  const [matchResults, setMatchResults] = useState<MatchResult[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchJobAndMatches = async () => {
+      if (!jobId) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Get job details
+        const jobData = await getPostJobById(jobId);
+        if (!jobData) {
+          setError("ไม่พบข้อมูลงาน");
+          return;
+        }
+        
+        setJob(jobData);
+        
+        // Mock AI matching results for demonstration
+        // In a real implementation, this would come from an AI matching service
+        const findJobsRef = collection(db, "find_jobs");
+        const findJobsSnapshot = await getDocs(findJobsRef);
+        
+        let mockMatches: MatchResult[] = [];
+        
+        // Create matches from find_jobs
+        findJobsSnapshot.forEach(doc => {
+          const findJobData = doc.data();
+          
+          // Calculate a mock AI score (random for demo)
+          const aiScore = Math.random();
+          
+          mockMatches.push({
+            id: doc.id,
+            findjob_id: findJobData.findjob_id || doc.id,
+            job_id: jobId,
+            name: findJobData.name || "ไม่ระบุชื่อ",
+            first_name: findJobData.first_name,
+            last_name: findJobData.last_name,
+            gender: findJobData.gender || "ไม่ระบุ",
+            jobType: findJobData.job_type,
+            date: findJobData.job_date || findJobData.start_date,
+            time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
+            location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
+            salary: findJobData.expected_salary || 0,
+            email: findJobData.email || "",
+            aiScore: aiScore,
+            workerId: findJobData.user_id,
+            user_id: findJobData.user_id
+          });
+        });
+        
+        // Sort by AI score descending
+        mockMatches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+        
+        setMatchResults(mockMatches);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchJobAndMatches();
+  }, [jobId]);
+  
+  const handleConfirmMatch = async () => {
+    if (!jobId || matchResults.length === 0 || !job) return;
+    
+    setSubmitting(true);
+    
+    try {
+      // Only save the top 5 matches
+      const top5Matches = matchResults.slice(0, 5);
+      
+      // Save each match to Firestore
+      for (let i = 0; i < top5Matches.length; i++) {
+        const match = top5Matches[i];
+        
+        await saveMatchResults({
+          job_id: jobId,
+          findjob_id: match.findjob_id || '',
+          priority: i + 1, // Priority based on rank (1-5)
+          status: 'on_queue',
+          // Job details
+          job_type: job.job_type,
+          job_date: job.job_date,
+          start_time: job.start_time,
+          end_time: job.end_time,
+          job_address: job.job_address,
+          province: job.province,
+          district: job.district,
+          subdistrict: job.subdistrict,
+          zip_code: job.zip_code,
+          job_salary: job.salary,
+          // Worker details
+          first_name: match.first_name || '',
+          last_name: match.last_name || '',
+          gender: match.gender || '',
+          email: match.email || '',
+          workerId: match.workerId || match.user_id || ''
+        });
+      }
+      
+      toast.success("บันทึกการจับคู่เรียบร้อยแล้ว");
+      navigate(`/status/${jobId}`);
+    } catch (error) {
+      console.error("Error saving match results:", error);
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow py-6">
+          <div className="container mx-auto px-4">
+            <p className="text-center">กำลังโหลดข้อมูล...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow py-6">
+          <div className="container mx-auto px-4">
+            <p className="text-center text-red-500">{error}</p>
+            <Button 
+              onClick={() => navigate("/my-jobs")}
+              className="mx-auto block mt-4"
+            >
+              กลับไปยังรายการงาน
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow py-6">
+        <div className="container mx-auto px-4">
+          <Button 
+            variant="outline" 
+            className="mb-4"
+            onClick={() => navigate('/my-jobs')}
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            กลับไปยังรายการงาน
+          </Button>
+          
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <BarChart className="h-6 w-6 text-fastlabor-600" />
+                <CardTitle className="text-2xl">AI Matching</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <h2 className="text-xl font-semibold mb-4">Job ID: {jobId}</h2>
+              
+              {job && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium text-lg mb-2">รายละเอียดงาน</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p><span className="font-medium">ประเภทงาน:</span> {job.job_type}</p>
+                      <p><span className="font-medium">วันที่:</span> {job.job_date}</p>
+                      <p><span className="font-medium">เวลา:</span> {job.start_time} - {job.end_time}</p>
+                    </div>
+                    <div>
+                      <p><span className="font-medium">สถานที่:</span> {job.job_address}</p>
+                      <p><span className="font-medium">ตำแหน่ง:</span> {job.province}/{job.district}/{job.subdistrict}</p>
+                      <p><span className="font-medium">ค่าตอบแทน:</span> {job.salary} บาท</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-4">
+                <h3 className="text-lg font-medium mb-2">แสดงงานที่มีผลการจับคู่สูงสุด 5 อันดับ</h3>
+                <p className="text-sm text-gray-500 mb-4">ระบบได้คัดกรองและจัดอันดับผลการจับคู่โดยใช้ AI เพื่อความเหมาะสมสูงสุด</p>
+              </div>
+              
+              <JobMatchDetails matches={matchResults} rankLimit={5} />
+              
+              <div className="flex justify-center mt-6">
+                <Button 
+                  onClick={handleConfirmMatch}
+                  disabled={submitting || matchResults.length === 0}
+                  className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white font-medium px-6"
+                >
+                  <Check size={20} className="mr-2" />
+                  {submitting ? "กำลังบันทึกข้อมูล..." : "ยืนยันการจับคู่"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default AIMatchingDetailPage;

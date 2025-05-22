@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -24,6 +23,7 @@ import JobDetailPage from "./pages/JobDetailPage";
 import ReviewPage from "./pages/ReviewPage";
 import WorkerJobDetailPage from "./pages/WorkerJobDetailPage";
 import EmployerReviewPage from "./pages/EmployerReviewPage";
+import AIMatchingDetailPage from './pages/AIMatchingDetailPage';
 
 /* 
  * Note about the TS6305 errors:
