@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,7 +8,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Star, ArrowRight, Check } from "lucide-react";
+import { Star } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,11 +26,12 @@ type FormValues = z.infer<typeof formSchema>;
 
 interface LocationState {
   jobId?: string;
-  jobType?: string;
   employerName?: string;
+  jobType?: string;
 }
 
 const EmployerReviewPage: React.FC = () => {
+  const { jobId } = useParams<{ jobId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
@@ -52,7 +53,7 @@ const EmployerReviewPage: React.FC = () => {
     
     // Show success toast
     toast.success("ขอบคุณสำหรับการให้คะแนน", {
-      description: `คุณให้คะแนน ${values.rating} ดาวสำหรับผู้ว่าจ้างงานนี้`
+      description: `คุณให้คะแนน ${values.rating} ดาวสำหรับนายจ้างนี้`
     });
     
     // Navigate to homepage after short delay
@@ -71,12 +72,12 @@ const EmployerReviewPage: React.FC = () => {
               <div className="flex justify-center mb-2">
                 <Star className="text-yellow-400" size={32} />
               </div>
-              <CardTitle className="text-2xl">⭐ Review Employer</CardTitle>
+              <CardTitle className="text-2xl">Review Employer</CardTitle>
               <CardDescription>
-                ให้คะแนนและแสดงความคิดเห็น
+                ให้คะแนนและแสดงความคิดเห็นต่อนายจ้าง
                 {state?.employerName && (
                   <div className="mt-2 font-medium">
-                    ผู้ว่าจ้าง: {state.employerName}
+                    นายจ้าง: {state.employerName}
                   </div>
                 )}
                 {state?.jobType && (
@@ -139,17 +140,16 @@ const EmployerReviewPage: React.FC = () => {
                   <div className="flex flex-col space-y-3">
                     <Button 
                       type="submit" 
-                      className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full flex items-center justify-center gap-2"
+                      className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white w-full"
                     >
-                      <Check size={18} /> Submit Review
+                      ส่งรีวิว
                     </Button>
                     <Button 
                       type="button" 
                       variant="outline"
                       onClick={() => navigate('/')}
-                      className="flex items-center justify-center gap-2"
                     >
-                      <ArrowRight size={18} /> Go to Homepage
+                      ไปหน้าหลัก
                     </Button>
                   </div>
                 </form>

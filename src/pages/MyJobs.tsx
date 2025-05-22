@@ -36,64 +36,6 @@ const MyJobs = () => {
     navigate(`/my-jobs/${tabId}`);
   };
 
-  // Fetch jobs based on the active tab
-  useEffect(() => {
-    const fetchJobs = async () => {
-      if (!userEmail) {
-        toast.error("กรุณาเข้าสู่ระบบก่อนดูประวัติงาน");
-        navigate("/login", { state: { from: `/my-jobs/${tab}` } });
-        return;
-      }
-
-      setIsLoading(true);
-
-      try {
-        let jobsData: FindJob[] = [];
-
-        if (tab === "find" && userId) {
-          // Fetch find jobs
-          jobsData = await getUnmatchedFindJobs(userId);
-        } else if (tab === "post" && userId) {
-          // In a real implementation, this would fetch posted jobs
-          // For now, we'll use an empty array
-          jobsData = [];
-        } else if (tab === "matched" && userId) {
-          // In a real implementation, this would fetch matched jobs
-          // For now, we'll use an empty array
-          jobsData = [];
-        }
-
-        setJobs(jobsData);
-      } catch (error) {
-        console.error(`Error fetching ${tab} jobs:`, error);
-        toast.error(`ไม่สามารถโหลดข้อมูลงานที่${tab === "find" ? "หา" : tab === "post" ? "ลงประกาศ" : "จับคู่แล้ว"}ได้`);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchJobs();
-  }, [tab, userEmail, userId, navigate]);
-
-  // Render empty message based on tab
-  const renderEmptyMessage = () => {
-    let message = "";
-    
-    if (tab === "find") {
-      message = "คุณยังไม่มีงานที่หา";
-    } else if (tab === "post") {
-      message = "คุณยังไม่มีงานที่ลงประกาศ";
-    } else {
-      message = "คุณยังไม่มีงานที่จับคู่แล้ว";
-    }
-    
-    return (
-      <div className="text-center py-8">
-        <p>{message}</p>
-      </div>
-    );
-  };
-
   // Redirect to MyJobsPage which has the implementation
   useEffect(() => {
     navigate('/my-jobs');

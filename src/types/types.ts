@@ -1,3 +1,4 @@
+
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -121,7 +122,7 @@ export interface Employer {
   rating?: number;
   reviews?: number;
   profile_image?: string;
-  name?: string; // Make name optional to avoid type errors
+  name: string; // Make name required to match EmployerCard type
 }
 
 export interface Job {
@@ -162,7 +163,7 @@ export interface MatchResultFirestore {
   subdistrict: string;
   zip_code: string;
   priority: number;
-  status: "on_queue" | "accepted" | "declined";
+  status: "on_queue" | "accepted" | "declined" | "paid" | "completed";
   findjob_id: string;
   job_id: string;
   job_salary: number;

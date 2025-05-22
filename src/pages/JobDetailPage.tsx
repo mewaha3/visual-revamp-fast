@@ -83,9 +83,16 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {employer && <EmployerCard employer={employer} />}
+              {employer && (
+                <EmployerCard 
+                  employer={{
+                    name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ',
+                    rating: employer.rating,
+                    reviews: employer.reviews
+                  }}
+                />
+              )}
               
-              {/* Replace job match details with payment button */}
               <div className="mt-6 space-y-4">
                 <Button 
                   onClick={handleOpenPaymentModal} 

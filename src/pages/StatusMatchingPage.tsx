@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Button } from "@/components/ui/button"; // Fix import
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
@@ -17,6 +17,7 @@ const StatusMatchingPage: React.FC = () => {
   const navigate = useNavigate();
   const [job, setJob] = useState<PostJob | null>(null);
   const [statusResults, setStatusResults] = useState<MatchResult[]>([]);
+  const [acceptedResults, setAcceptedResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -44,6 +45,12 @@ const StatusMatchingPage: React.FC = () => {
         if (matchResults.length > 0) {
           setIsConfirmed(true);
           setStatusResults(matchResults);
+          
+          // Filter for only accepted matches
+          const accepted = matchResults.filter(match => 
+            match.status?.toLowerCase() === 'accepted'
+          );
+          setAcceptedResults(accepted);
         } else {
           setIsConfirmed(false);
         }
@@ -132,13 +139,13 @@ const StatusMatchingPage: React.FC = () => {
                   ไปยังหน้า AI Matching
                 </Button>
               </div>
-            ) : statusResults.length === 0 ? (
+            ) : acceptedResults.length === 0 ? (
               <div className="text-center py-8">
-                <p>ไม่พบข้อมูลสถานะการจับคู่</p>
+                <p>ไม่พบข้อมูลงานที่ยอมรับแล้ว</p>
               </div>
             ) : (
               <JobMatchDetails 
-                matches={statusResults} 
+                matches={acceptedResults} 
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
               />

@@ -68,14 +68,24 @@ export const useJobDetails = (jobId?: string) => {
               phone: matchData.phone_post_jobs || ""
             };
             setEmployer(employerData);
-          } else {
-            // Fallback to basic employer info
+          } else if (matchData.first_name && matchData.last_name) {
+            // If employer info not found, try to use the worker info as a fallback
             const employerData: Employer = {
               id: jobId,
               first_name: matchData.first_name || "",
               last_name: matchData.last_name || "",
               name: `${matchData.first_name || ""} ${matchData.last_name || ""}`.trim() || "ไม่ระบุชื่อ",
               email: matchData.email || ""
+            };
+            setEmployer(employerData);
+          } else {
+            // Fallback to basic employer info
+            const employerData: Employer = {
+              id: jobId,
+              first_name: "",
+              last_name: "",
+              name: "ไม่ระบุชื่อ",
+              email: ""
             };
             setEmployer(employerData);
           }
@@ -122,6 +132,7 @@ export const useJobDetails = (jobId?: string) => {
             workerId: data.workerId,
             start_time: data.start_time,
             end_time: data.end_time,
+            priority: data.priority,
             // Additional nested fields
             first_name_post_jobs: data.first_name_post_jobs,
             last_name_post_jobs: data.last_name_post_jobs,

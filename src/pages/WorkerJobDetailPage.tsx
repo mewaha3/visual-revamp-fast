@@ -77,7 +77,15 @@ const WorkerJobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {employer && <EmployerCard employer={employer} />}
+              {employer && (
+                <EmployerCard 
+                  employer={{
+                    name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ',
+                    rating: employer.rating,
+                    reviews: employer.reviews
+                  }} 
+                />
+              )}
               
               <div className="mt-6 space-y-4">
                 <Button 
@@ -85,7 +93,7 @@ const WorkerJobDetailPage: React.FC = () => {
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
                   <CheckCircle className="mr-2" size={18} />
-                  Job Done
+                  งานเสร็จสิ้น (Job Done)
                 </Button>
               </div>
             </>

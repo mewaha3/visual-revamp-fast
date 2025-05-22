@@ -11,14 +11,14 @@ export interface Employer {
 }
 
 export interface EmployerCardProps {
-  employer?: Employer;
+  employer: Employer;
 }
 
 const EmployerCard: React.FC<EmployerCardProps> = ({ employer }) => {
   // If employer is provided, use its properties
-  const displayName = employer?.name || "ไม่ระบุชื่อ";
-  const displayRating = employer?.rating || 0;
-  const displayReviews = employer?.reviews || 0;
+  const displayName = employer.name || "ไม่ระบุชื่อ";
+  const displayRating = employer.rating || 0;
+  const displayReviews = employer.reviews || 0;
 
   return (
     <Card className="p-4">

@@ -4,18 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchResult } from '@/types/types';
-import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight } from 'lucide-react';
+import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
   showViewButton?: boolean;
   onViewDetails?: (jobId: string) => void;
+  allowRanking?: boolean;
+  rankLimit?: number;
+  onRankChange?: (matchId: string, newRank: number) => void;
 }
 
 const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ 
   matches,
   showViewButton = false,
-  onViewDetails 
+  onViewDetails,
+  allowRanking = false,
+  rankLimit = 5,
+  onRankChange
 }) => {
   if (!matches || matches.length === 0) {
     return (
@@ -75,17 +81,24 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
         {matches.map((match, index) => (
           <div key={match.id || index} className="border rounded-md p-4">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="font-medium flex items-center gap-2">
-                <User size={18} className="text-fastlabor-600" />
-                {match.name}
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium flex items-center gap-2">
+                  <User size={18} className="text-fastlabor-600" />
+                  {match.name || `${match.first_name || ""} ${match.last_name || ""}`}
+                </h3>
                 {match.gender && (
                   <Badge variant="outline" className="ml-2">
                     {match.gender === 'male' ? 'ชาย' : match.gender === 'female' ? 'หญิง' : match.gender}
                   </Badge>
                 )}
-              </h3>
-              <Badge className={getStatusColor(match.status)}>
-                {getStatusText(match.status)}
+                {allowRanking && typeof match.priority === 'number' && (
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                    ลำดับ {match.priority}
+                  </Badge>
+                )}
+              </div>
+              <Badge className={getStatusColor(match.status || '')}>
+                {getStatusText(match.status || '')}
               </Badge>
             </div>
             
@@ -97,33 +110,77 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
               
               <div className="flex items-center gap-2">
                 <Calendar size={16} className="text-gray-500 flex-shrink-0" />
-                <span>{match.date || "ไม่ระบุวันที่"}</span>
+                <span>{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
               </div>
               
               <div className="flex items-center gap-2">
                 <Clock size={16} className="text-gray-500 flex-shrink-0" />
-                <span>{match.time || `${match.start_time || ""} - ${match.end_time || ""}`}</span>
+                <span>
+                  {match.time || 
+                    (match.start_time && match.end_time ? 
+                      `${match.start_time} - ${match.end_time}` : 
+                      "ไม่ระบุเวลา")}
+                </span>
               </div>
               
               <div className="flex items-center gap-2">
                 <DollarSign size={16} className="text-gray-500 flex-shrink-0" />
-                <span>{match.salary ? `${match.salary} บาท` : "ไม่ระบุค่าจ้าง"}</span>
+                <span>
+                  {typeof match.salary === 'number' || match.salary ? 
+                    `${match.salary} บาท` : 
+                    "ไม่ระบุค่าจ้าง"}
+                </span>
               </div>
             </div>
             
-            {showViewButton && onViewDetails && (
-              <div className="mt-3">
+            <div className="flex flex-wrap gap-2 mt-3">
+              {allowRanking && onRankChange && (
+                <div className="flex items-center gap-2 mr-4">
+                  <span className="text-sm text-gray-600">ลำดับ:</span>
+                  <div className="flex items-center">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        if (match.id && match.priority !== undefined && match.priority > 1) {
+                          onRankChange(match.id, match.priority - 1);
+                        }
+                      }}
+                      disabled={!match.id || match.priority === undefined || match.priority <= 1}
+                    >
+                      <ChevronUp size={16} />
+                    </Button>
+                    <span className="mx-2 font-medium">{match.priority || '-'}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        if (match.id && match.priority !== undefined && match.priority < rankLimit) {
+                          onRankChange(match.id, match.priority + 1);
+                        }
+                      }}
+                      disabled={!match.id || match.priority === undefined || match.priority >= rankLimit}
+                    >
+                      <ChevronDown size={16} />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              
+              {showViewButton && onViewDetails && (
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={() => onViewDetails(match.job_id || "")}
-                  className="w-full text-fastlabor-600 border-fastlabor-600"
+                  className="text-fastlabor-600 border-fastlabor-600"
                 >
                   ดูรายละเอียด
                   <ArrowRight size={16} className="ml-2" />
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ))}
       </CardContent>
