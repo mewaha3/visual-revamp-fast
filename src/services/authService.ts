@@ -43,6 +43,8 @@ export interface UserRegistrationData {
  */
 export async function registerUser(userData: UserRegistrationData): Promise<string> {
   try {
+    console.log("Starting registration process...", userData.email);
+    
     // Step 1: Create the user in Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -52,6 +54,8 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
 
     const user = userCredential.user;
     const uid = user.uid;
+    
+    console.log("User created in Firebase Auth:", uid);
 
     // Step 2: Update the user's display name
     await updateProfile(user, {
@@ -67,12 +71,14 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     };
 
     if (userData.documents) {
+      console.log("Uploading user documents...");
       for (const [docType, file] of Object.entries(userData.documents)) {
         if (file) {
           const fileExtension = file.name.split('.').pop();
           const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
           await uploadBytes(storageRef, file);
           documentUrls[docType] = await getDownloadURL(storageRef);
+          console.log(`Document ${docType} uploaded successfully`);
         }
       }
     }
@@ -85,7 +91,8 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     // Step 4: Create user profile document in Firestore
     // IMPORTANT: We do NOT save the password in Firestore
     const userDocRef = doc(db, "users", uid);
-    await setDoc(userDocRef, {
+    
+    const userProfileData = {
       first_name: userData.first_name,
       last_name: userData.last_name,
       fullName: `${userData.first_name} ${userData.last_name}`,
@@ -109,7 +116,11 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       updatedAt: new Date().toISOString(),
       role: "user",
       user_id: uid
-    });
+    };
+    
+    console.log("Saving user profile to Firestore...", uid);
+    await setDoc(userDocRef, userProfileData);
+    console.log("User profile saved successfully");
 
     return uid;
   } catch (error) {

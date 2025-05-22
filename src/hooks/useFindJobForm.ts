@@ -61,8 +61,8 @@ export const useFindJobForm = () => {
     const lastName = localStorage.getItem('userLastName') || userFullName?.split(' ')[1] || '';
     const gender = localStorage.getItem('userGender') || 'Male';
     
-    // Create job data object
-    const jobData: Partial<FindJob> = {
+    // Create job data object with all required fields explicitly defined
+    const jobData = {
       job_type: jobType,
       skills: skills,
       job_date: jobDate,

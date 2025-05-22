@@ -1,5 +1,5 @@
 
-import { doc, getDoc, DocumentData } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 // Get user profile by userId
@@ -21,5 +21,32 @@ export async function getUserProfile(userId: string): Promise<any | null> {
   }
 }
 
-// No need for the re-export here since we're already exporting the function above
-// Removing: export { getUserProfile };
+// Update user profile data
+export async function updateUserProfile(userId: string, data: Partial<DocumentData>): Promise<boolean> {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await updateDoc(userDocRef, {
+      ...data,
+      updatedAt: new Date().toISOString()
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return false;
+  }
+}
+
+// Create or update user profile
+export async function setUserProfile(userId: string, userData: any): Promise<boolean> {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await setDoc(userDocRef, {
+      ...userData,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error setting user profile:", error);
+    return false;
+  }
+}

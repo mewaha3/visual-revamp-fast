@@ -56,43 +56,27 @@ export interface UserProfile {
   first_name: string;
   last_name: string;
   fullName: string;
-  national_id: string;
-  dob: string;
-  gender: string;
-  nationality: string;
-  address: string;
-  province: string;
-  district: string;
-  subdistrict: string;
-  zip_code: string;
+  national_id?: string;
+  dob?: string;
+  gender?: string;
+  nationality?: string;
+  address?: string;
+  province?: string;
+  district?: string;
+  subdistrict?: string;
+  zip_code?: string;
   email: string;
-  certificate: string | null;
-  passport: string | null;
-  visa: string | null;
-  work_permit: string | null;
-  createdAt: string;
-  updatedAt: string;
-  role: string;
-  user_id: string;
+  certificate?: string;
+  passport?: string;
+  visa?: string;
+  work_permit?: string;
+  role?: string;
+  createdAt?: string;
+  [key: string]: any; // For any additional fields
 }
 
-// Helper function to get user profile data
-export async function getUserProfile(userId: string): Promise<UserProfile | null> {
-  try {
-    const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef);
-    
-    if (docSnap.exists()) {
-      return docSnap.data() as UserProfile;
-    } else {
-      console.log("No such document!");
-      return null;
-    }
-  } catch (error) {
-    console.error("Error getting user profile:", error);
-    return null;
-  }
-}
+// Note: We're removing the getUserProfile function here to avoid duplication
+// since we now have it in userService.ts
 
 // Helper function to update user profile data
 export async function updateUserProfile(userId: string, data: Partial<DocumentData>): Promise<boolean> {
