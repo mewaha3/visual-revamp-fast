@@ -132,14 +132,14 @@ const AddressSection = () => {
               <SelectContent>
                 {!form.getValues("province") ? (
                   <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
-                ) : filteredAmphures && filteredAmphures.length === 0 ? (
-                  <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                ) : (
+                ) : filteredAmphures && filteredAmphures.length > 0 ? (
                   filteredAmphures.map((amphure) => (
                     <SelectItem key={amphure.id} value={amphure.name_th}>
                       {amphure.name_th}
                     </SelectItem>
                   ))
+                ) : (
+                  <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
                 )}
               </SelectContent>
             </Select>
@@ -168,14 +168,14 @@ const AddressSection = () => {
               <SelectContent>
                 {!form.getValues("district") ? (
                   <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
-                ) : filteredTambons && filteredTambons.length === 0 ? (
-                  <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
-                ) : (
+                ) : filteredTambons && filteredTambons.length > 0 ? (
                   filteredTambons.map((tambon) => (
                     <SelectItem key={tambon.id} value={tambon.name_th}>
                       {tambon.name_th}
                     </SelectItem>
                   ))
+                ) : (
+                  <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
                 )}
               </SelectContent>
             </Select>

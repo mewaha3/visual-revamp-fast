@@ -91,10 +91,7 @@ const LocationDetailsForm = ({
               ))
             ) : (
               <>
-                <SelectItem value="bangkok">กรุงเทพมหานคร</SelectItem>
-                <SelectItem value="chiang_mai">เชียงใหม่</SelectItem>
-                <SelectItem value="phuket">ภูเก็ต</SelectItem>
-                <SelectItem value="chonburi">ชลบุรี</SelectItem>
+                <SelectItem value="no-data" disabled>ไม่พบข้อมูลจังหวัด</SelectItem>
               </>
             )}
           </SelectContent>
@@ -122,12 +119,7 @@ const LocationDetailsForm = ({
                 </SelectItem>
               ))
             ) : (
-              <>
-                <SelectItem value="district1">เขตพระนคร</SelectItem>
-                <SelectItem value="district2">เขตดุสิต</SelectItem>
-                <SelectItem value="district3">เขตหนองจอก</SelectItem>
-                <SelectItem value="district4">เขตบางรัก</SelectItem>
-              </>
+              <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -153,12 +145,7 @@ const LocationDetailsForm = ({
                 </SelectItem>
               ))
             ) : (
-              <>
-                <SelectItem value="subdistrict1">แขวงตลาดยอด</SelectItem>
-                <SelectItem value="subdistrict2">แขวงวังบูรพาภิรมย์</SelectItem>
-                <SelectItem value="subdistrict3">แขวงจักรวรรดิ</SelectItem>
-                <SelectItem value="subdistrict4">แขวงสำราญราษฎร์</SelectItem>
-              </>
+              <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
             )}
           </SelectContent>
         </Select>
