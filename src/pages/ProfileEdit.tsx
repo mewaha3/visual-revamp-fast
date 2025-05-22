@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -45,6 +46,13 @@ export default function ProfileEdit() {
             gender: userData.gender || "",
             nationality: userData.nationality || "",
             address: userData.address || "",
+            province: userData.province || "",
+            district: userData.district || "",
+            subdistrict: userData.subdistrict || "",
+            zip_code: userData.zip_code || "",
+          });
+          
+          console.log("Location data loaded:", {
             province: userData.province || "",
             district: userData.district || "",
             subdistrict: userData.subdistrict || "",
