@@ -1,91 +1,68 @@
-import { MatchResult } from "@/types/types";
-import { mockMatches } from "@/data/mocks/matchMocks";
-import { saveMatchResults, matchJobWithWorkers, getMatchResultsForJob, updateMatchResultStatus } from "@/services/matchingService";
 
-/**
- * Get AI suggested matches for a job
- * @param jobId The job ID to match
- * @returns Promise with match results
- */
-export const getAIMatches = async (jobId: string): Promise<MatchResult[]> => {
+import { getUnmatchedFindJobs } from "./firestoreService";
+import { FindJob } from "@/types/types";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+// Function to get unmatched find jobs for backward compatibility
+export async function fetchUnmatchedFindJobs(userId: string): Promise<FindJob[]> {
+  return await getUnmatchedFindJobs(userId);
+}
+
+// Function to check if a find job is matched
+export async function isJobMatched(jobId: string): Promise<boolean> {
   try {
-    // Get matches from Firestore
-    const matches = await matchJobWithWorkers(jobId);
+    // Check if the job exists in match_results collection
+    const matchesQuery = query(
+      collection(db, "match_results"),
+      where("findjob_id", "==", jobId)
+    );
     
-    if (matches && matches.length > 0) {
-      return matches;
+    const matchesSnapshot = await getDocs(matchesQuery);
+    return !matchesSnapshot.empty;
+  } catch (error) {
+    console.error("Error checking if job is matched:", error);
+    return false;
+  }
+}
+
+// Interface for getting job matches
+export interface JobMatch {
+  id: string;
+  status: string;
+  jobId: string;
+  matchScore: number;
+}
+
+// Function to get job matches for a specific job
+export async function getJobMatches(jobId: string): Promise<JobMatch[]> {
+  try {
+    // Query match_results for the given job ID
+    const matchesQuery = query(
+      collection(db, "match_results"),
+      where("findjob_id", "==", jobId)
+    );
+    
+    const matchesSnapshot = await getDocs(matchesQuery);
+    
+    if (matchesSnapshot.empty) {
+      return [];
     }
     
-    // Fallback to mock data if no matches found
-    return mockMatches[jobId] || [];
-  } catch (error) {
-    console.error("Error getting AI matches:", error);
-    // Fallback to mock data on error
-    return mockMatches[jobId] || [];
-  }
-};
-
-/**
- * Confirm matches for a job
- * @param jobId The job ID to confirm matches for
- * @returns Promise with success status
- */
-export const confirmMatches = async (jobId: string, matchResults?: MatchResult[]): Promise<boolean> => {
-  try {
-    // If match results are provided, use them
-    // Otherwise, fetch matches first
-    let matches = matchResults;
-    if (!matches) {
-      matches = await matchJobWithWorkers(jobId);
-    }
+    const matches: JobMatch[] = [];
+    matchesSnapshot.forEach((doc) => {
+      const data = doc.data();
+      matches.push({
+        id: doc.id,
+        status: data.status || "pending",
+        jobId: jobId,
+        matchScore: data.match_score || 0
+      });
+    });
     
-    // Save matches to Firestore
-    return await saveMatchResults(jobId, matches);
+    return matches;
   } catch (error) {
-    console.error("Error confirming matches:", error);
-    return false;
-  }
-};
-
-/**
- * Accept a job match
- * @param matchId The match ID to accept
- * @returns Promise with success status
- */
-export const acceptJobMatch = async (matchId: string): Promise<boolean> => {
-  try {
-    return await updateMatchResultStatus(matchId, "accepted");
-  } catch (error) {
-    console.error("Error accepting job match:", error);
-    return false;
-  }
-};
-
-/**
- * Decline a job match
- * @param matchId The match ID to decline
- * @returns Promise with success status
- */
-export const declineJobMatch = async (matchId: string): Promise<boolean> => {
-  try {
-    return await updateMatchResultStatus(matchId, "declined");
-  } catch (error) {
-    console.error("Error declining job match:", error);
-    return false;
-  }
-};
-
-/**
- * Get match status results for a job
- * @param jobId The job ID to get match status for
- * @returns Promise with status results
- */
-export const getJobMatchStatus = async (jobId: string) => {
-  try {
-    // Get match results from Firestore
-    return await getMatchResultsForJob(jobId);
-  } catch (error) {
-    console.error("Error getting job match status:", error);
+    console.error("Error getting job matches:", error);
     return [];
   }
-};
+}

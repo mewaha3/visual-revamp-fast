@@ -1,226 +1,346 @@
-
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
-import { getPostJobById } from '@/services/firestoreService';
-import { matchJobWithWorkers, saveMatchResults } from '@/services/matchingService';
-import { confirmMatches } from '@/services/api';
-import { MatchResult, PostJob } from '@/types/types';
-import { BarChart, Check, UserCheck } from 'lucide-react';
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { getFindJobById } from "@/services/firestoreService";
+import { isJobMatched, getJobMatches } from "@/services/api";
+import { FindJob } from "@/types/types";
+import { Loader2, ArrowLeft, Clock, Calendar, MapPin, Briefcase, DollarSign, User } from "lucide-react";
 
-const AIMatchingPage: React.FC = () => {
-  const { jobId } = useParams<{ jobId: string }>();
+interface JobMatch {
+  id: string;
+  status: string;
+  jobId: string;
+  matchScore: number;
+  worker_name?: string;
+  worker_id?: string;
+}
+
+const AIMatchingPage = () => {
+  const { jobId } = useParams();
   const navigate = useNavigate();
-  const [job, setJob] = useState<PostJob | null>(null);
-  const [matchingResults, setMatchingResults] = useState<MatchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [job, setJob] = useState<FindJob | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isMatched, setIsMatched] = useState(false);
+  const [matches, setMatches] = useState<JobMatch[]>([]);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchJobData = async () => {
       if (!jobId) return;
       
-      setLoading(true);
-      
       try {
-        // Get job details from Firestore
-        const jobDetails = await getPostJobById(jobId);
-        if (jobDetails) {
-          setJob(jobDetails as PostJob);
-          
-          // Get matching results from Firestore using the matcher
-          const matches = await matchJobWithWorkers(jobId);
-          console.log("Matching results:", matches);
-          setMatchingResults(matches);
-        } else {
-          console.error("No job found with ID:", jobId);
+        setIsLoading(true);
+        
+        // Fetch job details
+        const jobData = await getFindJobById(jobId);
+        
+        if (!jobData) {
+          toast({
+            title: "ไม่พบข้อมูลงาน",
+            description: "ไม่สามารถดึงข้อมูลงานที่ต้องการได้",
+            variant: "destructive",
+          });
+          navigate("/my-jobs");
+          return;
+        }
+        
+        setJob(jobData);
+        
+        // Check if job is already matched
+        const matched = await isJobMatched(jobId);
+        setIsMatched(matched);
+        
+        // If matched, get the matches
+        if (matched) {
+          const jobMatches = await getJobMatches(jobId);
+          setMatches(jobMatches);
         }
       } catch (error) {
-        console.error("Error fetching matching results:", error);
-        toast.error("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+        console.error("Error fetching job data:", error);
+        toast({
+          title: "เกิดข้อผิดพลาด",
+          description: "ไม่สามารถดึงข้อมูลงานได้ กรุณาลองใหม่อีกครั้ง",
+          variant: "destructive",
+        });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     
-    fetchData();
-  }, [jobId]);
-  
-  const handlePriorityChange = (index: number, value: string) => {
-    const priority = parseInt(value);
-    const updatedResults = [...matchingResults];
+    fetchJobData();
+  }, [jobId, navigate, toast]);
+
+  const handleStartMatching = async () => {
+    if (!job) return;
     
-    // Find the worker that currently has this priority
-    const currentWorkerIndex = updatedResults.findIndex(w => w.priority === priority);
-    
-    // If found, swap priorities
-    if (currentWorkerIndex !== -1 && currentWorkerIndex !== index) {
-      const currentPriority = updatedResults[index].priority || 0;
-      updatedResults[currentWorkerIndex].priority = currentPriority;
-    }
-    
-    // Set new priority for the selected worker
-    updatedResults[index].priority = priority;
-    
-    setMatchingResults(updatedResults);
-  };
-  
-  const handleConfirmMatches = async () => {
-    if (!jobId) return;
-    
-    setConfirming(true);
     try {
-      // Save matches to Firestore with priorities
-      const success = await saveMatchResults(jobId, matchingResults);
+      // Simulate AI matching process
+      toast({
+        title: "กำลังจับคู่งาน",
+        description: "ระบบกำลังค้นหาคนงานที่เหมาะสมกับงานของคุณ",
+      });
       
-      if (success) {
-        toast.success("ระบบได้ทำการจับคู่งานเรียบร้อยแล้ว");
-        // Navigate to status page after confirming matches
-        navigate(`/status/${jobId}`);
-      } else {
-        toast.error("ไม่สามารถบันทึกข้อมูลการจับคู่ได้");
-      }
+      // Redirect to status page to show matching progress
+      navigate(`/status/${jobId}`);
     } catch (error) {
-      console.error("Error confirming matches:", error);
-      toast.error("ไม่สามารถยืนยันการจับคู่ได้ กรุณาลองใหม่อีกครั้ง");
-    } finally {
-      setConfirming(false);
+      console.error("Error starting matching:", error);
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถเริ่มกระบวนการจับคู่งานได้ กรุณาลองใหม่อีกครั้ง",
+        variant: "destructive",
+      });
     }
   };
-  
-  if (!jobId) {
-    return <div>Invalid job ID</div>;
+
+  const handleGoBack = () => {
+    navigate("/my-jobs");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin text-fastlabor-600" />
+            <span className="ml-2">กำลังโหลดข้อมูล...</span>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-4">ไม่พบข้อมูลงาน</h2>
+            <p className="mb-6">ไม่สามารถดึงข้อมูลงานที่ต้องการได้</p>
+            <Button onClick={handleGoBack}>กลับไปหน้างานของฉัน</Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow py-6">
-        <div className="container mx-auto px-4">
-          <Button 
-            variant="outline" 
-            className="mb-4"
-            onClick={() => navigate('/my-jobs')}
-          >
-            กลับไปยังรายการงาน
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button variant="ghost" onClick={handleGoBack} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" /> กลับไปหน้างานของฉัน
           </Button>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <BarChart className="h-6 w-6 text-fastlabor-600" />
-              <h1 className="text-2xl font-bold text-gray-800">AI Matching</h1>
-            </div>
-            
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold">Job ID: {jobId}</h2>
-              <p className="text-gray-600">แสดงแรงงานที่มีผลการจับคู่สูงสุด</p>
-            </div>
-            
-            <div className="mb-6">
-              <Alert>
-                <UserCheck className="h-4 w-4" />
-                <AlertDescription>
-                  เลือกลำดับความสำคัญของแรงงานและกดปุ่มยืนยันการจับคู่ ระบบจะส่งข้อมูลไปยังแรงงาน
-                </AlertDescription>
-              </Alert>
-            </div>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <p>กำลังโหลดข้อมูล...</p>
-              </div>
-            ) : matchingResults.length === 0 ? (
-              <div className="text-center py-8">
-                <p>ไม่พบข้อมูลการจับคู่</p>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-8">
-                  {matchingResults.map((match, index) => (
-                    <div key={index} className="border-b border-gray-100 pb-8 last:border-b-0">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-24">
-                          <Select 
-                            value={match.priority?.toString() || (index + 1).toString()}
-                            onValueChange={(value) => handlePriorityChange(index, value)}
-                          >
-                            <SelectTrigger className="w-24">
-                              <SelectValue placeholder="ลำดับ" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="1">ลำดับ 1</SelectItem>
-                              <SelectItem value="2">ลำดับ 2</SelectItem>
-                              <SelectItem value="3">ลำดับ 3</SelectItem>
-                              <SelectItem value="4">ลำดับ 4</SelectItem>
-                              <SelectItem value="5">ลำดับ 5</SelectItem>
-                            </SelectContent>
-                          </Select>
+          <h1 className="text-2xl font-bold">จับคู่งานอัตโนมัติ</h1>
+          <p className="text-gray-600">
+            ระบบ AI จะช่วยจับคู่งานของคุณกับคนงานที่เหมาะสมที่สุด
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>{job.job_type}</CardTitle>
+                    <CardDescription>
+                      รหัสงาน: {job.findjob_id || job.id}
+                    </CardDescription>
+                  </div>
+                  <Badge variant={isMatched ? "success" : "outline"}>
+                    {isMatched ? "จับคู่แล้ว" : "ยังไม่ได้จับคู่"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <div className="px-6">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="details">รายละเอียดงาน</TabsTrigger>
+                    <TabsTrigger value="matches" disabled={!isMatched}>
+                      ผลการจับคู่ {matches.length > 0 && `(${matches.length})`}
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                
+                <TabsContent value="details" className="m-0">
+                  <CardContent className="pt-6">
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <Calendar className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">วันที่ทำงาน</p>
+                          <p className="text-gray-600">{job.job_date}</p>
                         </div>
-                        <h3 className="font-medium text-lg">แรงงาน {match.name}</h3>
                       </div>
                       
-                      <div className="space-y-2 pl-6">
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Name: {match.name}</span>
+                      <div className="flex items-start">
+                        <Clock className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">เวลาทำงาน</p>
+                          <p className="text-gray-600">{job.start_time} - {job.end_time}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Gender: {match.gender}</span>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <MapPin className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">สถานที่ทำงาน</p>
+                          <p className="text-gray-600">
+                            {job.job_address}, {job.subdistrict}, {job.district}, {job.province} {job.zip_code}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Job Type: {match.jobType || match.job_type}</span>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <Briefcase className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">ทักษะที่ต้องการ</p>
+                          <p className="text-gray-600">{job.skills || "ไม่ระบุ"}</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Date: {match.date}</span>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <DollarSign className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">ค่าจ้าง</p>
+                          <p className="text-gray-600">
+                            {job.start_salary} - {job.start_salary + job.range_salary} บาท
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Time: {match.time}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Location: {match.location}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>Salary: {match.salary}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-fastlabor-600">•</span>
-                          <span>AI Score: {(match.aiScore || 0).toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <User className="h-5 w-5 mr-2 text-gray-500" />
+                        <div>
+                          <p className="font-medium">เพศที่ต้องการ</p>
+                          <p className="text-gray-600">
+                            {job.gender === "male" ? "ชาย" : 
+                             job.gender === "female" ? "หญิง" : "ไม่ระบุ"}
+                          </p>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </CardContent>
+                </TabsContent>
                 
-                <div className="mt-8 flex justify-center">
-                  <Button 
-                    onClick={handleConfirmMatches} 
-                    disabled={confirming}
-                    className="bg-fastlabor-600 hover:bg-fastlabor-700 flex items-center gap-2 px-8 py-6 text-lg"
-                  >
-                    {confirming ? (
-                      "กำลังดำเนินการ..."
+                <TabsContent value="matches" className="m-0">
+                  <CardContent className="pt-6">
+                    {matches.length > 0 ? (
+                      <div className="space-y-4">
+                        {matches.map((match) => (
+                          <div key={match.id} className="border rounded-lg p-4">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium">{match.worker_name || "คนงาน"}</p>
+                                <p className="text-sm text-gray-500">
+                                  คะแนนความเหมาะสม: {match.matchScore}%
+                                </p>
+                              </div>
+                              <Badge variant={
+                                match.status === "accepted" ? "success" : 
+                                match.status === "declined" ? "destructive" : "outline"
+                              }>
+                                {match.status === "accepted" ? "ยอมรับแล้ว" : 
+                                 match.status === "declined" ? "ปฏิเสธแล้ว" : "รอการตอบรับ"}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     ) : (
-                      <>
-                        <Check size={20} />
-                        ยืนยันการจับคู่
-                      </>
+                      <div className="text-center py-6">
+                        <p className="text-gray-500">ยังไม่มีผลการจับคู่</p>
+                      </div>
                     )}
+                  </CardContent>
+                </TabsContent>
+              </Tabs>
+              
+              <CardFooter className="flex justify-end">
+                {!isMatched && (
+                  <Button onClick={handleStartMatching} className="bg-fastlabor-600 hover:bg-fastlabor-700">
+                    เริ่มจับคู่งาน
                   </Button>
+                )}
+                {isMatched && (
+                  <Button onClick={() => navigate(`/status/${jobId}`)} variant="outline">
+                    ดูสถานะการจับคู่
+                  </Button>
+                )}
+              </CardFooter>
+            </Card>
+          </div>
+          
+          <div>
+            <Card>
+              <CardHeader>
+                <CardTitle>ระบบจับคู่อัตโนมัติ</CardTitle>
+                <CardDescription>
+                  AI จะช่วยจับคู่งานของคุณกับคนงานที่เหมาะสมที่สุด
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center">
+                    <div className="bg-blue-100 rounded-full p-2 mr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium">ประมวลผลอัตโนมัติ</p>
+                      <p className="text-sm text-gray-500">ระบบจะประมวลผลและจับคู่งานให้อัตโนมัติ</p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center">
+                    <div className="bg-green-100 rounded-full p-2 mr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-600">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium">คัดกรองคุณภาพ</p>
+                      <p className="text-sm text-gray-500">คัดกรองคนงานที่มีคุณภาพและตรงตามความต้องการ</p>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center">
+                    <div className="bg-purple-100 rounded-full p-2 mr-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-600">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium">ยืนยันการจ้างงาน</p>
+                      <p className="text-sm text-gray-500">ยืนยันการจ้างงานได้ทันทีเมื่อพบคนงานที่เหมาะสม</p>
+                    </div>
+                  </div>
                 </div>
-              </>
-            )}
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

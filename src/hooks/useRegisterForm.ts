@@ -90,10 +90,21 @@ export function useRegisterForm() {
       // Format the date to string for storing
       const formattedDate = format(values.dob, "yyyy-MM-dd");
       
-      // Prepare user data for registration
+      // Prepare user data for registration - ensure all required fields are included
       const userData: UserRegistrationData = {
-        ...values,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        password: values.password,
+        national_id: values.national_id,
         dob: formattedDate,
+        gender: values.gender,
+        nationality: values.nationality,
+        address: values.address,
+        province: values.province,
+        district: values.district,
+        subdistrict: values.subdistrict,
+        zip_code: values.zip_code,
         documents: documents
       };
       
