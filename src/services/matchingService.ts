@@ -35,6 +35,8 @@ export interface MatchResultSubmission {
   first_name_find_jobs?: string;
   last_name_find_jobs?: string;
   gender_find_jobs?: string;
+  // Additional fields
+  skills?: string;
 }
 
 // Add a match result to Firestore
@@ -107,6 +109,11 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
             dataWithMetadata.gender_find_jobs = workerData.gender;
             dataWithMetadata.workerId = findJobData.user_id;
           }
+        }
+        
+        // Add skills info if available
+        if (findJobData.skills) {
+          dataWithMetadata.skills = findJobData.skills;
         }
       }
     } catch (error) {

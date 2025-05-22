@@ -4,12 +4,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { getPostJobById } from '@/services/firestoreService';
 import { getMatchesForJob } from '@/services/matchOperationsService';
 import { PostJob, MatchResult } from '@/types/types';
-import { BarChart, ArrowLeft, Info, Check, X, RefreshCw } from 'lucide-react';
+import { BarChart, ArrowLeft, Info, RefreshCw } from 'lucide-react';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 
 const StatusMatchingPage: React.FC = () => {
@@ -148,6 +147,7 @@ const StatusMatchingPage: React.FC = () => {
                 matches={acceptedResults} 
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
+                showSkills={true}
               />
             )}
           </div>

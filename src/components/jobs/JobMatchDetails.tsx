@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchResult } from '@/types/types';
-import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, ChevronDown, Briefcase, FileText } from 'lucide-react';
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
@@ -13,6 +13,7 @@ interface JobMatchDetailsProps {
   allowRanking?: boolean;
   rankLimit?: number;
   onRankChange?: (matchId: string, newRank: number) => void;
+  showSkills?: boolean;
 }
 
 const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({ 
@@ -21,7 +22,8 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
   onViewDetails,
   allowRanking = false,
   rankLimit = 5,
-  onRankChange
+  onRankChange,
+  showSkills = false
 }) => {
   if (!matches || matches.length === 0) {
     return (
@@ -72,6 +74,20 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
     }
   };
 
+  // Helper function to get formatted gender in Thai
+  const getFormattedGender = (gender: string) => {
+    if (!gender) return 'ไม่ระบุ';
+    
+    switch (gender.toLowerCase()) {
+      case 'male':
+        return 'ชาย';
+      case 'female':
+        return 'หญิง';
+      default:
+        return gender;
+    }
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -88,7 +104,7 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                 </h3>
                 {match.gender && (
                   <Badge variant="outline" className="ml-2">
-                    {match.gender === 'male' ? 'ชาย' : match.gender === 'female' ? 'หญิง' : match.gender}
+                    {getFormattedGender(match.gender)}
                   </Badge>
                 )}
                 {allowRanking && typeof match.priority === 'number' && (
@@ -97,12 +113,21 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                   </Badge>
                 )}
               </div>
-              <Badge className={getStatusColor(match.status || '')}>
-                {getStatusText(match.status || '')}
-              </Badge>
+              {match.status && (
+                <Badge className={getStatusColor(match.status || '')}>
+                  {getStatusText(match.status || '')}
+                </Badge>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
+              {match.jobType && (
+                <div className="flex items-center gap-2">
+                  <Briefcase size={16} className="text-gray-500 flex-shrink-0" />
+                  <span>{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2">
                 <MapPin size={16} className="text-gray-500 flex-shrink-0" />
                 <span>{match.province || "ไม่ระบุจังหวัด"}/{match.district || "ไม่ระบุเขต"}/{match.subdistrict || "ไม่ระบุแขวง"}</span>
@@ -131,6 +156,13 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                     "ไม่ระบุค่าจ้าง"}
                 </span>
               </div>
+              
+              {showSkills && match.skills && (
+                <div className="flex items-center gap-2 col-span-2">
+                  <FileText size={16} className="text-gray-500 flex-shrink-0" />
+                  <span>ทักษะ: {match.skills || "ไม่ระบุ"}</span>
+                </div>
+              )}
             </div>
             
             <div className="flex flex-wrap gap-2 mt-3">
@@ -169,7 +201,7 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
                 </div>
               )}
               
-              {showViewButton && onViewDetails && (
+              {showViewButton && onViewDetails && match.job_id && (
                 <Button 
                   variant="outline" 
                   size="sm" 

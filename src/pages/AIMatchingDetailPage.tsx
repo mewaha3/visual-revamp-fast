@@ -113,7 +113,8 @@ const AIMatchingDetailPage: React.FC = () => {
             user_id: findJobData.user_id,
             province: findJobData.province,
             district: findJobData.district,
-            subdistrict: findJobData.subdistrict
+            subdistrict: findJobData.subdistrict,
+            skills: findJobData.skills || ""
           });
         });
         
@@ -122,6 +123,12 @@ const AIMatchingDetailPage: React.FC = () => {
         
         // Take only top 5 matches
         matches = matches.slice(0, 5);
+        
+        // Assign initial priority values based on AI score order
+        matches = matches.map((match, index) => ({
+          ...match,
+          priority: index + 1
+        }));
         
         setMatchResults(matches);
       } catch (error) {
@@ -141,9 +148,25 @@ const AIMatchingDetailPage: React.FC = () => {
     const matchIndex = updatedMatches.findIndex(match => match.id === matchId);
     
     if (matchIndex !== -1) {
-      // Here we would normally update the rank in the database
-      console.log(`Changed rank of match ${matchId} to ${newRank}`);
-      setMatchResults(updatedMatches);
+      // Get the old rank
+      const oldRank = updatedMatches[matchIndex].priority || 0;
+      
+      if (oldRank === newRank) return; // No change needed
+      
+      // Update all matches that are affected by the rank change
+      updatedMatches.forEach(match => {
+        if (match.id === matchId) {
+          match.priority = newRank;
+        } else if (oldRank < newRank && match.priority && match.priority > oldRank && match.priority <= newRank) {
+          // Moving down in rank (increasing number), decrease others in between
+          match.priority = (match.priority - 1);
+        } else if (oldRank > newRank && match.priority && match.priority >= newRank && match.priority < oldRank) {
+          // Moving up in rank (decreasing number), increase others in between
+          match.priority = (match.priority + 1);
+        }
+      });
+      
+      setMatchResults([...updatedMatches]);
     }
   };
   
@@ -154,13 +177,11 @@ const AIMatchingDetailPage: React.FC = () => {
     
     try {
       // Save matches with their current ranks (based on array position)
-      for (let i = 0; i < matchResults.length; i++) {
-        const match = matchResults[i];
-        
+      for (const match of matchResults) {
         await saveMatchResults({
           job_id: jobId,
           findjob_id: match.findjob_id || '',
-          priority: i + 1, // Priority based on rank (1-5)
+          priority: match.priority || 0,
           status: 'on_queue',
           // Job details
           job_type: job.job_type,
@@ -178,7 +199,8 @@ const AIMatchingDetailPage: React.FC = () => {
           last_name: match.last_name || '',
           gender: match.gender || '',
           email: match.email || '',
-          workerId: match.workerId || ''
+          workerId: match.workerId || '',
+          skills: match.skills || ''
         });
       }
       
@@ -279,6 +301,7 @@ const AIMatchingDetailPage: React.FC = () => {
                 rankLimit={5} 
                 allowRanking={true} 
                 onRankChange={handleRankChange}
+                showSkills={true}
               />
               
               <div className="flex justify-center mt-6">

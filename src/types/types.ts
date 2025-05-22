@@ -169,6 +169,7 @@ export interface MatchResultFirestore {
   job_salary: number;
   created_at?: any;
   updated_at?: any;
+  skills?: string;
 }
 
 export interface MatchResult {
@@ -211,6 +212,7 @@ export interface MatchResult {
   first_name_find_jobs?: string;
   last_name_find_jobs?: string;
   gender_find_jobs?: string;
+  skills?: string; // Add skills field
 }
 
 export interface StatusResult {
@@ -231,4 +233,5 @@ export interface StatusResult {
   priority?: number; // Added for priority
   first_name?: string;
   last_name?: string;
+  skills?: string; // Add skills field
 }
