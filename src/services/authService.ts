@@ -43,7 +43,10 @@ export interface UserRegistrationData {
  */
 export async function registerUser(userData: UserRegistrationData): Promise<string> {
   try {
-    console.log("Starting registration process...", userData.email);
+    console.log("Starting registration process with data:", { 
+      ...userData, 
+      password: "[REDACTED]" // Don't log the password
+    });
     
     // Step 1: Create the user in Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(
@@ -61,6 +64,7 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
     await updateProfile(user, {
       displayName: `${userData.first_name} ${userData.last_name}`
     });
+    console.log("User display name updated");
 
     // Step 3: Upload documents if available
     const documentUrls: Record<string, string | null> = {
@@ -74,11 +78,12 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       console.log("Uploading user documents...");
       for (const [docType, file] of Object.entries(userData.documents)) {
         if (file) {
+          console.log(`Uploading ${docType} document:`, file.name);
           const fileExtension = file.name.split('.').pop();
           const storageRef = ref(storage, `users/${uid}/documents/${docType}.${fileExtension}`);
           await uploadBytes(storageRef, file);
           documentUrls[docType] = await getDownloadURL(storageRef);
-          console.log(`Document ${docType} uploaded successfully`);
+          console.log(`Document ${docType} uploaded successfully. URL:`, documentUrls[docType]);
         }
       }
     }
@@ -118,10 +123,17 @@ export async function registerUser(userData: UserRegistrationData): Promise<stri
       user_id: uid
     };
     
-    console.log("Saving user profile to Firestore...", uid);
-    await setDoc(userDocRef, userProfileData);
-    console.log("User profile saved successfully");
-
+    console.log("Saving user profile to Firestore:", uid);
+    
+    try {
+      await setDoc(userDocRef, userProfileData);
+      console.log("User profile saved successfully to Firestore");
+    } catch (firestoreError) {
+      console.error("Error saving to Firestore:", firestoreError);
+      // Even if Firestore save fails, we don't throw here since the user account was created
+      // Instead we log the error but still return the user ID
+    }
+    
     return uid;
   } catch (error) {
     console.error("Error during registration:", error);

@@ -9,6 +9,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import { getUserProfile } from "@/services/userService";
 
 interface AuthContextType {
   userEmail: string | null;
@@ -64,19 +65,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUserId(user.uid);
           
           // Get user data from Firestore
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
+          const userData = await getUserProfile(user.uid);
           
-          if (docSnap.exists()) {
-            const userData = docSnap.data() as UserProfile;
-            setUserFullName(userData.fullName || `${userData.first_name} ${userData.last_name}`);
+          if (userData) {
+            console.log("User data retrieved from Firestore:", userData);
+            const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
+            setUserFullName(fullName);
             setUserProfile(userData);
           } else {
             console.warn("No user document found in Firestore for:", user.uid);
-            setUserFullName(null);
+            // Fallback to displayName from Auth if available
+            setUserFullName(user.displayName || null);
             setUserProfile(null);
           }
         } else {
+          console.log("User signed out");
           setUserEmail(null);
           setUserFullName(null);
           setUserId(null);
@@ -104,16 +107,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       console.log("Login successful:", user.uid);
       
-      // Get user data from Firestore
-      const docRef = doc(db, "users", user.uid);
-      const docSnap = await getDoc(docRef);
+      // Get user data from Firestore using our service function
+      const userData = await getUserProfile(user.uid);
       
-      if (docSnap.exists()) {
-        const userData = docSnap.data() as UserProfile;
-        setUserFullName(userData.fullName || `${userData.first_name} ${userData.last_name}`);
+      if (userData) {
+        console.log("User profile retrieved from Firestore:", userData);
+        const fullName = userData.fullName || `${userData.first_name} ${userData.last_name}`;
+        setUserFullName(fullName);
         setUserProfile(userData);
       } else {
         console.warn("No user document found in Firestore");
+        // Fallback to displayName from Auth if available
+        setUserFullName(user.displayName || null);
       }
       
       toast({

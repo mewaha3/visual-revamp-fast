@@ -24,11 +24,34 @@ export async function getUserProfile(userId: string): Promise<any | null> {
 // Update user profile data
 export async function updateUserProfile(userId: string, data: Partial<DocumentData>): Promise<boolean> {
   try {
+    if (!userId) {
+      console.error("Cannot update profile: User ID is missing");
+      return false;
+    }
+    
+    console.log(`Updating user profile for ${userId} with data:`, data);
     const userDocRef = doc(db, "users", userId);
-    await updateDoc(userDocRef, {
-      ...data,
-      updatedAt: new Date().toISOString()
-    });
+    
+    // First check if the document exists
+    const docSnap = await getDoc(userDocRef);
+    
+    if (docSnap.exists()) {
+      // Update existing document
+      await updateDoc(userDocRef, {
+        ...data,
+        updatedAt: new Date().toISOString()
+      });
+      console.log("User profile updated successfully");
+    } else {
+      // Create new document
+      await setDoc(userDocRef, {
+        ...data,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      console.log("User profile created successfully");
+    }
+    
     return true;
   } catch (error) {
     console.error("Error updating user profile:", error);
@@ -39,11 +62,20 @@ export async function updateUserProfile(userId: string, data: Partial<DocumentDa
 // Create or update user profile
 export async function setUserProfile(userId: string, userData: any): Promise<boolean> {
   try {
+    if (!userId) {
+      console.error("Cannot set profile: User ID is missing");
+      return false;
+    }
+    
+    console.log(`Setting user profile for ${userId} with data:`, userData);
     const userDocRef = doc(db, "users", userId);
+    
     await setDoc(userDocRef, {
       ...userData,
       updatedAt: new Date().toISOString()
     }, { merge: true });
+    
+    console.log("User profile set successfully");
     return true;
   } catch (error) {
     console.error("Error setting user profile:", error);

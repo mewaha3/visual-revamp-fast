@@ -60,12 +60,6 @@ const Header = () => {
   // Display name formatting function
   const displayName = () => {
     if (userFullName) {
-      // Split the full name to get first and last name
-      const nameParts = userFullName.split(' ');
-      if (nameParts.length >= 2) {
-        // Show first name and last name
-        return `${nameParts[0]} ${nameParts[1]}`;
-      }
       return userFullName;
     }
     return userEmail;

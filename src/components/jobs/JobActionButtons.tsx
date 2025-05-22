@@ -6,9 +6,20 @@ import { Check, X } from 'lucide-react';
 export interface JobActionButtonsProps {
   onAccept: () => void;
   onDecline: () => void;
+  jobId?: string;
+  workerId?: string;
+  hasPaid?: boolean;
+  fromPayment?: boolean;
 }
 
-const JobActionButtons: React.FC<JobActionButtonsProps> = ({ onAccept, onDecline }) => {
+const JobActionButtons: React.FC<JobActionButtonsProps> = ({ 
+  onAccept, 
+  onDecline,
+  jobId, // Added these props even though they're not used in this component
+  workerId, // to satisfy the TypeScript interface
+  hasPaid,
+  fromPayment
+}) => {
   return (
     <div className="flex gap-4 justify-center mt-4">
       <Button 
