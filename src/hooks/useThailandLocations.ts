@@ -1,12 +1,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { Thai_Province, Thai_Amphure, Thai_Tambon } from '@/types/locationTypes';
+import { Province, Amphure, Tambon } from '@/types/locationTypes';
 
 interface UseThailandLocationsReturn {
-  provinces: Thai_Province[];
-  filteredAmphures: Thai_Amphure[];
-  filteredTambons: Thai_Tambon[];
+  provinces: Province[];
+  filteredAmphures: Amphure[];
+  filteredTambons: Tambon[];
   selectedProvince: string;
   selectedAmphure: string;
   selectedTambon: string;
@@ -22,9 +22,9 @@ interface UseThailandLocationsReturn {
 
 const useThailandLocations = (): UseThailandLocationsReturn => {
   // States for location data
-  const [provinces, setProvinces] = useState<Thai_Province[]>([]);
-  const [amphures, setAmphures] = useState<Thai_Amphure[]>([]);
-  const [tambons, setTambons] = useState<Thai_Tambon[]>([]);
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [amphures, setAmphures] = useState<Amphure[]>([]);
+  const [tambons, setTambons] = useState<Tambon[]>([]);
   
   // Selected location states
   const [selectedProvince, setSelectedProvince] = useState<string>('');
@@ -38,8 +38,8 @@ const useThailandLocations = (): UseThailandLocationsReturn => {
   const [userProfileLoaded, setUserProfileLoaded] = useState<boolean>(false);
   
   // Filtered locations based on selections
-  const [filteredAmphures, setFilteredAmphures] = useState<Thai_Amphure[]>([]);
-  const [filteredTambons, setFilteredTambons] = useState<Thai_Tambon[]>([]);
+  const [filteredAmphures, setFilteredAmphures] = useState<Amphure[]>([]);
+  const [filteredTambons, setFilteredTambons] = useState<Tambon[]>([]);
 
   // Function to set initial location values from user profile
   const setInitialLocationValues = useCallback((province: string, district: string, subdistrict: string) => {
@@ -65,7 +65,7 @@ const useThailandLocations = (): UseThailandLocationsReturn => {
           const foundTambon = amphureTambons.find(t => t.name_th === subdistrict);
           if (foundTambon) {
             setSelectedTambon(subdistrict);
-            setZipCode(foundTambon.zip_code);
+            setZipCode(String(foundTambon.zip_code));
           }
         }
       }
@@ -157,7 +157,7 @@ const useThailandLocations = (): UseThailandLocationsReturn => {
         );
         
         if (selectedTambonData) {
-          setZipCode(selectedTambonData.zip_code);
+          setZipCode(String(selectedTambonData.zip_code));
         }
       }
     }
