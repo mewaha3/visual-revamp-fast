@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import EmployerCard from '@/components/jobs/EmployerCard';
-import { matchMocks } from '@/data/mocks/matchMocks';
 import JobHeader from '@/components/jobs/JobHeader';
+import { mockMatches } from '@/data/mocks/matchMocks';
 
 const AIMatchingPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -17,10 +17,10 @@ const AIMatchingPage: React.FC = () => {
   const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
 
   // Get the job details from matchMocks
-  const job = matchMocks.find(match => match.job_id === jobId);
+  const job = mockMatches.find(match => match.job_id === jobId);
   
   // Get all matching workers for this job
-  const matchingWorkers = matchMocks.filter(match => 
+  const matchingWorkers = mockMatches.filter(match => 
     match.job_id === jobId && match.findjob_id
   );
   

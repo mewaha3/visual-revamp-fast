@@ -16,7 +16,6 @@ const StatusMatchingPage: React.FC = () => {
   const navigate = useNavigate();
   const [job, setJob] = useState<PostJob | null>(null);
   const [statusResults, setStatusResults] = useState<MatchResult[]>([]);
-  const [acceptedResults, setAcceptedResults] = useState<MatchResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmed, setIsConfirmed] = useState(false);
@@ -44,12 +43,6 @@ const StatusMatchingPage: React.FC = () => {
         if (matchResults.length > 0) {
           setIsConfirmed(true);
           setStatusResults(matchResults);
-          
-          // Filter for only accepted matches
-          const accepted = matchResults.filter(match => 
-            match.status?.toLowerCase() === 'accepted'
-          );
-          setAcceptedResults(accepted);
         } else {
           setIsConfirmed(false);
         }
@@ -141,13 +134,13 @@ const StatusMatchingPage: React.FC = () => {
                   ไปยังหน้า AI Matching
                 </Button>
               </div>
-            ) : acceptedResults.length === 0 ? (
+            ) : statusResults.length === 0 ? (
               <div className="text-center py-8">
-                <p>ไม่พบข้อมูลงานที่ยอมรับแล้ว</p>
+                <p>ไม่พบข้อมูลการจับคู่แรงงาน</p>
               </div>
             ) : (
               <JobMatchDetails 
-                matches={acceptedResults} 
+                matches={statusResults} 
                 showViewButton={true}
                 onViewDetails={handleViewJobDetails}
                 showSkills={true}
