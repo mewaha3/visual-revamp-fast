@@ -2,12 +2,20 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Briefcase, Search, ClipboardList } from "lucide-react";
+import { Menu, X, User, LogOut, Briefcase, Search, ClipboardList, Settings } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { userEmail, userFullName, logout } = useAuth();
+  const { userEmail, userFullName, userId, logout } = useAuth();
   const location = useLocation();
   
   // Close mobile menu when changing routes
@@ -85,18 +93,31 @@ const Header = () => {
         <div className="hidden md:flex items-center space-x-4">
           {userEmail ? (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-fastlabor-700">
-                <User size={18} />
-                <span className="font-medium">{displayName()}</span>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 flex items-center gap-2"
-              >
-                <LogOut size={16} />
-                ออกจากระบบ
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 text-fastlabor-700 px-3">
+                    <div className="h-8 w-8 rounded-full bg-fastlabor-100 flex items-center justify-center">
+                      <User size={18} className="text-fastlabor-600" />
+                    </div>
+                    <span className="font-medium">{displayName()}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>บัญชีของฉัน</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link to="/profile/edit">
+                    <DropdownMenuItem className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>แก้ไขโปรไฟล์</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>ออกจากระบบ</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ) : (
             <>
@@ -154,6 +175,15 @@ const Header = () => {
                     <User size={18} />
                     <span className="font-medium">{displayName()}</span>
                   </div>
+                  <Link to="/profile/edit" onClick={() => setIsOpen(false)}>
+                    <Button 
+                      variant="outline" 
+                      className="border-fastlabor-600 text-fastlabor-600 hover:bg-fastlabor-50 justify-center w-full flex items-center gap-2"
+                    >
+                      <Settings size={16} />
+                      แก้ไขโปรไฟล์
+                    </Button>
+                  </Link>
                   <Button 
                     variant="outline" 
                     onClick={handleLogout}

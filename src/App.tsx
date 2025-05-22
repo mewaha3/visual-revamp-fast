@@ -27,6 +27,7 @@ import EmployerReviewPage from "./pages/EmployerReviewPage";
 import AIMatchingDetailPage from './pages/AIMatchingDetailPage';
 import AcceptedJobDetailPage from './pages/AcceptedJobDetailPage';
 import WorkerReviewPage from './pages/WorkerReviewPage';
+import ProfileEdit from './pages/ProfileEdit';
 
 /* 
  * Note about the TS6305 errors:
@@ -69,6 +70,8 @@ const App = () => (
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/find-job" element={<FindJob />} />
             <Route path="/my-jobs" element={<MyJobsPage />} />
+            {/* Profile edit route */}
+            <Route path="/profile/edit" element={<ProfileEdit />} />
             {/* New route for the find tab */}
             <Route path="/my-jobs/find" element={<MyJobsPage />} />
             {/* Job matching system routes */}
