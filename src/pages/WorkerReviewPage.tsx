@@ -135,7 +135,7 @@ const WorkerReviewPage: React.FC = () => {
             <CardHeader className="text-center p-6">
               <div className="flex flex-col items-center mb-2">
                 <Star className="text-yellow-400 w-10 h-10" />
-                <CardTitle className="text-2xl font-bold text-center mt-2">Review Employer</CardTitle>
+                <CardTitle className="text-2xl font-bold text-center mt-2">Review Employee</CardTitle>
                 <CardDescription className="text-gray-500 text-center">ให้คะแนนและแสดงความคิดเห็น</CardDescription>
                 
                 {!loading && !error && employerInfo && (
