@@ -84,7 +84,7 @@ export default function UploadDocuments() {
     
     try {
       // In a real app, you would upload the documents to a server here
-      console.log("Documents to upload:", documents);
+      console.log("Documents ready for upload (not uploading):", Object.keys(documents).filter(key => !!documents[key as keyof DocumentsState]));
       
       // Register the user
       if (formData) {
@@ -104,12 +104,14 @@ export default function UploadDocuments() {
           zip_code: formData.zip_code
         };
         
-        // This would actually register the user in a real app
-        // Uncomment this to actually register the user
-        // const userId = await registerUser(userData);
-        
-        // For now, we'll just simulate success
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Actually register the user in Firebase
+        try {
+          const userId = await registerUser(userData);
+          console.log("User registered successfully with ID:", userId);
+        } catch (registerError) {
+          console.error("Error during registration:", registerError);
+          throw registerError;
+        }
         
         // Show success dialog
         setShowSuccessDialog(true);
