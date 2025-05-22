@@ -21,7 +21,11 @@ import { ProfileFormValues } from "@/pages/ProfileEdit";
 import { useEffect } from "react";
 
 export default function AddressSection() {
-  const { control, setValue, getValues } = useFormContext<ProfileFormValues>();
+  const { control, setValue, getValues, watch } = useFormContext<ProfileFormValues>();
+  
+  const provinceValue = watch("province");
+  const districtValue = watch("district");
+  const subdistrictValue = watch("subdistrict");
   
   // Initialize Thailand locations hook
   const {
@@ -34,6 +38,7 @@ export default function AddressSection() {
     handleAmphureChange,
     handleTambonChange,
     zipCode,
+    initializeLocation
   } = useThailandLocations();
 
   // Update zip_code when tambon changes
@@ -42,6 +47,18 @@ export default function AddressSection() {
       setValue("zip_code", zipCode);
     }
   }, [zipCode, setValue]);
+
+  // Initialize selected locations when form values are loaded
+  useEffect(() => {
+    const province = getValues("province");
+    const district = getValues("district");
+    const subdistrict = getValues("subdistrict");
+    
+    if (province && district && subdistrict) {
+      console.log("Initializing location with:", { province, district, subdistrict });
+      initializeLocation(province, district, subdistrict);
+    }
+  }, [getValues, initializeLocation]);
 
   return (
     <div className="space-y-6">
@@ -122,7 +139,7 @@ export default function AddressSection() {
                   setValue("subdistrict", "");
                   setValue("zip_code", "");
                 }}
-                disabled={!getValues("province")}
+                disabled={!provinceValue}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -130,7 +147,7 @@ export default function AddressSection() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {!getValues("province") ? (
+                  {!provinceValue ? (
                     <SelectItem value="select-province" disabled>โปรดเลือกจังหวัดก่อน</SelectItem>
                   ) : filteredAmphures.length === 0 ? (
                     <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>
@@ -160,7 +177,7 @@ export default function AddressSection() {
                   field.onChange(value);
                   handleTambonChange(value);
                 }}
-                disabled={!getValues("district")}
+                disabled={!districtValue}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -168,7 +185,7 @@ export default function AddressSection() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {!getValues("district") ? (
+                  {!districtValue ? (
                     <SelectItem value="select-district" disabled>โปรดเลือกอำเภอ/เขตก่อน</SelectItem>
                   ) : filteredTambons.length === 0 ? (
                     <SelectItem value="no-data" disabled>ไม่พบข้อมูล</SelectItem>

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Province, Amphure, Tambon } from '@/types/locationTypes';
 
 export const useThailandLocations = () => {
@@ -21,6 +21,7 @@ export const useThailandLocations = () => {
   const [selectedAmphure, setSelectedAmphure] = useState<string>("");
   const [selectedTambon, setSelectedTambon] = useState<string>("");
   const [zipCode, setZipCode] = useState<string>("");
+  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
 
   // Fetch all data on component mount
   useEffect(() => {
@@ -44,6 +45,7 @@ export const useThailandLocations = () => {
         setProvinces(provinceData);
         setAmphures(amphureData);
         setTambons(tambonData);
+        setDataLoaded(true);
       } catch (err) {
         console.error('Error fetching location data:', err);
         setError('Failed to load location data. Please try again later.');
@@ -54,6 +56,51 @@ export const useThailandLocations = () => {
     
     fetchData();
   }, []);
+
+  // Initialize location dropdowns with saved user data
+  const initializeLocation = useCallback((provinceName: string, districtName: string, subdistrictName: string) => {
+    if (!dataLoaded) {
+      console.log("Data not loaded yet, will initialize later");
+      return;
+    }
+    
+    console.log("Initializing location with:", { provinceName, districtName, subdistrictName });
+    
+    // Set province and filter amphures
+    setSelectedProvince(provinceName);
+    const selectedProvObj = provinces.find(p => p.name_th === provinceName);
+    
+    if (selectedProvObj) {
+      const filteredAmp = amphures.filter(a => a.province_id === selectedProvObj.id);
+      setFilteredAmphures(filteredAmp);
+      
+      // Set amphure and filter tambons
+      setSelectedAmphure(districtName);
+      const selectedAmpObj = filteredAmp.find(a => a.name_th === districtName);
+      
+      if (selectedAmpObj) {
+        const filteredTmb = tambons.filter(t => t.amphure_id === selectedAmpObj.id);
+        setFilteredTambons(filteredTmb);
+        
+        // Set tambon and zipcode
+        setSelectedTambon(subdistrictName);
+        const selectedTmbObj = filteredTmb.find(t => t.name_th === subdistrictName);
+        
+        if (selectedTmbObj) {
+          const zipCodeValue = String(selectedTmbObj.zip_code);
+          console.log("Setting zip code to:", zipCodeValue);
+          setZipCode(zipCodeValue);
+        }
+      }
+    }
+  }, [provinces, amphures, tambons, dataLoaded]);
+
+  // Effect to initialize when data is loaded
+  useEffect(() => {
+    if (dataLoaded && selectedProvince && selectedAmphure && selectedTambon) {
+      initializeLocation(selectedProvince, selectedAmphure, selectedTambon);
+    }
+  }, [dataLoaded, initializeLocation, selectedProvince, selectedAmphure, selectedTambon]);
 
   // Filter amphures when province changes
   const handleProvinceChange = (provinceNameTh: string) => {
@@ -124,7 +171,8 @@ export const useThailandLocations = () => {
     zipCode,
     handleProvinceChange,
     handleAmphureChange,
-    handleTambonChange
+    handleTambonChange,
+    initializeLocation
   };
 };
 
