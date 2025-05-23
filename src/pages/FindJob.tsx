@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import useFindJobForm from "@/hooks/useFindJobForm";
-import { Search, Loader2, Info } from "lucide-react";
+import { Search, Loader2, Info, Phone } from "lucide-react";
 import FindJobInformationForm from "@/components/jobs/FindJobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
@@ -50,6 +51,7 @@ const FindJob = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, userId } = useAuth();
+  const [phone, setPhone] = useState(''); // New state for phone number
 
   // Get tomorrow's date in YYYY-MM-DD format for date input min value
   const getTomorrowDate = () => {
@@ -69,6 +71,12 @@ const FindJob = () => {
     // Check minimum salary
     if (parseInt(minSalary) < 100) {
       toast.error("ค่าจ้างขั้นต่ำต้องไม่น้อยกว่า 100 บาท");
+      return;
+    }
+    
+    // Validate phone number if provided
+    if (phone && !/^[0-9]{9,10}$/.test(phone)) {
+      toast.error("กรุณาระบุเบอร์โทรศัพท์ที่ถูกต้อง");
       return;
     }
     
@@ -93,6 +101,7 @@ const FindJob = () => {
         start_salary: Number(minSalary),
         range_salary: Number(maxSalary),
         gender: userProfile?.gender || "",
+        phone: phone, // Add phone number to the data
       };
       
       // Save to Firestore
@@ -154,6 +163,26 @@ const FindJob = () => {
                 onEndTimeChange={setEndTime}
                 minDate={getTomorrowDate()}
               />
+
+              {/* Phone Number Field */}
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  เบอร์โทรศัพท์ติดต่อ
+                </label>
+                <div className="flex items-center">
+                  <Phone className="mr-2 h-4 w-4 text-gray-500" />
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="เช่น 0812345678"
+                    className="flex-1"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">กรุณาระบุเบอร์โทรศัพท์สำหรับการติดต่อ</p>
+              </div>
 
               {/* Address Information */}
               <AddressInformationForm 
