@@ -51,11 +51,24 @@ const FindJob = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { userProfile, userId } = useAuth();
 
+  // Get tomorrow's date in YYYY-MM-DD format for date input min value
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!jobType || !jobDate || !startTime || !endTime || !selectedProvince || !minSalary) {
       toast.error("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน");
+      return;
+    }
+    
+    // Check minimum salary
+    if (parseInt(minSalary) < 100) {
+      toast.error("ค่าจ้างขั้นต่ำต้องไม่น้อยกว่า 100 บาท");
       return;
     }
     
@@ -139,6 +152,7 @@ const FindJob = () => {
                 onJobDateChange={(e) => setJobDate(e.target.value)}
                 onStartTimeChange={setStartTime}
                 onEndTimeChange={setEndTime}
+                minDate={getTomorrowDate()}
               />
 
               {/* Address Information */}
@@ -171,6 +185,7 @@ const FindJob = () => {
                 maxSalary={maxSalary}
                 onMinSalaryChange={(e) => setMinSalary(e.target.value)}
                 onMaxSalaryChange={(e) => setMaxSalary(e.target.value)}
+                minimumValue={100}
               />
 
               {/* Submit Button */}

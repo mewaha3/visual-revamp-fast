@@ -23,6 +23,7 @@ interface FindJobInformationFormProps {
   onJobDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStartTimeChange: (value: string) => void;
   onEndTimeChange: (value: string) => void;
+  minDate?: string; // Added minDate prop
 }
 
 const FindJobInformationForm = ({
@@ -36,6 +37,7 @@ const FindJobInformationForm = ({
   onJobDateChange,
   onStartTimeChange,
   onEndTimeChange,
+  minDate, // Get tomorrow's date from parent
 }: FindJobInformationFormProps) => {
   return (
     <div className="space-y-4">
@@ -88,7 +90,11 @@ const FindJobInformationForm = ({
           type="date"
           value={jobDate}
           onChange={onJobDateChange}
+          min={minDate} // Apply minimum date (tomorrow)
         />
+        {minDate && (
+          <p className="text-xs text-gray-500 mt-1">ต้องเป็นวันที่หลังจากวันนี้เท่านั้น</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

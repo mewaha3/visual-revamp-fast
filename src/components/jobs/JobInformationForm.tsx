@@ -27,6 +27,8 @@ interface JobInformationFormProps {
   onStartTimeChange: (value: string) => void;
   onEndTimeChange: (value: string) => void;
   onSalaryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  minDate?: string; // Added minDate prop
+  minSalary?: number; // Added minSalary prop
 }
 
 const JobInformationForm = ({
@@ -43,7 +45,9 @@ const JobInformationForm = ({
   onEndDateChange,
   onStartTimeChange,
   onEndTimeChange,
-  onSalaryChange
+  onSalaryChange,
+  minDate, // Get tomorrow's date from parent
+  minSalary = 0 // Default to 0 if not provided
 }: JobInformationFormProps) => {
   return (
     <div className="space-y-4">
@@ -97,8 +101,12 @@ const JobInformationForm = ({
             type="date"
             value={startDate}
             onChange={onStartDateChange}
+            min={minDate} // Apply minimum date (tomorrow)
             required
           />
+          {minDate && (
+            <p className="text-xs text-gray-500 mt-1">ต้องเป็นวันที่หลังจากวันนี้เท่านั้น</p>
+          )}
         </div>
         
         <div>
@@ -109,6 +117,7 @@ const JobInformationForm = ({
             type="date"
             value={endDate}
             onChange={onEndDateChange}
+            min={startDate || minDate} // Must be at least the start date or tomorrow
             required
           />
         </div>
@@ -159,8 +168,12 @@ const JobInformationForm = ({
           value={salary}
           onChange={onSalaryChange}
           placeholder="เช่น 500"
+          min={minSalary} // Set minimum salary value
           required
         />
+        {minSalary > 0 && (
+          <p className="text-xs text-gray-500 mt-1">ค่าจ้างขั้นต่ำ {minSalary} บาท</p>
+        )}
       </div>
     </div>
   );

@@ -32,9 +32,16 @@ export const useFindJobForm = () => {
   const [startTime, setStartTime] = useState<string>('');
   const [endTime, setEndTime] = useState<string>('');
   const [address, setAddress] = useState<string>('');
-  const [minSalary, setMinSalary] = useState<string>('');
+  const [minSalary, setMinSalary] = useState<string>('100'); // Set default to 100
   const [maxSalary, setMaxSalary] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Get tomorrow's date in YYYY-MM-DD format
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,6 +63,26 @@ export const useFindJobForm = () => {
       return;
     }
 
+    // Validate minimum salary
+    if (parseInt(minSalary) < 100) {
+      toast.error("ค่าจ้างขั้นต่ำต้องไม่น้อยกว่า 100 บาท");
+      setMinSalary('100');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate date
+    const selectedDate = new Date(jobDate);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < tomorrow) {
+      toast.error("วันที่ต้องเป็นวันพรุ่งนี้เป็นต้นไป");
+      setIsSubmitting(false);
+      return;
+    }
+
     // Get user info from auth context or local storage
     const firstName = localStorage.getItem('userFirstName') || userFullName?.split(' ')[0] || '';
     const lastName = localStorage.getItem('userLastName') || userFullName?.split(' ')[1] || '';
@@ -72,7 +99,7 @@ export const useFindJobForm = () => {
       province: selectedProvince,
       district: selectedAmphure,
       subdistrict: selectedTambon,
-      start_salary: parseInt(minSalary, 10) || 0,
+      start_salary: parseInt(minSalary, 10) || 100,
       range_salary: parseInt(maxSalary, 10) || 0,
       email: userEmail,
       first_name: firstName,
@@ -129,6 +156,7 @@ export const useFindJobForm = () => {
     handleAmphureChange,
     handleTambonChange,
     isSubmitting,
+    getTomorrowDate,
   };
 };
 

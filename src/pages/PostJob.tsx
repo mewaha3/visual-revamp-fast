@@ -32,6 +32,13 @@ const PostJob = () => {
     salary: "",
   });
 
+  // Get tomorrow's date in YYYY-MM-DD format for date input min value
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!userEmail) {
@@ -54,9 +61,19 @@ const PostJob = () => {
   } = useThailandLocations();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    let value = e.target.value;
+    
+    // For salary field, enforce minimum value of 100
+    if (e.target.name === "salary") {
+      const numValue = parseInt(value);
+      if (numValue < 100) {
+        value = "100";
+      }
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [e.target.name]: value,
     });
   };
 
@@ -104,6 +121,12 @@ const PostJob = () => {
         !formData.startTime || !formData.endTime || !formData.address || 
         !formData.province || !formData.salary) {
       toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
+      return;
+    }
+
+    // Validate minimum salary
+    if (parseInt(formData.salary) < 100) {
+      toast.error("ค่าจ้างต้องไม่น้อยกว่า 100 บาท");
       return;
     }
     
@@ -189,6 +212,8 @@ const PostJob = () => {
                 onStartTimeChange={(value) => handleSelectChange("startTime", value)}
                 onEndTimeChange={(value) => handleSelectChange("endTime", value)}
                 onSalaryChange={handleChange}
+                minDate={getTomorrowDate()}
+                minSalary={100}
               />
               
               <AddressInformationForm 
