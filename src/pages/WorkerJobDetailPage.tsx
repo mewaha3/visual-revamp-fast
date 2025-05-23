@@ -88,7 +88,7 @@ const WorkerJobDetailPage: React.FC = () => {
                     }} 
                   />
                   
-                  {(employer.phone || employer.phone) && (
+                  {employer.phone && (
                     <Card className="mb-6 mt-4">
                       <CardContent className="pt-6">
                         <div className="flex items-center gap-2">
