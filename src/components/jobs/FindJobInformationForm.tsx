@@ -18,11 +18,13 @@ interface FindJobInformationFormProps {
   jobDate: string;
   startTime: string;
   endTime: string;
+  phone: string; // Added phone prop
   onJobTypeChange: (value: string) => void;
   onSkillsChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onJobDateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStartTimeChange: (value: string) => void;
   onEndTimeChange: (value: string) => void;
+  onPhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // Added phone handler
   minDate?: string; // Added minDate prop
 }
 
@@ -32,11 +34,13 @@ const FindJobInformationForm = ({
   jobDate,
   startTime,
   endTime,
+  phone, // Added phone
   onJobTypeChange,
   onSkillsChange,
   onJobDateChange,
   onStartTimeChange,
   onEndTimeChange,
+  onPhoneChange, // Added phone handler
   minDate, // Get tomorrow's date from parent
 }: FindJobInformationFormProps) => {
   return (
@@ -95,6 +99,23 @@ const FindJobInformationForm = ({
         {minDate && (
           <p className="text-xs text-gray-500 mt-1">ต้องเป็นวันที่หลังจากวันนี้เท่านั้น</p>
         )}
+      </div>
+
+      <div>
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+          เบอร์โทรศัพท์ <span className="text-red-500">*</span>
+        </label>
+        <Input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={onPhoneChange}
+          placeholder="เช่น 099-999-9999"
+          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}|[0-9]{10}|[0-9]{9}"
+          title="กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง เช่น 0991234567 หรือ 091-234-5678"
+          required
+        />
+        <p className="text-xs text-gray-500 mt-1">กรอกเฉพาะตัวเลข เช่น 0991234567</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

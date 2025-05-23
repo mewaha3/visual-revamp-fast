@@ -34,6 +34,7 @@ export const useFindJobForm = () => {
   const [address, setAddress] = useState<string>('');
   const [minSalary, setMinSalary] = useState<string>('100'); // Set default to 100
   const [maxSalary, setMaxSalary] = useState<string>('');
+  const [phone, setPhone] = useState<string>(''); // Added phone state
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   // Get tomorrow's date in YYYY-MM-DD format
@@ -73,7 +74,7 @@ export const useFindJobForm = () => {
     
     // Validation
     if (!jobType || !skills || !jobDate || !startTime || !endTime || !address || 
-        !selectedProvince || !selectedAmphure || !selectedTambon || !minSalary) {
+        !selectedProvince || !selectedAmphure || !selectedTambon || !minSalary || !phone) {
       toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
       setIsSubmitting(false);
       return;
@@ -121,6 +122,7 @@ export const useFindJobForm = () => {
       last_name: lastName,
       gender,
       zip_code: zipCode,
+      phone, // Added phone field
     };
 
     // Add the new job
@@ -157,6 +159,8 @@ export const useFindJobForm = () => {
     setMinSalary,
     maxSalary,
     setMaxSalary,
+    phone, // Added phone state
+    setPhone, // Added phone setter
     handleSubmit,
     provinces,
     filteredAmphures,

@@ -1,3 +1,4 @@
+
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -28,7 +29,7 @@ export interface FindJob {
     range_salary?: number;
     job_address?: string;
     zip_code?: string;
-    phone?: string; 
+    phone?: string; // Added phone field
     score?: number; 
     aiScore?: number; 
     user_id?: string; 
@@ -54,7 +55,7 @@ export interface PostJob {
     district: string;
     subdistrict: string;
     zip_code: string;
-    phone?: string; // Add phone field
+    phone?: string; // Added phone field
     status?: string;
     user_id?: string; 
 }
@@ -111,7 +112,7 @@ export interface JobDetail {
   detail?: string;
   name?: string; // Add name to fix type errors in matchMocks
   zip_code?: string; // Add zip_code
-  phone?: string; // Add phone field
+  phone?: string; // Added phone field
 }
 
 // Update Employer interface with required fields
@@ -120,7 +121,7 @@ export interface Employer {
   first_name: string;
   last_name: string;
   email: string;
-  phone?: string;
+  phone?: string; // Added phone field
   rating?: number;
   reviews?: number;
   profile_image?: string;
@@ -146,6 +147,7 @@ export interface Job {
   subdistrict: string;
   zip_code?: string;
   status?: string;
+  phone?: string; // Added phone field
 }
 
 // Add MatchResultFirestore interface for Firebase storage
@@ -173,6 +175,9 @@ export interface MatchResultFirestore {
   updated_at?: any;
   skills?: string;
   embedding_model?: string;
+  phone?: string; // Added phone field
+  phone_post_jobs?: string; // Added for employer phone
+  phone_find_jobs?: string; // Added for worker phone
 }
 
 export interface MatchResult {
@@ -217,6 +222,9 @@ export interface MatchResult {
   gender_find_jobs?: string;
   skills?: string; // Add skills field
   embedding_model?: string; // Add field for tracking which model was used
+  phone?: string; // Added phone field
+  phone_post_jobs?: string; // Added for employer phone
+  phone_find_jobs?: string; // Added for worker phone
 }
 
 export interface StatusResult {
@@ -239,4 +247,5 @@ export interface StatusResult {
   last_name?: string;
   skills?: string; // Add skills field
   embedding_model?: string; // Add field for tracking which model was used
+  phone?: string; // Added phone field
 }

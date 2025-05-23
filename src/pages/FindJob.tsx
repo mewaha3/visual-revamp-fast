@@ -32,6 +32,8 @@ const FindJob = () => {
     setMinSalary,
     maxSalary,
     setMaxSalary,
+    phone, // Add phone state
+    setPhone, // Add phone setter
     handleSubmit: originalSubmit,
     provinces,
     filteredAmphures,
@@ -61,7 +63,7 @@ const FindJob = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!jobType || !jobDate || !startTime || !endTime || !selectedProvince || !minSalary) {
+    if (!jobType || !jobDate || !startTime || !endTime || !selectedProvince || !minSalary || !phone) {
       toast.error("กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน");
       return;
     }
@@ -93,6 +95,7 @@ const FindJob = () => {
         start_salary: Number(minSalary),
         range_salary: Number(maxSalary),
         gender: userProfile?.gender || "",
+        phone: phone, // Add phone field
       };
       
       // Save to Firestore
@@ -147,11 +150,13 @@ const FindJob = () => {
                 jobDate={jobDate}
                 startTime={startTime}
                 endTime={endTime}
+                phone={phone} // Add phone prop
                 onJobTypeChange={setJobType}
                 onSkillsChange={(e) => setSkills(e.target.value)}
                 onJobDateChange={(e) => setJobDate(e.target.value)}
                 onStartTimeChange={setStartTime}
                 onEndTimeChange={setEndTime}
+                onPhoneChange={(e) => setPhone(e.target.value)} // Add phone handler
                 minDate={getTomorrowDate()}
               />
 

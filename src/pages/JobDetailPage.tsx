@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -165,12 +166,12 @@ const JobDetailPage: React.FC = () => {
                         <p>{acceptedWorker.jobType || acceptedWorker.job_type || 'ไม่ระบุ'}</p>
                       </div>
                       
-                      {acceptedWorker.phone && (
+                      {(acceptedWorker.phone_find_jobs || acceptedWorker.phone) && (
                         <div>
                           <h4 className="text-sm text-gray-500 flex items-center gap-1">
                             <Phone size={14} className="text-fastlabor-600" /> เบอร์ติดต่อ
                           </h4>
-                          <p>{acceptedWorker.phone}</p>
+                          <p>{acceptedWorker.phone_find_jobs || acceptedWorker.phone}</p>
                         </div>
                       )}
                       
@@ -202,23 +203,7 @@ const JobDetailPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Button 
-                    onClick={() => {
-                      if (jobId && acceptedWorker) {
-                        const workerName = acceptedWorker.first_name_find_jobs && acceptedWorker.last_name_find_jobs
-                          ? `${acceptedWorker.first_name_find_jobs} ${acceptedWorker.last_name_find_jobs}`
-                          : acceptedWorker.name || `${acceptedWorker.first_name || ''} ${acceptedWorker.last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
-                                     
-                        toast.success("กำลังไปยังหน้ารีวิวแรงงาน");
-                        navigate(`/review/${jobId}`, {
-                          state: {
-                            jobId,
-                            workerId: acceptedWorker.workerId,
-                            jobType: jobDetails?.job_type,
-                            workerName
-                          }
-                        });
-                      }
-                    }}
+                    onClick={handleJobDone}
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
                   >
                     <CheckCircle className="mr-2" size={18} />

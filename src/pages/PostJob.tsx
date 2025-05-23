@@ -30,6 +30,7 @@ const PostJob = () => {
     subdistrict: "",
     postalCode: "",
     salary: "",
+    phone: "", // Added phone field
   });
 
   // Get tomorrow's date in YYYY-MM-DD format for date input min value
@@ -124,7 +125,7 @@ const PostJob = () => {
     // Validate form
     if (!formData.JobType || !formData.jobDetail || !formData.startDate || 
         !formData.startTime || !formData.endTime || !formData.address || 
-        !formData.province || !formData.salary) {
+        !formData.province || !formData.salary || !formData.phone) {
       toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
       return;
     }
@@ -156,6 +157,7 @@ const PostJob = () => {
         district: formData.district,
         subdistrict: formData.subdistrict,
         zip_code: formData.postalCode,
+        phone: formData.phone, // Added phone field
       };
 
       // Save to Firestore
@@ -211,6 +213,7 @@ const PostJob = () => {
                 startTime={formData.startTime}
                 endTime={formData.endTime}
                 salary={formData.salary}
+                phone={formData.phone} // Added phone prop
                 onJobTypeChange={(value) => handleSelectChange("JobType", value)}
                 onJobDetailChange={handleChange}
                 onStartDateChange={handleChange}
@@ -222,6 +225,13 @@ const PostJob = () => {
                   target: {
                     ...e.target,
                     name: "salary"
+                  }
+                })}
+                onPhoneChange={(e) => handleChange({ // Added phone handler
+                  ...e,
+                  target: {
+                    ...e.target,
+                    name: "phone"
                   }
                 })}
                 minDate={getTomorrowDate()}
