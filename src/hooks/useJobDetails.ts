@@ -5,7 +5,7 @@ import { getEmployerDetails } from '@/services/employerService';
 import { JobDetail, Employer, MatchResult } from '@/types/types';
 import { toast } from "sonner";
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 export const useJobDetails = (jobId?: string) => {
   const [jobDetails, setJobDetails] = useState<JobDetail | null>(null);
@@ -92,11 +92,11 @@ export const useJobDetails = (jobId?: string) => {
             job_type: matchData.job_type || "",
             detail: matchData.job_detail || "",
             job_detail: matchData.job_detail || "",
-            job_date: matchData.date || "",
+            job_date: matchData.job_date || "",
             start_time: matchData.start_time || "",
             end_time: matchData.end_time || "",
             job_address: matchData.job_address || "",
-            salary: typeof matchData.salary === 'number' ? matchData.salary : 0,
+            salary: matchData.job_salary || 0,
             province: matchData.province || "",
             district: matchData.district || "",
             subdistrict: matchData.subdistrict || "",
