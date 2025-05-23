@@ -33,8 +33,55 @@ export const useJobDetails = (jobId?: string) => {
         const matchSnapshot = await getDocs(matchQuery);
         
         if (!matchSnapshot.empty) {
-          // We found match results, use the first one to get job details
-          const matchData = matchSnapshot.docs[0].data();
+          // Look for an accepted match result first
+          let acceptedMatch = null;
+          const allMatches: MatchResult[] = [];
+          
+          matchSnapshot.forEach((doc) => {
+            const data = doc.data();
+            const matchResult = {
+              id: doc.id,
+              job_id: data.job_id,
+              findjob_id: data.findjob_id,
+              name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "ไม่ระบุชื่อ",
+              gender: data.gender,
+              jobType: data.job_type,
+              job_type: data.job_type,
+              date: data.job_date,
+              time: `${data.start_time || ""} - ${data.end_time || ""}`,
+              location: `${data.province || ""}/${data.district || ""}/${data.subdistrict || ""}`,
+              province: data.province || "",
+              district: data.district || "",
+              subdistrict: data.subdistrict || "",
+              salary: data.job_salary || 0,
+              status: data.status,
+              first_name: data.first_name,
+              last_name: data.last_name,
+              email: data.email,
+              workerId: data.workerId,
+              start_time: data.start_time,
+              end_time: data.end_time,
+              priority: data.priority,
+              skills: data.skills,
+              // Additional nested fields
+              first_name_post_jobs: data.first_name_post_jobs,
+              last_name_post_jobs: data.last_name_post_jobs,
+              gender_post_jobs: data.gender_post_jobs,
+              first_name_find_jobs: data.first_name_find_jobs,
+              last_name_find_jobs: data.last_name_find_jobs,
+              gender_find_jobs: data.gender_find_jobs
+            };
+            
+            allMatches.push(matchResult);
+            
+            // Find the accepted match
+            if (data.status && data.status.toLowerCase() === 'accepted') {
+              acceptedMatch = matchResult;
+            }
+          });
+          
+          // Use the accepted match if available, otherwise use the first match
+          const matchData = acceptedMatch || allMatches[0];
           
           // Construct job details from match data
           const jobData: JobDetail = {
@@ -89,6 +136,9 @@ export const useJobDetails = (jobId?: string) => {
             };
             setEmployer(employerData);
           }
+          
+          // Set all match results for this job
+          setMatchDetails(allMatches);
         } else {
           // If not in match_results, try to get from post_jobs
           const details = await getJobDetails(jobId);
@@ -105,48 +155,8 @@ export const useJobDetails = (jobId?: string) => {
           }
           
           setEmployer(employerInfo);
+          setMatchDetails([]);
         }
-        
-        // Get match_results related to this job
-        const matchResults: MatchResult[] = [];
-        matchSnapshot.forEach((doc) => {
-          const data = doc.data();
-          matchResults.push({
-            id: doc.id,
-            job_id: data.job_id,
-            findjob_id: data.findjob_id,
-            name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "ไม่ระบุชื่อ",
-            gender: data.gender,
-            jobType: data.job_type,
-            date: data.job_date,
-            time: `${data.start_time || ""} - ${data.end_time || ""}`,
-            location: `${data.province || ""}/${data.district || ""}/${data.subdistrict || ""}`,
-            province: data.province || "",
-            district: data.district || "",
-            subdistrict: data.subdistrict || "",
-            salary: data.job_salary || 0,
-            status: data.status,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            email: data.email,
-            workerId: data.workerId,
-            start_time: data.start_time,
-            end_time: data.end_time,
-            priority: data.priority,
-            skills: data.skills,
-            // Additional nested fields
-            first_name_post_jobs: data.first_name_post_jobs,
-            last_name_post_jobs: data.last_name_post_jobs,
-            gender_post_jobs: data.gender_post_jobs,
-            first_name_find_jobs: data.first_name_find_jobs,
-            last_name_find_jobs: data.last_name_find_jobs,
-            gender_find_jobs: data.gender_find_jobs
-          });
-        });
-        
-        setMatchDetails(matchResults);
-        console.log("Match results fetched:", matchResults);
-        
       } catch (error) {
         console.error("Error fetching job details:", error);
         setError("ไม่สามารถโหลดข้อมูลได้");

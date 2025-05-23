@@ -14,6 +14,7 @@ import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { db } from '@/lib/firebase';
 import { collection, query, getDocs, where } from 'firebase/firestore';
 import { saveMatchResults, getMatchResultsByJobId } from '@/services/matchingService';
+import { calculateTextSimilarity, calculateSimpleStringSimilarity } from '@/utils/embeddingUtils';
 
 const AIMatchingDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -26,6 +27,7 @@ const AIMatchingDetailPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [hasExistingMatches, setHasExistingMatches] = useState(false);
+  const [useEmbeddings, setUseEmbeddings] = useState(true);
 
   const fetchJobAndMatches = async (forceRefresh = false) => {
     if (!jobId) return;
@@ -56,6 +58,7 @@ const AIMatchingDetailPage: React.FC = () => {
       const findJobsSnapshot = await getDocs(findJobsRef);
       
       let matches: MatchResult[] = [];
+      const matchPromises: Promise<MatchResult>[] = [];
       
       // Create matches from find_jobs with scoring
       findJobsSnapshot.forEach(doc => {
@@ -67,87 +70,143 @@ const AIMatchingDetailPage: React.FC = () => {
           return;
         }
         
-        // Calculate match score based on multiple factors
-        let matchScore = 0;
-        
-        // Job type match (high weight)
-        if (findJobData.job_type === jobData.job_type) {
-          matchScore += 0.4;
-        }
-        
-        // Location match (medium weight)
-        if (findJobData.province === jobData.province) {
-          matchScore += 0.2;
-          
-          if (findJobData.district === jobData.district) {
-            matchScore += 0.1;
+        matchPromises.push(
+          (async () => {
+            // Calculate match score based on multiple factors
+            let matchScore = 0;
             
-            if (findJobData.subdistrict === jobData.subdistrict) {
+            // Job type match (high weight: 0.3)
+            if (findJobData.job_type === jobData.job_type) {
+              matchScore += 0.3;
+            }
+            
+            // Location match (medium weight: 0.2)
+            if (findJobData.province === jobData.province) {
+              matchScore += 0.1;
+              
+              if (findJobData.district === jobData.district) {
+                matchScore += 0.05;
+                
+                if (findJobData.subdistrict === jobData.subdistrict) {
+                  matchScore += 0.05;
+                }
+              }
+            }
+            
+            // Time preference match (medium weight: 0.1)
+            const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
+            const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
+            const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
+            const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
+            
+            // If time ranges overlap
+            if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
               matchScore += 0.1;
             }
-          }
-        }
-        
-        // Time preference match (medium weight)
-        const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
-        const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
-        const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
-        const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
-        
-        // If time ranges overlap
-        if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
-          matchScore += 0.2;
-        }
 
-        // Add a slight random factor for refresh variance (small weight)
-        if (forceRefresh) {
-          matchScore += (Math.random() * 0.2) - 0.1; // -0.1 to +0.1 variance
-        }
-        
-        // Create the match object
-        matches.push({
-          id: doc.id,
-          findjob_id: findJobData.findjob_id || doc.id,
-          job_id: jobId,
-          name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim() || "ไม่ระบุชื่อ",
-          first_name: findJobData.first_name,
-          last_name: findJobData.last_name,
-          gender: findJobData.gender || "ไม่ระบุ",
-          jobType: findJobData.job_type,
-          job_type: findJobData.job_type,
-          date: findJobData.job_date || findJobData.start_date,
-          time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
-          start_time: findJobData.start_time,
-          end_time: findJobData.end_time,
-          location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
-          salary: findJobData.expected_salary || findJobData.start_salary || 0,
-          email: findJobData.email || "",
-          aiScore: matchScore,
-          workerId: findJobData.user_id,
-          user_id: findJobData.user_id,
-          province: findJobData.province,
-          district: findJobData.district,
-          subdistrict: findJobData.subdistrict,
-          skills: findJobData.skills || ""
-        });
+            // NEW: Job description and skills similarity using embeddings (high weight: 0.3)
+            try {
+              let descriptionSimilarity = 0;
+              const jobDescription = jobData.detail || '';
+              const workerSkills = findJobData.skills || '';
+              
+              if (useEmbeddings) {
+                // Try using embeddings first
+                descriptionSimilarity = await calculateTextSimilarity(
+                  jobDescription,
+                  workerSkills
+                );
+              } else {
+                // Fall back to simple string matching
+                descriptionSimilarity = calculateSimpleStringSimilarity(
+                  jobDescription,
+                  workerSkills
+                );
+              }
+              
+              console.log(`Similarity score for worker ${findJobData.first_name}: ${descriptionSimilarity}`);
+              
+              // Add the weighted similarity score (0.3 max)
+              matchScore += descriptionSimilarity * 0.3;
+            } catch (error) {
+              console.error("Error calculating text similarity:", error);
+              // Fall back to simple string similarity
+              const simpleSimilarity = calculateSimpleStringSimilarity(
+                jobData.detail || '',
+                findJobData.skills || ''
+              );
+              matchScore += simpleSimilarity * 0.15; // Half weight for fallback method
+            }
+
+            // Add a slight random factor for refresh variance (small weight)
+            if (forceRefresh) {
+              matchScore += (Math.random() * 0.1) - 0.05; // -0.05 to +0.05 variance
+            }
+            
+            // Ensure score is within 0-1 range
+            matchScore = Math.min(Math.max(matchScore, 0), 1);
+            
+            // Create the match object
+            return {
+              id: doc.id,
+              findjob_id: findJobData.findjob_id || doc.id,
+              job_id: jobId,
+              name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim() || "ไม่ระบุชื่อ",
+              first_name: findJobData.first_name,
+              last_name: findJobData.last_name,
+              gender: findJobData.gender || "ไม่ระบุ",
+              jobType: findJobData.job_type,
+              job_type: findJobData.job_type,
+              date: findJobData.job_date || findJobData.start_date,
+              time: `${findJobData.start_time || "00:00"} - ${findJobData.end_time || "00:00"}`,
+              start_time: findJobData.start_time,
+              end_time: findJobData.end_time,
+              location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
+              salary: findJobData.expected_salary || findJobData.start_salary || 0,
+              email: findJobData.email || "",
+              aiScore: matchScore,
+              workerId: findJobData.user_id,
+              user_id: findJobData.user_id,
+              province: findJobData.province,
+              district: findJobData.district,
+              subdistrict: findJobData.subdistrict,
+              skills: findJobData.skills || ""
+            };
+          })()
+        );
       });
       
-      // Sort by AI score descending
-      matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
-      
-      // Take only top 5 matches
-      matches = matches.slice(0, 5);
-      
-      // Assign initial priority values based on AI score order
-      matches = matches.map((match, index) => ({
-        ...match,
-        priority: index + 1
-      }));
-      
-      setMatchResults(matches);
-      
-      if (forceRefresh) {
-        toast.success("จับคู่งานใหม่เรียบร้อยแล้ว");
+      try {
+        // Wait for all match calculations to complete
+        matches = await Promise.all(matchPromises);
+        
+        // Sort by AI score descending
+        matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+        
+        // Take only top 5 matches
+        matches = matches.slice(0, 5);
+        
+        // Assign initial priority values based on AI score order
+        matches = matches.map((match, index) => ({
+          ...match,
+          priority: index + 1
+        }));
+        
+        setMatchResults(matches);
+        
+        if (forceRefresh) {
+          toast.success("จับคู่งานใหม่เรียบร้อยแล้ว");
+        }
+      } catch (error) {
+        console.error("Error calculating matches:", error);
+        // If embedding fails, try with simple string matching
+        if (useEmbeddings) {
+          setUseEmbeddings(false);
+          toast.error("ไม่สามารถใช้ AI Embedding ได้ กำลังใช้การเปรียบเทียบแบบพื้นฐานแทน");
+          fetchJobAndMatches(forceRefresh);
+        } else {
+          throw error;
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -323,6 +382,11 @@ const AIMatchingDetailPage: React.FC = () => {
                       <p><span className="font-medium">ค่าตอบแทน:</span> {job.salary} บาท</p>
                     </div>
                   </div>
+                  {job.detail && (
+                    <div className="mt-2">
+                      <p><span className="font-medium">รายละเอียดงาน:</span> {job.detail}</p>
+                    </div>
+                  )}
                 </div>
               )}
               

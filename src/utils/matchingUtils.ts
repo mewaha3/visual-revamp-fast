@@ -1,21 +1,9 @@
 
-// Utility functions for matching calculations
+import { calculateTextSimilarity, calculateSimpleStringSimilarity } from './embeddingUtils';
 
 // คำนวณคะแนนความคล้ายกันระหว่างสตริง
 export const calculateStringSimilarity = (str1: string, str2: string): number => {
-  const s1 = str1.toLowerCase();
-  const s2 = str2.toLowerCase();
-  
-  // ตัดคำและเปรียบเทียบคำที่ตรงกัน
-  const words1 = s1.split(/\s+|,/).filter(Boolean);
-  const words2 = s2.split(/\s+|,/).filter(Boolean);
-  
-  // หาจำนวนคำที่มีร่วมกัน
-  const commonWords = words1.filter(word => words2.includes(word)).length;
-  
-  // คำนวณคะแนนความคล้ายคลึง
-  const similarity = commonWords / Math.max(words1.length, words2.length, 1);
-  return similarity;
+  return calculateSimpleStringSimilarity(str1, str2);
 };
 
 // คำนวณคะแนนความใกล้เคียงของตำแหน่งที่ตั้ง
@@ -97,4 +85,101 @@ export const calculateSalaryMatch = (jobSalary: number, workerMinSalary: number,
   const diff = jobSalary - workerMaxSalary;
   const maxDiff = workerMaxSalary * 0.5; // สมมติว่าต่างกันได้ไม่เกิน 50% ของเงินเดือนขั้นสูง
   return Math.max(0, 1 - (diff / maxDiff));
+};
+
+// ฟังก์ชั่นใหม่: คำนวณความเหมาะสมของงาน
+export const calculateJobDescriptionMatch = async (
+  jobDescription: string,
+  workerSkills: string,
+  useEmbeddings: boolean = true
+): Promise<number> => {
+  if (!jobDescription || !workerSkills) {
+    return 0;
+  }
+  
+  try {
+    if (useEmbeddings) {
+      // ใช้ text embeddings model
+      return await calculateTextSimilarity(jobDescription, workerSkills);
+    } else {
+      // ใช้วิธีเปรียบเทียบแบบง่าย
+      return calculateSimpleStringSimilarity(jobDescription, workerSkills);
+    }
+  } catch (error) {
+    console.error('Error calculating job description match:', error);
+    return calculateSimpleStringSimilarity(jobDescription, workerSkills);
+  }
+};
+
+// ฟังก์ชั่นใหม่: คำนวณคะแนนการจับคู่โดยรวม
+export const calculateOverallMatchScore = async (
+  job: {
+    job_type: string;
+    province: string;
+    district: string;
+    subdistrict: string;
+    start_time: string;
+    end_time: string;
+    job_date: string;
+    salary: number;
+    detail?: string;
+  },
+  worker: {
+    job_type: string;
+    province: string;
+    district: string;
+    subdistrict: string;
+    start_time: string;
+    end_time: string;
+    job_date?: string;
+    expected_salary?: number;
+    skills?: string;
+  },
+  useEmbeddings: boolean = true
+): Promise<number> => {
+  let score = 0;
+  let weights = {
+    jobType: 0.2,
+    location: 0.2,
+    time: 0.1,
+    date: 0.1,
+    jobDescription: 0.3,
+    salary: 0.1
+  };
+  
+  // Job type match
+  if (job.job_type === worker.job_type) {
+    score += weights.jobType;
+  }
+  
+  // Location match
+  score += calculateLocationSimilarity(
+    job.province, job.district, job.subdistrict,
+    worker.province, worker.district, worker.subdistrict
+  ) * weights.location;
+  
+  // Time match
+  if (job.start_time && job.end_time && worker.start_time && worker.end_time) {
+    score += calculateTimeOverlap(
+      job.start_time, job.end_time,
+      worker.start_time, worker.end_time
+    ) * weights.time;
+  }
+  
+  // Date match
+  if (job.job_date && worker.job_date) {
+    score += calculateDateMatch(job.job_date, worker.job_date) * weights.date;
+  }
+  
+  // Job description and skills match
+  if (job.detail && worker.skills) {
+    const descriptionScore = await calculateJobDescriptionMatch(
+      job.detail,
+      worker.skills,
+      useEmbeddings
+    );
+    score += descriptionScore * weights.jobDescription;
+  }
+  
+  return Math.min(Math.max(score, 0), 1); // Ensure score is between 0 and 1
 };
