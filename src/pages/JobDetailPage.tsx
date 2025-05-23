@@ -42,13 +42,16 @@ const JobDetailPage: React.FC = () => {
     handleConfirmPayment,
     handleCloseSuccessModal
   } = usePayment(fromPaymentState);
+
+  // Get the accepted worker from matchDetails
+  const acceptedWorker = matchDetails?.find(match => match.status?.toLowerCase() === 'accepted');
   
-  // Get worker details when match details are available
+  // Get worker details when accepted worker is available
   useEffect(() => {
     const fetchWorkerDetails = async () => {
-      if (matchDetails && matchDetails.length > 0 && matchDetails[0].workerId) {
+      if (acceptedWorker && acceptedWorker.workerId) {
         try {
-          const workerInfo = await getWorkerById(matchDetails[0].workerId);
+          const workerInfo = await getWorkerById(acceptedWorker.workerId);
           setWorkerDetails(workerInfo);
         } catch (error) {
           console.error("Failed to fetch worker details:", error);
@@ -63,6 +66,7 @@ const JobDetailPage: React.FC = () => {
   console.log("Job Detail Page - Job ID:", jobId);
   console.log("Job Details:", jobDetails);
   console.log("Match Details:", matchDetails);
+  console.log("Accepted Worker:", acceptedWorker);
   console.log("Worker Details:", workerDetails);
   
   const handleRetry = () => {
@@ -70,16 +74,16 @@ const JobDetailPage: React.FC = () => {
   };
   
   const handleJobDone = () => {
-    if (jobId && matchDetails && matchDetails.length > 0) {
-      const workerName = matchDetails[0].first_name_find_jobs && matchDetails[0].last_name_find_jobs
-        ? `${matchDetails[0].first_name_find_jobs} ${matchDetails[0].last_name_find_jobs}`
-        : matchDetails[0].name || `${matchDetails[0].first_name || ''} ${matchDetails[0].last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
+    if (jobId && acceptedWorker) {
+      const workerName = acceptedWorker.first_name_find_jobs && acceptedWorker.last_name_find_jobs
+        ? `${acceptedWorker.first_name_find_jobs} ${acceptedWorker.last_name_find_jobs}`
+        : acceptedWorker.name || `${acceptedWorker.first_name || ''} ${acceptedWorker.last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
                          
       toast.success("กำลังไปยังหน้ารีวิวแรงงาน");
       navigate(`/review/${jobId}`, {
         state: {
           jobId,
-          workerId: matchDetails[0].workerId,
+          workerId: acceptedWorker.workerId,
           jobType: jobDetails?.job_type,
           workerName
         }
@@ -124,8 +128,8 @@ const JobDetailPage: React.FC = () => {
             <>
               <JobDetailsCard jobDetails={jobDetails} />
               
-              {/* Worker Information Card - Only showing the required information */}
-              {matchDetails && matchDetails.length > 0 && (
+              {/* Worker Information Card - Only showing if there's an accepted worker */}
+              {acceptedWorker && (
                 <Card className="mb-6">
                   <CardHeader>
                     <CardTitle className="text-2xl">รายละเอียดแรงงาน</CardTitle>
@@ -134,39 +138,39 @@ const JobDetailPage: React.FC = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <Avatar className="h-16 w-16">
                         <AvatarFallback className="bg-fastlabor-100 text-fastlabor-600 text-xl">
-                          {matchDetails[0].first_name_find_jobs?.charAt(0) || 
-                           matchDetails[0].first_name?.charAt(0) || 
-                           matchDetails[0].name?.charAt(0) || 'W'}
+                          {acceptedWorker.first_name_find_jobs?.charAt(0) || 
+                           acceptedWorker.first_name?.charAt(0) || 
+                           acceptedWorker.name?.charAt(0) || 'W'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="text-xl font-medium">
-                          {(matchDetails[0].first_name_find_jobs && matchDetails[0].last_name_find_jobs) ? 
-                            `${matchDetails[0].first_name_find_jobs} ${matchDetails[0].last_name_find_jobs}` : 
-                            (matchDetails[0].first_name && matchDetails[0].last_name) ? 
-                              `${matchDetails[0].first_name} ${matchDetails[0].last_name}` : 
-                              matchDetails[0].name || 'ไม่ระบุชื่อ'}
+                          {(acceptedWorker.first_name_find_jobs && acceptedWorker.last_name_find_jobs) ? 
+                            `${acceptedWorker.first_name_find_jobs} ${acceptedWorker.last_name_find_jobs}` : 
+                            (acceptedWorker.first_name && acceptedWorker.last_name) ? 
+                              `${acceptedWorker.first_name} ${acceptedWorker.last_name}` : 
+                              acceptedWorker.name || 'ไม่ระบุชื่อ'}
                         </h3>
-                        <p className="text-gray-500">{matchDetails[0].email || ''}</p>
+                        <p className="text-gray-500">{acceptedWorker.email || ''}</p>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div>
                         <h4 className="text-sm text-gray-500">เพศ</h4>
-                        <p>{matchDetails[0].gender_find_jobs || matchDetails[0].gender || 'ไม่ระบุ'}</p>
+                        <p>{acceptedWorker.gender_find_jobs || acceptedWorker.gender || 'ไม่ระบุ'}</p>
                       </div>
                       
                       <div>
                         <h4 className="text-sm text-gray-500">ประเภทงาน</h4>
-                        <p>{matchDetails[0].jobType || matchDetails[0].job_type || 'ไม่ระบุ'}</p>
+                        <p>{acceptedWorker.jobType || acceptedWorker.job_type || 'ไม่ระบุ'}</p>
                       </div>
                       
-                      {matchDetails[0].skills && (
+                      {acceptedWorker.skills && (
                         <div className="col-span-2">
                           <h4 className="text-sm text-gray-500 mb-1">ทักษะ</h4>
                           <div className="flex flex-wrap gap-2">
-                            {matchDetails[0].skills.split(',').map((skill: string, index: number) => (
+                            {acceptedWorker.skills.split(',').map((skill: string, index: number) => (
                               <Badge key={index} variant="secondary" className="px-2 py-1">
                                 {skill.trim()}
                               </Badge>

@@ -133,6 +133,7 @@ export const useJobDetails = (jobId?: string) => {
             start_time: data.start_time,
             end_time: data.end_time,
             priority: data.priority,
+            skills: data.skills,
             // Additional nested fields
             first_name_post_jobs: data.first_name_post_jobs,
             last_name_post_jobs: data.last_name_post_jobs,
