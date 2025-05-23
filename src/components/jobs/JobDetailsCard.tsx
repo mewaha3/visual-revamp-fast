@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobDetail } from '@/types/types';
-import { Calendar, Clock, MapPin, Banknote, FileText, Phone } from 'lucide-react';
+import { Calendar, Clock, MapPin, Banknote, FileText } from 'lucide-react';
 
 interface JobDetailsCardProps {
   jobDetails: JobDetail;
@@ -44,15 +44,6 @@ const JobDetailsCard: React.FC<JobDetailsCardProps> = ({ jobDetails }) => {
               </h3>
               <p className="ml-7 text-gray-700">{jobDetails.salary} บาท/วัน</p>
             </div>
-            
-            {jobDetails.phone && (
-              <div>
-                <h3 className="flex items-center gap-2 font-semibold text-lg">
-                  <Phone className="text-fastlabor-600" size={18} /> เบอร์ติดต่อ
-                </h3>
-                <p className="ml-7 text-gray-700">{jobDetails.phone}</p>
-              </div>
-            )}
           </div>
           
           <div>

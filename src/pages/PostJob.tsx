@@ -11,8 +11,7 @@ import JobInformationForm from "@/components/jobs/JobInformationForm";
 import AddressInformationForm from "@/components/jobs/AddressInformationForm";
 import LocationDetailsForm from "@/components/jobs/LocationDetailsForm";
 import useThailandLocations from "@/hooks/useThailandLocations";
-import { Info, Loader2, Phone } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Info, Loader2 } from "lucide-react";
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -31,7 +30,6 @@ const PostJob = () => {
     subdistrict: "",
     postalCode: "",
     salary: "",
-    phone: "", // Added phone field
   });
 
   // Get tomorrow's date in YYYY-MM-DD format for date input min value
@@ -137,12 +135,6 @@ const PostJob = () => {
       validateSalary();
       return;
     }
-
-    // Validate phone number (optional but if provided, must be valid)
-    if (formData.phone && !/^[0-9]{9,10}$/.test(formData.phone)) {
-      toast.error("กรุณาระบุเบอร์โทรศัพท์ที่ถูกต้อง");
-      return;
-    }
     
     setIsSubmitting(true);
     
@@ -164,7 +156,6 @@ const PostJob = () => {
         district: formData.district,
         subdistrict: formData.subdistrict,
         zip_code: formData.postalCode,
-        phone: formData.phone, // Added phone field to job data
       };
 
       // Save to Firestore
@@ -236,32 +227,6 @@ const PostJob = () => {
                 minDate={getTomorrowDate()}
                 minSalary={100}
               />
-              
-              {/* Phone Number Field */}
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  เบอร์โทรศัพท์ติดต่อ
-                </label>
-                <div className="flex items-center">
-                  <Phone className="mr-2 h-4 w-4 text-gray-500" />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange({
-                      ...e,
-                      target: {
-                        ...e.target,
-                        name: "phone"
-                      }
-                    })}
-                    placeholder="เช่น 0812345678"
-                    className="flex-1"
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1">กรุณาระบุเบอร์โทรศัพท์สำหรับการติดต่อ</p>
-              </div>
               
               <AddressInformationForm 
                 address={formData.address}

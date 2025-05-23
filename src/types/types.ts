@@ -1,3 +1,4 @@
+
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -28,7 +29,7 @@ export interface FindJob {
     range_salary?: number;
     job_address?: string;
     zip_code?: string;
-    phone?: string; // Added phone field
+    phone?: string; 
     score?: number; 
     aiScore?: number; 
     user_id?: string; 
@@ -54,7 +55,6 @@ export interface PostJob {
     district: string;
     subdistrict: string;
     zip_code: string;
-    phone?: string; // Added phone field
     status?: string;
     user_id?: string; 
 }
@@ -111,7 +111,6 @@ export interface JobDetail {
   detail?: string;
   name?: string; // Add name to fix type errors in matchMocks
   zip_code?: string; // Add zip_code
-  phone?: string; // Add phone field
 }
 
 // Update Employer interface with required fields
