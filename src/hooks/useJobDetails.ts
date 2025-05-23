@@ -5,7 +5,7 @@ import { getEmployerDetails } from '@/services/employerService';
 import { JobDetail, Employer, MatchResult } from '@/types/types';
 import { toast } from "sonner";
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export const useJobDetails = (jobId?: string) => {
   const [jobDetails, setJobDetails] = useState<JobDetail | null>(null);
@@ -71,7 +71,8 @@ export const useJobDetails = (jobId?: string) => {
               first_name_find_jobs: data.first_name_find_jobs,
               last_name_find_jobs: data.last_name_find_jobs,
               gender_find_jobs: data.gender_find_jobs,
-              phone_post_jobs: data.phone_post_jobs // Add employer phone
+              phone_post_jobs: data.phone_post_jobs, // Add employer phone
+              phone_find_jobs: data.phone_find_jobs // Add worker phone
             };
             
             allMatches.push(matchResult);
@@ -92,11 +93,11 @@ export const useJobDetails = (jobId?: string) => {
             job_type: matchData.job_type || "",
             detail: matchData.job_detail || "",
             job_detail: matchData.job_detail || "",
-            job_date: matchData.job_date || "",
+            job_date: matchData.date || "",
             start_time: matchData.start_time || "",
             end_time: matchData.end_time || "",
             job_address: matchData.job_address || "",
-            salary: matchData.job_salary || 0,
+            salary: typeof matchData.salary === 'number' ? matchData.salary : 0,
             province: matchData.province || "",
             district: matchData.district || "",
             subdistrict: matchData.subdistrict || "",
