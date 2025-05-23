@@ -32,6 +32,7 @@ export const getJobDetails = async (jobId: string): Promise<JobDetail> => {
         subdistrict: firestoreJob.subdistrict || '',
         salary: firestoreJob.salary || 0,
         job_address: firestoreJob.job_address || '',
+        phone: firestoreJob.phone || '', // Add phone from Firestore data
       };
       
       return jobDetail;

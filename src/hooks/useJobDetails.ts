@@ -63,13 +63,15 @@ export const useJobDetails = (jobId?: string) => {
               end_time: data.end_time,
               priority: data.priority,
               skills: data.skills,
+              phone: data.phone, // Add phone field to matchResult
               // Additional nested fields
               first_name_post_jobs: data.first_name_post_jobs,
               last_name_post_jobs: data.last_name_post_jobs,
               gender_post_jobs: data.gender_post_jobs,
               first_name_find_jobs: data.first_name_find_jobs,
               last_name_find_jobs: data.last_name_find_jobs,
-              gender_find_jobs: data.gender_find_jobs
+              gender_find_jobs: data.gender_find_jobs,
+              phone_post_jobs: data.phone_post_jobs // Add employer phone
             };
             
             allMatches.push(matchResult);
@@ -99,7 +101,8 @@ export const useJobDetails = (jobId?: string) => {
             district: matchData.district || "",
             subdistrict: matchData.subdistrict || "",
             status: matchData.status,
-            zip_code: matchData.zip_code || ""
+            zip_code: matchData.zip_code || "",
+            phone: matchData.phone_post_jobs || "" // Add phone from match data
           };
           
           setJobDetails(jobData);
@@ -112,7 +115,7 @@ export const useJobDetails = (jobId?: string) => {
               last_name: matchData.last_name_post_jobs,
               name: `${matchData.first_name_post_jobs} ${matchData.last_name_post_jobs}`.trim(),
               email: matchData.email_post_jobs || "",
-              phone: matchData.phone_post_jobs || ""
+              phone: matchData.phone_post_jobs || "" // Add phone to employer data
             };
             setEmployer(employerData);
           } else if (matchData.first_name && matchData.last_name) {
@@ -122,7 +125,8 @@ export const useJobDetails = (jobId?: string) => {
               first_name: matchData.first_name || "",
               last_name: matchData.last_name || "",
               name: `${matchData.first_name || ""} ${matchData.last_name || ""}`.trim() || "ไม่ระบุชื่อ",
-              email: matchData.email || ""
+              email: matchData.email || "",
+              phone: matchData.phone || "" // Add phone to employer data
             };
             setEmployer(employerData);
           } else {
@@ -132,7 +136,8 @@ export const useJobDetails = (jobId?: string) => {
               first_name: "",
               last_name: "",
               name: "ไม่ระบุชื่อ",
-              email: ""
+              email: "",
+              phone: ""
             };
             setEmployer(employerData);
           }

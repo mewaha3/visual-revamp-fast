@@ -1,4 +1,3 @@
-
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -55,6 +54,7 @@ export interface PostJob {
     district: string;
     subdistrict: string;
     zip_code: string;
+    phone?: string; // Add phone field
     status?: string;
     user_id?: string; 
 }
@@ -92,7 +92,7 @@ export const JOB_TYPES = [
   { value: "other", label: "อื่นๆ", icon: "file-text" },
 ];
 
-// Update JobDetail interface to include job_id and name
+// Update JobDetail interface to include job_id, phone, and name
 export interface JobDetail {
   id: string;
   job_id?: string;
@@ -111,6 +111,7 @@ export interface JobDetail {
   detail?: string;
   name?: string; // Add name to fix type errors in matchMocks
   zip_code?: string; // Add zip_code
+  phone?: string; // Add phone field
 }
 
 // Update Employer interface with required fields
