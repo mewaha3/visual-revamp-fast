@@ -99,7 +99,7 @@ export const calculateJobDescriptionMatch = async (
   
   try {
     if (useEmbeddings) {
-      // ใช้ text embeddings model - WangchanBERTa
+      // ใช้ text embeddings model
       return await calculateTextSimilarity(jobDescription, workerSkills);
     } else {
       // ใช้วิธีเปรียบเทียบแบบง่าย
@@ -138,13 +138,12 @@ export const calculateOverallMatchScore = async (
   useEmbeddings: boolean = true
 ): Promise<number> => {
   let score = 0;
-  // ปรับน้ำหนักให้ความสำคัญกับ job description มากขึ้นเนื่องจาก WangchanBERTa มีความแม่นยำสำหรับภาษาไทย
   let weights = {
-    jobType: 0.15,
-    location: 0.15,
+    jobType: 0.3,
+    location: 0.2,
     time: 0.1,
     date: 0.1,
-    jobDescription: 0.4,  // เพิ่มน้ำหนักของ WangchanBERTa embeddings
+    jobDescription: 0.2,
     salary: 0.1
   };
   
@@ -172,7 +171,7 @@ export const calculateOverallMatchScore = async (
     score += calculateDateMatch(job.job_date, worker.job_date) * weights.date;
   }
   
-  // Job description and skills match with WangchanBERTa
+  // Job description and skills match
   if (job.detail && worker.skills) {
     const descriptionScore = await calculateJobDescriptionMatch(
       job.detail,
