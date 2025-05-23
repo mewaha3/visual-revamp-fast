@@ -71,7 +71,8 @@ export const useJobDetails = (jobId?: string) => {
               first_name_find_jobs: data.first_name_find_jobs,
               last_name_find_jobs: data.last_name_find_jobs,
               gender_find_jobs: data.gender_find_jobs,
-              phone_post_jobs: data.phone_post_jobs // Add employer phone
+              phone_post_jobs: data.phone_post_jobs, // Add employer phone
+              phone_find_jobs: data.phone_find_jobs // Add worker phone
             };
             
             allMatches.push(matchResult);

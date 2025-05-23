@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -10,7 +9,7 @@ import { useJobDetails } from '@/hooks/useJobDetails';
 import { usePayment } from '@/hooks/usePayment';
 import PaymentModal from '@/components/payment/PaymentModal';
 import PaymentSuccessModal from '@/components/payment/PaymentSuccessModal';
-import { RefreshCw, CreditCard, CheckCircle } from 'lucide-react';
+import { RefreshCw, CreditCard, CheckCircle, Phone } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -107,7 +106,7 @@ const JobDetailPage: React.FC = () => {
               <p className="text-red-500">{error}</p>
               <div className="mt-4 flex flex-col gap-3">
                 <Button 
-                  onClick={handleRetry} 
+                  onClick={() => window.location.reload()} 
                   variant="outline" 
                   className="mx-auto"
                 >
@@ -166,6 +165,15 @@ const JobDetailPage: React.FC = () => {
                         <p>{acceptedWorker.jobType || acceptedWorker.job_type || 'ไม่ระบุ'}</p>
                       </div>
                       
+                      {acceptedWorker.phone && (
+                        <div>
+                          <h4 className="text-sm text-gray-500 flex items-center gap-1">
+                            <Phone size={14} className="text-fastlabor-600" /> เบอร์ติดต่อ
+                          </h4>
+                          <p>{acceptedWorker.phone}</p>
+                        </div>
+                      )}
+                      
                       {acceptedWorker.skills && (
                         <div className="col-span-2">
                           <h4 className="text-sm text-gray-500 mb-1">ทักษะ</h4>
@@ -194,7 +202,23 @@ const JobDetailPage: React.FC = () => {
                   </Button>
                 ) : (
                   <Button 
-                    onClick={handleJobDone}
+                    onClick={() => {
+                      if (jobId && acceptedWorker) {
+                        const workerName = acceptedWorker.first_name_find_jobs && acceptedWorker.last_name_find_jobs
+                          ? `${acceptedWorker.first_name_find_jobs} ${acceptedWorker.last_name_find_jobs}`
+                          : acceptedWorker.name || `${acceptedWorker.first_name || ''} ${acceptedWorker.last_name || ''}`.trim() || 'ไม่ระบุชื่อ';
+                                     
+                        toast.success("กำลังไปยังหน้ารีวิวแรงงาน");
+                        navigate(`/review/${jobId}`, {
+                          state: {
+                            jobId,
+                            workerId: acceptedWorker.workerId,
+                            jobType: jobDetails?.job_type,
+                            workerName
+                          }
+                        });
+                      }
+                    }}
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
                   >
                     <CheckCircle className="mr-2" size={18} />

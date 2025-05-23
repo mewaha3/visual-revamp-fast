@@ -1,7 +1,8 @@
 
 import { findJobs } from "@/data/findJobs";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getFindJobById } from "./findJobService";
 
 // Store matched worker data for reference
 const matchedWorkers: Record<string, any> = {};
@@ -33,7 +34,8 @@ export const getWorkerById = async (workerId: string): Promise<any> => {
         gender: workerData.gender_find_jobs || workerData.gender || '',
         skills: workerData.skills || '',
         jobType: workerData.job_type || '',
-        email: workerData.email || ''
+        email: workerData.email || '',
+        phone: workerData.phone_find_jobs || workerData.phone || '' // Add phone number
       };
 
       // Cache the worker data
@@ -53,9 +55,27 @@ export const getWorkerById = async (workerId: string): Promise<any> => {
         gender: userData.gender || '',
         skills: userData.skills || '',
         jobType: userData.job_type || '',
-        email: userData.email || ''
+        email: userData.email || '',
+        phone: userData.phone || '' // Add phone number
       };
 
+      // Cache the worker data
+      matchedWorkers[workerId] = formattedWorker;
+      return formattedWorker;
+    }
+    
+    // Try to get from find_jobs collection
+    const findJobData = await getFindJobById(workerId);
+    if (findJobData) {
+      const formattedWorker = {
+        name: `${findJobData.first_name || ''} ${findJobData.last_name || ''}`.trim(),
+        gender: findJobData.gender || '',
+        skills: findJobData.skills || '',
+        jobType: findJobData.job_type || '',
+        email: findJobData.email || '',
+        phone: findJobData.phone || '' // Add phone number
+      };
+      
       // Cache the worker data
       matchedWorkers[workerId] = formattedWorker;
       return formattedWorker;
@@ -70,7 +90,8 @@ export const getWorkerById = async (workerId: string): Promise<any> => {
         gender: worker.gender || '',
         skills: worker.skills || '',
         jobType: worker.job_type || '',
-        email: worker.email || ''
+        email: worker.email || '',
+        phone: worker.phone || '' // Add phone number
       };
       
       // Cache the worker data for future reference
