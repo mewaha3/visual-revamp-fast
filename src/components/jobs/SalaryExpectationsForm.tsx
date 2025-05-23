@@ -6,7 +6,7 @@ interface SalaryExpectationsFormProps {
   maxSalary: string;
   onMinSalaryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onMaxSalaryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  minimumValue?: number; // Added minimum value prop
+  minimumValue?: number;
 }
 
 const SalaryExpectationsForm = ({
@@ -14,25 +14,28 @@ const SalaryExpectationsForm = ({
   maxSalary,
   onMinSalaryChange,
   onMaxSalaryChange,
-  minimumValue = 0 // Default value if not provided
+  minimumValue = 0
 }: SalaryExpectationsFormProps) => {
   // Custom handler for min salary to enforce minimum value
   const handleMinSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    const numValue = parseInt(value);
     
-    // If value is less than minimum, set to minimum value
-    if (numValue < minimumValue) {
-      const newEvent = {
-        ...e,
-        target: {
-          ...e.target,
-          value: minimumValue.toString()
-        }
-      };
-      onMinSalaryChange(newEvent);
-    } else {
-      onMinSalaryChange(e);
+    // Allow the user to type any value, including empty string
+    onMinSalaryChange(e);
+    
+    // If value is empty or less than minimum on blur, set to minimum value
+    if (e.type === 'blur') {
+      const numValue = parseInt(value);
+      if (isNaN(numValue) || numValue < minimumValue) {
+        const newEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: minimumValue.toString()
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        onMinSalaryChange(newEvent);
+      }
     }
   };
 
@@ -50,6 +53,7 @@ const SalaryExpectationsForm = ({
             type="number"
             value={minSalary}
             onChange={handleMinSalaryChange}
+            onBlur={handleMinSalaryChange}
             placeholder="เช่น 500"
             min={minimumValue}
           />
@@ -68,7 +72,7 @@ const SalaryExpectationsForm = ({
             value={maxSalary}
             onChange={onMaxSalaryChange}
             placeholder="เช่น 1000"
-            min={minSalary || minimumValue}
+            min={minSalary && parseInt(minSalary) >= minimumValue ? minSalary : minimumValue.toString()}
           />
         </div>
       </div>

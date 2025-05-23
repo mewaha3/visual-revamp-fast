@@ -43,6 +43,22 @@ export const useFindJobForm = () => {
     return tomorrow.toISOString().split('T')[0];
   };
 
+  // Handle min salary change with validation
+  const handleMinSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setMinSalary(value);
+  };
+
+  // Final validation before submit
+  const validateSalary = () => {
+    const minSalaryNum = parseInt(minSalary);
+    if (isNaN(minSalaryNum) || minSalaryNum < 100) {
+      setMinSalary('100');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -64,9 +80,8 @@ export const useFindJobForm = () => {
     }
 
     // Validate minimum salary
-    if (parseInt(minSalary) < 100) {
+    if (!validateSalary()) {
       toast.error("ค่าจ้างขั้นต่ำต้องไม่น้อยกว่า 100 บาท");
-      setMinSalary('100');
       setIsSubmitting(false);
       return;
     }
@@ -157,6 +172,8 @@ export const useFindJobForm = () => {
     handleTambonChange,
     isSubmitting,
     getTomorrowDate,
+    handleMinSalaryChange,
+    validateSalary,
   };
 };
 
