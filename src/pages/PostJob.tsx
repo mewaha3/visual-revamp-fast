@@ -63,14 +63,6 @@ const PostJob = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     let value = e.target.value;
     
-    // For salary field, enforce minimum value of 100
-    if (e.target.name === "salary") {
-      const numValue = parseInt(value);
-      if (numValue < 100) {
-        value = "100";
-      }
-    }
-    
     setFormData({
       ...formData,
       [e.target.name]: value,
@@ -113,6 +105,19 @@ const PostJob = () => {
     }
   };
 
+  // Validate salary before submission
+  const validateSalary = () => {
+    const salaryNum = parseInt(formData.salary);
+    if (isNaN(salaryNum) || salaryNum < 100) {
+      setFormData({
+        ...formData,
+        salary: "100"
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -127,6 +132,7 @@ const PostJob = () => {
     // Validate minimum salary
     if (parseInt(formData.salary) < 100) {
       toast.error("ค่าจ้างต้องไม่น้อยกว่า 100 บาท");
+      validateSalary();
       return;
     }
     
@@ -141,7 +147,7 @@ const PostJob = () => {
         start_time: formData.startTime,
         end_time: formData.endTime,
         job_address: formData.address,
-        salary: parseInt(formData.salary) || 0,
+        salary: parseInt(formData.salary) || 100,
         email: userProfile?.email || userEmail || "",
         first_name: userProfile?.first_name || "",
         last_name: userProfile?.last_name || "",
@@ -211,7 +217,13 @@ const PostJob = () => {
                 onEndDateChange={handleChange}
                 onStartTimeChange={(value) => handleSelectChange("startTime", value)}
                 onEndTimeChange={(value) => handleSelectChange("endTime", value)}
-                onSalaryChange={handleChange}
+                onSalaryChange={(e) => handleChange({
+                  ...e,
+                  target: {
+                    ...e.target,
+                    name: "salary"
+                  }
+                })}
                 minDate={getTomorrowDate()}
                 minSalary={100}
               />

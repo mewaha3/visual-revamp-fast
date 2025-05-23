@@ -1,3 +1,4 @@
+
 // Import statements if needed...
 
 // Update the FindJob interface to match the expected type
@@ -40,6 +41,7 @@ export interface PostJob {
     job_id?: string; 
     job_type: string;
     job_detail: string;
+    detail?: string; // Add detail field to fix type errors
     job_date: string;
     start_time: string;
     end_time: string;

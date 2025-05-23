@@ -1,3 +1,4 @@
+
 import { useFormContext } from "react-hook-form";
 import DocumentUpload from "@/components/upload/DocumentUpload";
 import { useState, useEffect } from "react";
@@ -46,6 +47,9 @@ const DocumentsSection = ({
         />
       ) : (
         <>
+          <p className="text-sm text-amber-600 mb-2 font-medium">
+            กรุณาอัพโหลดอย่างน้อยหนึ่งเอกสารดังต่อไปนี้
+          </p>
           <DocumentUpload 
             title="หนังสือเดินทาง (Passport)" 
             onChange={(file) => onDocumentUpload("passport", file)} 

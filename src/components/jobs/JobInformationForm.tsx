@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Info } from "lucide-react";
+import { useState } from "react";
 
 interface JobInformationFormProps {
   jobType: string;
@@ -27,8 +28,8 @@ interface JobInformationFormProps {
   onStartTimeChange: (value: string) => void;
   onEndTimeChange: (value: string) => void;
   onSalaryChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  minDate?: string; // Added minDate prop
-  minSalary?: number; // Added minSalary prop
+  minDate?: string;
+  minSalary?: number;
 }
 
 const JobInformationForm = ({
@@ -46,9 +47,32 @@ const JobInformationForm = ({
   onStartTimeChange,
   onEndTimeChange,
   onSalaryChange,
-  minDate, // Get tomorrow's date from parent
-  minSalary = 0 // Default to 0 if not provided
+  minDate,
+  minSalary = 0
 }: JobInformationFormProps) => {
+  // Custom handler for salary to enforce minimum value
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    // Allow the user to type any value, including empty string
+    onSalaryChange(e);
+    
+    // If value is empty or less than minimum on blur, set to minimum value
+    if (e.type === 'blur') {
+      const numValue = parseInt(value);
+      if (isNaN(numValue) || numValue < minSalary) {
+        const newEvent = {
+          ...e,
+          target: {
+            ...e.target,
+            value: minSalary.toString()
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        onSalaryChange(newEvent);
+      }
+    }
+  };
+  
   return (
     <div className="space-y-4">
       <h2 className="font-medium text-gray-700">รายละเอียดงาน</h2>
@@ -166,7 +190,8 @@ const JobInformationForm = ({
           name="salary"
           type="number"
           value={salary}
-          onChange={onSalaryChange}
+          onChange={handleSalaryChange}
+          onBlur={handleSalaryChange}
           placeholder="เช่น 500"
           min={minSalary} // Set minimum salary value
           required

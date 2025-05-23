@@ -64,7 +64,8 @@ export default function UploadDocuments() {
     if (formData.nationality === "Thai") {
       return !!documents.id_card;
     } else {
-      return !!documents.passport && !!documents.visa && !!documents.work_permit;
+      // For foreigners, require at least one document instead of all three
+      return !!documents.passport || !!documents.visa || !!documents.work_permit;
     }
   }
 
@@ -74,7 +75,7 @@ export default function UploadDocuments() {
         title: "กรุณาอัพโหลดเอกสารที่จำเป็น",
         description: formData?.nationality === "Thai" 
           ? "กรุณาอัพโหลดสำเนาบัตรประชาชน" 
-          : "กรุณาอัพโหลดหนังสือเดินทาง วีซ่า และใบอนุญาตทำงาน",
+          : "กรุณาอัพโหลดอย่างน้อยหนึ่งเอกสารเพื่อยืนยันตัวตน",
         variant: "destructive"
       });
       return;
@@ -170,7 +171,7 @@ export default function UploadDocuments() {
               <p className="text-sm text-blue-700">
                 {formData.nationality === "Thai" 
                   ? "กรุณาอัพโหลดสำเนาบัตรประชาชนเพื่อยืนยันตัวตน" 
-                  : "กรุณาอัพโหลดเอกสารสำหรับชาวต่างชาติเพื่อยืนยันตัวตน"}
+                  : "กรุณาอัพโหลดอย่างน้อยหนึ่งเอกสารสำหรับชาวต่างชาติเพื่อยืนยันตัวตน"}
               </p>
             </div>
             
