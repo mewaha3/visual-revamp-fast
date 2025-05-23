@@ -8,9 +8,8 @@ import JobDetailsCard from '@/components/jobs/JobDetailsCard';
 import EmployerCard from '@/components/jobs/EmployerCard';
 import { Button } from "@/components/ui/button";
 import { useJobDetails } from '@/hooks/useJobDetails';
-import { CheckCircle, RefreshCcw, Phone } from 'lucide-react';
+import { CheckCircle, RefreshCcw } from 'lucide-react';
 import { toast } from "sonner";
-import { Card, CardContent } from "@/components/ui/card";
 
 const WorkerJobDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -79,27 +78,13 @@ const WorkerJobDetailPage: React.FC = () => {
               <JobDetailsCard jobDetails={jobDetails} />
               
               {employer && (
-                <>
-                  <EmployerCard 
-                    employer={{
-                      name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ',
-                      rating: employer.rating,
-                      reviews: employer.reviews
-                    }} 
-                  />
-                  
-                  {employer.phone && (
-                    <Card className="mb-6 mt-4">
-                      <CardContent className="pt-6">
-                        <div className="flex items-center gap-2">
-                          <Phone className="text-fastlabor-600" size={18} />
-                          <h3 className="text-lg font-medium">เบอร์ติดต่อนายจ้าง</h3>
-                        </div>
-                        <p className="ml-7 mt-1">{employer.phone}</p>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
+                <EmployerCard 
+                  employer={{
+                    name: employer.name || `${employer.first_name || ''} ${employer.last_name || ''}`.trim() || 'ไม่ระบุชื่อ',
+                    rating: employer.rating,
+                    reviews: employer.reviews
+                  }} 
+                />
               )}
               
               <div className="mt-6 space-y-4">

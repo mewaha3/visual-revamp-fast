@@ -54,7 +54,7 @@ const JobDetailsCard: React.FC<JobDetailsCardProps> = ({ jobDetails }) => {
             </div>
 
             {jobDetails.phone && (
-              <div className="col-span-1 md:col-span-2">
+              <div>
                 <h3 className="flex items-center gap-2 font-semibold text-lg">
                   <Phone className="text-fastlabor-600" size={18} /> เบอร์ติดต่อ
                 </h3>
