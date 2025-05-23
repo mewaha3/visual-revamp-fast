@@ -164,7 +164,7 @@ export interface MatchResultFirestore {
   subdistrict: string;
   zip_code: string;
   priority: number;
-  status: "on_queue" | "accepted" | "declined" | "paid" | "completed" | "no_candidates";
+  status: "on_queue" | "accepted" | "declined" | "paid" | "completed";
   findjob_id: string;
   job_id: string;
   job_salary: number;

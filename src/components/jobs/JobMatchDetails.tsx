@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MatchResult } from '@/types/types';
-import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, ChevronDown, Briefcase, FileText, AlertCircle } from 'lucide-react';
+import { MapPin, Calendar, Clock, User, DollarSign, ArrowRight, ChevronUp, ChevronDown, Briefcase, FileText } from 'lucide-react';
 
 interface JobMatchDetailsProps {
   matches: MatchResult[];
@@ -53,8 +53,6 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'on_queue':
         return 'bg-amber-100 text-amber-800 border-amber-200';
-      case 'no_candidates':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -73,8 +71,6 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
         return 'เสร็จสิ้น';
       case 'on_queue':
         return 'รอการตอบรับ';
-      case 'no_candidates':
-        return 'ไม่มีผู้สมัคร';
       default:
         return status || 'ไม่ระบุ';
     }
@@ -100,11 +96,6 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
     return hideButtonForStatus.includes(status.toLowerCase());
   };
 
-  // Check if this is a "no candidates" match
-  const isNoCandidatesMatch = (match: MatchResult) => {
-    return match.status?.toLowerCase() === 'no_candidates' || match.findjob_id === 'auto-generated';
-  };
-
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -113,174 +104,126 @@ const JobMatchDetails: React.FC<JobMatchDetailsProps> = ({
       <CardContent className="space-y-4">
         {matches.map((match, index) => (
           <div key={match.id || index} className="border rounded-md p-4">
-            {isNoCandidatesMatch(match) ? (
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle size={18} className="text-amber-500" />
-                    <h3 className="font-medium">ยังไม่มีผู้สมัครงาน</h3>
-                  </div>
-                  <Badge className={getStatusColor(match.status || 'no_candidates')}>
-                    {getStatusText(match.status || 'no_candidates')}
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium flex items-center gap-2">
+                  <User size={18} className="text-fastlabor-600" />
+                  {match.name || `${match.first_name || ""} ${match.last_name || ""}`}
+                </h3>
+                {match.gender && (
+                  <Badge variant="outline" className="ml-2">
+                    {getFormattedGender(match.gender)}
                   </Badge>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  ขณะนี้ยังไม่มีผู้สมัครที่เหมาะสมกับงานนี้ เมื่อมีผู้สมัครใหม่ระบบจะทำการแจ้งเตือนให้ทราบ
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
-                  {match.jobType && (
-                    <div className="flex items-center gap-2">
-                      <Briefcase size={16} className="text-gray-500 flex-shrink-0" />
-                      <span>{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>{match.province || "ไม่ระบุจังหวัด"}/{match.district || "ไม่ระบุเขต"}/{match.subdistrict || "ไม่ระบุแขวง"}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>
-                      {match.time || 
-                        (match.start_time && match.end_time ? 
-                          `${match.start_time} - ${match.end_time}` : 
-                          "ไม่ระบุเวลา")}
-                    </span>
-                  </div>
-                </div>
+                )}
+                {allowRanking && typeof match.priority === 'number' && (
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                    ลำดับ {match.priority}
+                  </Badge>
+                )}
               </div>
-            ) : (
-              <div>
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium flex items-center gap-2">
-                      <User size={18} className="text-fastlabor-600" />
-                      {match.name || `${match.first_name || ""} ${match.last_name || ""}`}
-                    </h3>
-                    {match.gender && (
-                      <Badge variant="outline" className="ml-2">
-                        {getFormattedGender(match.gender)}
-                      </Badge>
-                    )}
-                    {allowRanking && typeof match.priority === 'number' && (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                        ลำดับ {match.priority}
-                      </Badge>
-                    )}
-                  </div>
-                  {match.status && (
-                    <Badge className={getStatusColor(match.status || '')}>
-                      {getStatusText(match.status || '')}
-                    </Badge>
-                  )}
+              {match.status && (
+                <Badge className={getStatusColor(match.status || '')}>
+                  {getStatusText(match.status || '')}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
+              {match.jobType && (
+                <div className="flex items-center gap-2">
+                  <Briefcase size={16} className="text-gray-500 flex-shrink-0" />
+                  <span>{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-3">
-                  {match.jobType && (
-                    <div className="flex items-center gap-2">
-                      <Briefcase size={16} className="text-gray-500 flex-shrink-0" />
-                      <span>{match.jobType || match.job_type || "ไม่ระบุประเภทงาน"}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>{match.province || "ไม่ระบุจังหวัด"}/{match.district || "ไม่ระบุเขต"}/{match.subdistrict || "ไม่ระบุแขวง"}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>
-                      {match.time || 
-                        (match.start_time && match.end_time ? 
-                          `${match.start_time} - ${match.end_time}` : 
-                          "ไม่ระบุเวลา")}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <DollarSign size={16} className="text-gray-500 flex-shrink-0" />
-                    <span>
-                      {typeof match.salary === 'number' || match.salary ? 
-                        `${match.salary} บาท` : 
-                        "ไม่ระบุค่าจ้าง"}
-                    </span>
-                  </div>
-                  
-                  {showSkills && match.skills && (
-                    <div className="flex items-center gap-2 col-span-2">
-                      <FileText size={16} className="text-gray-500 flex-shrink-0" />
-                      <span>ทักษะ: {match.skills || "ไม่ระบุ"}</span>
-                    </div>
-                  )}
+              )}
+              
+              <div className="flex items-center gap-2">
+                <MapPin size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.province || "ไม่ระบุจังหวัด"}/{match.district || "ไม่ระบุเขต"}/{match.subdistrict || "ไม่ระบุแขวง"}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Calendar size={16} className="text-gray-500 flex-shrink-0" />
+                <span>{match.date || match.job_date || "ไม่ระบุวันที่"}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-gray-500 flex-shrink-0" />
+                <span>
+                  {match.time || 
+                    (match.start_time && match.end_time ? 
+                      `${match.start_time} - ${match.end_time}` : 
+                      "ไม่ระบุเวลา")}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <DollarSign size={16} className="text-gray-500 flex-shrink-0" />
+                <span>
+                  {typeof match.salary === 'number' || match.salary ? 
+                    `${match.salary} บาท` : 
+                    "ไม่ระบุค่าจ้าง"}
+                </span>
+              </div>
+              
+              {showSkills && match.skills && (
+                <div className="flex items-center gap-2 col-span-2">
+                  <FileText size={16} className="text-gray-500 flex-shrink-0" />
+                  <span>ทักษะ: {match.skills || "ไม่ระบุ"}</span>
                 </div>
-                
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {allowRanking && onRankChange && (
-                    <div className="flex items-center gap-2 mr-4">
-                      <span className="text-sm text-gray-600">ลำดับ:</span>
-                      <div className="flex items-center">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            if (match.id && match.priority !== undefined && match.priority > 1) {
-                              onRankChange(match.id, match.priority - 1);
-                            }
-                          }}
-                          disabled={!match.id || match.priority === undefined || match.priority <= 1}
-                        >
-                          <ChevronUp size={16} />
-                        </Button>
-                        <span className="mx-2 font-medium">{match.priority || '-'}</span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => {
-                            if (match.id && match.priority !== undefined && match.priority < rankLimit) {
-                              onRankChange(match.id, match.priority + 1);
-                            }
-                          }}
-                          disabled={!match.id || match.priority === undefined || match.priority >= rankLimit}
-                        >
-                          <ChevronDown size={16} />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {showViewButton && onViewDetails && match.job_id && 
-                   !shouldHideButton(match.status) && 
-                   match.status?.toLowerCase() !== 'declined' && 
-                   match.status?.toLowerCase() !== 'on_queue' && 
-                   match.status?.toLowerCase() !== 'no_candidates' && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => onViewDetails(match.job_id || "")}
-                      className="text-fastlabor-600 border-fastlabor-600"
+              )}
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mt-3">
+              {allowRanking && onRankChange && (
+                <div className="flex items-center gap-2 mr-4">
+                  <span className="text-sm text-gray-600">ลำดับ:</span>
+                  <div className="flex items-center">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        if (match.id && match.priority !== undefined && match.priority > 1) {
+                          onRankChange(match.id, match.priority - 1);
+                        }
+                      }}
+                      disabled={!match.id || match.priority === undefined || match.priority <= 1}
                     >
-                      ดูรายละเอียด
-                      <ArrowRight size={16} className="ml-2" />
+                      <ChevronUp size={16} />
                     </Button>
-                  )}
+                    <span className="mx-2 font-medium">{match.priority || '-'}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        if (match.id && match.priority !== undefined && match.priority < rankLimit) {
+                          onRankChange(match.id, match.priority + 1);
+                        }
+                      }}
+                      disabled={!match.id || match.priority === undefined || match.priority >= rankLimit}
+                    >
+                      <ChevronDown size={16} />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+              
+              {showViewButton && onViewDetails && match.job_id && 
+               !shouldHideButton(match.status) && 
+               match.status?.toLowerCase() !== 'declined' && 
+               match.status?.toLowerCase() !== 'on_queue' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => onViewDetails(match.job_id || "")}
+                  className="text-fastlabor-600 border-fastlabor-600"
+                >
+                  ดูรายละเอียด
+                  <ArrowRight size={16} className="ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
         ))}
       </CardContent>
