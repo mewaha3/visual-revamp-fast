@@ -185,19 +185,6 @@ const PostJob = () => {
     }
   };
 
-  // Validate salary before submission
-  const validateSalary = () => {
-    const salaryNum = parseInt(formData.salary);
-    if (isNaN(salaryNum) || salaryNum < 100) {
-      setFormData({
-        ...formData,
-        salary: "100"
-      });
-      return false;
-    }
-    return true;
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
