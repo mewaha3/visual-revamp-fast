@@ -7,13 +7,17 @@ import Footer from '@/components/Footer';
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, BarChart, Check, RefreshCw } from 'lucide-react';
+import { ArrowLeft, BarChart, Check, RefreshCw, AlertTriangle } from 'lucide-react';
 import { getPostJobById } from '@/services/firestoreService';
 import { PostJob, MatchResult } from '@/types/types';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { db } from '@/lib/firebase';
 import { collection, query, getDocs, where } from 'firebase/firestore';
-import { saveMatchResults, getMatchResultsByJobId } from '@/services/matchingService';
+import { 
+  saveMatchResults, 
+  getMatchResultsByJobId, 
+  createSimpleMatch 
+} from '@/services/matchingService';
 import { calculateTextSimilarity, calculateSimpleStringSimilarity } from '@/utils/embeddingUtils';
 
 const AIMatchingDetailPage: React.FC = () => {
@@ -28,6 +32,7 @@ const AIMatchingDetailPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [hasExistingMatches, setHasExistingMatches] = useState(false);
   const [useEmbeddings, setUseEmbeddings] = useState(true);
+  const [noWorkersFound, setNoWorkersFound] = useState(false);
 
   const fetchJobAndMatches = async (forceRefresh = false) => {
     if (!jobId) return;
@@ -59,6 +64,7 @@ const AIMatchingDetailPage: React.FC = () => {
       
       let matches: MatchResult[] = [];
       const matchPromises: Promise<MatchResult>[] = [];
+      let validWorkers = false;
       
       // Create matches from find_jobs with scoring
       findJobsSnapshot.forEach(doc => {
@@ -69,6 +75,8 @@ const AIMatchingDetailPage: React.FC = () => {
           console.log(`Skipping job ${doc.id} as it belongs to the current user`);
           return;
         }
+        
+        validWorkers = true;
         
         matchPromises.push(
           (async () => {
@@ -176,23 +184,33 @@ const AIMatchingDetailPage: React.FC = () => {
         );
       });
       
+      // Set flag if no workers found
+      if (!validWorkers) {
+        setNoWorkersFound(true);
+      }
+      
       try {
         // Wait for all match calculations to complete
-        matches = await Promise.all(matchPromises);
-        
-        // Sort by AI score descending
-        matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
-        
-        // Take only top 5 matches
-        matches = matches.slice(0, 5);
-        
-        // Assign initial priority values based on AI score order
-        matches = matches.map((match, index) => ({
-          ...match,
-          priority: index + 1
-        }));
-        
-        setMatchResults(matches);
+        if (matchPromises.length > 0) {
+          matches = await Promise.all(matchPromises);
+          
+          // Sort by AI score descending
+          matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+          
+          // Take only top 5 matches
+          matches = matches.slice(0, 5);
+          
+          // Assign initial priority values based on AI score order
+          matches = matches.map((match, index) => ({
+            ...match,
+            priority: index + 1
+          }));
+          
+          setMatchResults(matches);
+        } else {
+          // Handle case when no potential matches found
+          setMatchResults([]);
+        }
         
         if (forceRefresh) {
           toast.success("จับคู่งานใหม่เรียบร้อยแล้ว");
@@ -250,6 +268,26 @@ const AIMatchingDetailPage: React.FC = () => {
       });
       
       setMatchResults([...updatedMatches]);
+    }
+  };
+  
+  // เพิ่มฟังก์ชันสำหรับการจัดการกรณีไม่พบผู้สมัคร
+  const handleNoWorkerConfirm = async () => {
+    if (!jobId || !job) return;
+    
+    setSubmitting(true);
+    
+    try {
+      // สร้าง match แบบง่ายเมื่อไม่มีผู้สมัคร
+      await createSimpleMatch(jobId, job);
+      
+      toast.success("บันทึกสถานะงานเรียบร้อยแล้ว");
+      navigate(`/status/${jobId}`);
+    } catch (error) {
+      console.error("Error handling no worker scenario:", error);
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+    } finally {
+      setSubmitting(false);
     }
   };
   
@@ -390,39 +428,61 @@ const AIMatchingDetailPage: React.FC = () => {
                 </div>
               )}
               
-              <div className="mb-4">
-                <h3 className="text-lg font-medium mb-2">แสดงงานที่มีผลการจับคู่สูงสุด 5 อันดับ</h3>
-                <p className="text-sm text-gray-500 mb-4">คุณสามารถเปลี่ยนอันดับลำดับความสำคัญของผลการจับคู่ได้ด้วย</p>
-              </div>
-              
-              <JobMatchDetails 
-                matches={matchResults} 
-                rankLimit={5} 
-                allowRanking={true} 
-                onRankChange={handleRankChange}
-                showSkills={true}
-              />
-              
-              <div className="flex justify-center mt-6">
-                <Button 
-                  onClick={handleConfirmMatch}
-                  disabled={submitting || matchResults.length === 0 || hasExistingMatches}
-                  className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white font-medium px-6"
-                >
-                  <Check size={20} className="mr-2" />
-                  {hasExistingMatches 
-                    ? "ได้ยืนยันการจับคู่แล้ว" 
-                    : submitting 
-                      ? "กำลังบันทึกข้อมูล..." 
-                      : "ยืนยันการจับคู่"
-                  }
-                </Button>
-              </div>
-              
-              {hasExistingMatches && (
-                <p className="text-center mt-4 text-sm text-amber-600">
-                  คุณได้ยืนยันการจับคู่ไปแล้ว ดูผลการจับคู่ได้ที่หน้า Status Matching
-                </p>
+              {noWorkersFound || matchResults.length === 0 ? (
+                <div className="text-center py-6 mb-6">
+                  <div className="flex items-center justify-center mb-4">
+                    <AlertTriangle className="h-12 w-12 text-amber-500 mr-2" />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2">ไม่พบผู้สมัครที่เหมาะสมกับงานนี้</h3>
+                  <p className="text-gray-600 mb-6">
+                    ขณะนี้ยังไม่มีผู้สมัครงานที่ตรงกับตำแหน่งงานนี้ 
+                    คุณสามารถลองจับคู่ในภายหลัง หรือยืนยันการบันทึกงานเพื่อรอผู้สมัครงานในอนาคต
+                  </p>
+                  <Button 
+                    onClick={handleNoWorkerConfirm}
+                    disabled={submitting || hasExistingMatches}
+                    className="bg-amber-500 hover:bg-amber-600 text-white font-medium px-6"
+                  >
+                    {submitting ? "กำลังบันทึกข้อมูล..." : "บันทึกงานและรอผู้สมัคร"}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <h3 className="text-lg font-medium mb-2">แสดงงานที่มีผลการจับคู่สูงสุด 5 อันดับ</h3>
+                    <p className="text-sm text-gray-500 mb-4">คุณสามารถเปลี่ยนอันดับลำดับความสำคัญของผลการจับคู่ได้ด้วย</p>
+                  </div>
+                  
+                  <JobMatchDetails 
+                    matches={matchResults} 
+                    rankLimit={5} 
+                    allowRanking={true} 
+                    onRankChange={handleRankChange}
+                    showSkills={true}
+                  />
+                  
+                  <div className="flex justify-center mt-6">
+                    <Button 
+                      onClick={handleConfirmMatch}
+                      disabled={submitting || matchResults.length === 0 || hasExistingMatches}
+                      className="bg-fastlabor-600 hover:bg-fastlabor-700 text-white font-medium px-6"
+                    >
+                      <Check size={20} className="mr-2" />
+                      {hasExistingMatches 
+                        ? "ได้ยืนยันการจับคู่แล้ว" 
+                        : submitting 
+                          ? "กำลังบันทึกข้อมูล..." 
+                          : "ยืนยันการจับคู่"
+                      }
+                    </Button>
+                  </div>
+                  
+                  {hasExistingMatches && (
+                    <p className="text-center mt-4 text-sm text-amber-600">
+                      คุณได้ยืนยันการจับคู่ไปแล้ว ดูผลการจับคู่ได้ที่หน้า Status Matching
+                    </p>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

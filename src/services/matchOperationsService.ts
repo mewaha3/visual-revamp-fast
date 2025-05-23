@@ -198,3 +198,44 @@ export const createJobMatch = async (matchData: Partial<MatchResult>): Promise<s
     throw error;
   }
 };
+
+// Function to create a simple match when no candidates are found
+export const createSimpleMatch = async (jobId: string, jobData: any): Promise<string> => {
+  try {
+    // Create a simple match with default values
+    const matchData = {
+      job_id: jobId,
+      findjob_id: "auto-generated",
+      first_name: "ยังไม่มีผู้สมัคร",
+      last_name: "",
+      gender: "ไม่ระบุ",
+      email: "",
+      job_type: jobData.job_type || "ไม่ระบุ",
+      job_date: jobData.job_date || "ไม่ระบุ",
+      start_time: jobData.start_time || "00:00",
+      end_time: jobData.end_time || "00:00",
+      job_address: jobData.job_address || "ไม่ระบุ",
+      province: jobData.province || "ไม่ระบุ",
+      district: jobData.district || "ไม่ระบุ",
+      subdistrict: jobData.subdistrict || "ไม่ระบุ",
+      zip_code: jobData.zip_code || "ไม่ระบุ",
+      job_salary: jobData.salary || 0,
+      priority: 1,
+      status: "no_candidates",
+      workerId: "",
+      skills: "ไม่มีข้อมูล"
+    };
+    
+    const result = await addDoc(collection(db, "match_results"), {
+      ...matchData,
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp()
+    });
+    
+    console.log("Created simple match with ID:", result.id);
+    return result.id;
+  } catch (error) {
+    console.error("Error creating simple match:", error);
+    throw error;
+  }
+};

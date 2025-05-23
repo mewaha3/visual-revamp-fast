@@ -8,7 +8,7 @@ export interface MatchResultSubmission {
   job_id: string;
   findjob_id: string;
   priority: number;
-  status: 'on_queue' | 'accepted' | 'declined';
+  status: 'on_queue' | 'accepted' | 'declined' | 'no_candidates';
   // Job details fields
   job_type: string;
   job_date: string;
@@ -133,7 +133,7 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
 // Update match result status
 export async function updateMatchResultStatus(
   matchId: string, 
-  status: 'accepted' | 'declined' | 'on_queue'
+  status: 'accepted' | 'declined' | 'on_queue' | 'no_candidates'
 ): Promise<boolean> {
   try {
     const docRef = doc(db, "match_results", matchId);
@@ -166,6 +166,43 @@ export async function getMatchResultsByJobId(jobId: string) {
     return matches;
   } catch (error) {
     console.error("Error getting match results:", error);
+    throw error;
+  }
+}
+
+// Function to create a simple match when no candidates are found
+export async function createSimpleMatch(jobId: string, jobData: any): Promise<string> {
+  try {
+    // Create a simple match with default values
+    const matchData = {
+      job_id: jobId,
+      findjob_id: "auto-generated",
+      first_name: "ยังไม่มีผู้สมัคร",
+      last_name: "",
+      gender: "ไม่ระบุ",
+      email: "",
+      job_type: jobData.job_type || "ไม่ระบุ",
+      job_date: jobData.job_date || "ไม่ระบุ",
+      start_time: jobData.start_time || "00:00",
+      end_time: jobData.end_time || "00:00",
+      job_address: jobData.job_address || "ไม่ระบุ",
+      province: jobData.province || "ไม่ระบุ",
+      district: jobData.district || "ไม่ระบุ",
+      subdistrict: jobData.subdistrict || "ไม่ระบุ",
+      zip_code: jobData.zip_code || "ไม่ระบุ",
+      job_salary: jobData.salary || 0,
+      priority: 1,
+      status: "no_candidates",
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp()
+    };
+    
+    // Add the document to Firestore
+    const docRef = await addDoc(collection(db, "match_results"), matchData);
+    console.log("Simple match created successfully with ID:", docRef.id);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating simple match:", error);
     throw error;
   }
 }
