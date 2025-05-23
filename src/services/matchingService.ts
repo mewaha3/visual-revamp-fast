@@ -8,7 +8,7 @@ export interface MatchResultSubmission {
   job_id: string;
   findjob_id: string;
   priority: number;
-  status: 'on_queue' | 'accepted' | 'declined';
+  status: 'on_queue' | 'accepted' | 'declined' | 'no_candidates';
   // Job details fields
   job_type: string;
   job_date: string;
@@ -37,17 +37,19 @@ export interface MatchResultSubmission {
   gender_find_jobs?: string;
   // Additional fields
   skills?: string;
+  embedding_model?: string;
 }
 
 // Add a match result to Firestore
 export async function addMatchResult(matchData: MatchResultSubmission): Promise<string> {
   try {
-    // Add timestamp and set default status if not provided
+    // Add timestamp, set default status if not provided, and add embedding model info
     const dataWithMetadata = {
       ...matchData,
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
       status: matchData.status || 'on_queue',
+      embedding_model: 'airesearch/wangchanberta-base-att-spm-uncased'
     };
 
     // First, try to get the post job to include employer info
@@ -133,7 +135,7 @@ export async function addMatchResult(matchData: MatchResultSubmission): Promise<
 // Update match result status
 export async function updateMatchResultStatus(
   matchId: string, 
-  status: 'accepted' | 'declined' | 'on_queue'
+  status: 'accepted' | 'declined' | 'on_queue' | 'no_candidates'
 ): Promise<boolean> {
   try {
     const docRef = doc(db, "match_results", matchId);
@@ -146,6 +148,68 @@ export async function updateMatchResultStatus(
   } catch (error) {
     console.error(`Error updating match status to ${status}:`, error);
     return false;
+  }
+}
+
+// Create a simple match record when no matches are found
+export async function createSimpleMatch(jobData: {
+  job_id: string, 
+  job_type: string,
+  job_date: string,
+  start_time: string,
+  end_time: string,
+  job_address: string,
+  province: string,
+  district: string,
+  subdistrict: string,
+  zip_code: string,
+  job_salary: number,
+  user_id?: string
+}): Promise<string> {
+  try {
+    // Create a placeholder match result with status no_candidates
+    const matchData: MatchResultSubmission = {
+      job_id: jobData.job_id,
+      findjob_id: 'no_candidates',
+      priority: 1,
+      status: 'no_candidates',
+      job_type: jobData.job_type,
+      job_date: jobData.job_date,
+      start_time: jobData.start_time,
+      end_time: jobData.end_time,
+      job_address: jobData.job_address,
+      province: jobData.province,
+      district: jobData.district,
+      subdistrict: jobData.subdistrict,
+      zip_code: jobData.zip_code,
+      job_salary: jobData.job_salary,
+      first_name: '',
+      last_name: '',
+      gender: '',
+      email: ''
+    };
+    
+    // If user_id is provided, try to get employer info
+    if (jobData.user_id) {
+      try {
+        const employerRef = doc(db, "users", jobData.user_id);
+        const employerSnap = await getDoc(employerRef);
+        
+        if (employerSnap.exists()) {
+          const employerData = employerSnap.data();
+          matchData.first_name_post_jobs = employerData.first_name;
+          matchData.last_name_post_jobs = employerData.last_name;
+          matchData.gender_post_jobs = employerData.gender;
+        }
+      } catch (error) {
+        console.error("Error getting employer data:", error);
+      }
+    }
+    
+    return await addMatchResult(matchData);
+  } catch (error) {
+    console.error("Error creating simple match:", error);
+    throw error;
   }
 }
 

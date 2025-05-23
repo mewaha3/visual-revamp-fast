@@ -13,8 +13,9 @@ import { PostJob, MatchResult } from '@/types/types';
 import JobMatchDetails from '@/components/jobs/JobMatchDetails';
 import { db } from '@/lib/firebase';
 import { collection, query, getDocs, where } from 'firebase/firestore';
-import { saveMatchResults, getMatchResultsByJobId } from '@/services/matchingService';
+import { saveMatchResults, getMatchResultsByJobId, createSimpleMatch } from '@/services/matchingService';
 import { calculateTextSimilarity, calculateSimpleStringSimilarity } from '@/utils/embeddingUtils';
+import { calculateOverallMatchScore } from '@/utils/matchingUtils';
 
 const AIMatchingDetailPage: React.FC = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -28,6 +29,7 @@ const AIMatchingDetailPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [hasExistingMatches, setHasExistingMatches] = useState(false);
   const [useEmbeddings, setUseEmbeddings] = useState(true);
+  const [modelInfo, setModelInfo] = useState("WangchanBERTa (ไทย)");
 
   const fetchJobAndMatches = async (forceRefresh = false) => {
     if (!jobId) return;
@@ -72,79 +74,41 @@ const AIMatchingDetailPage: React.FC = () => {
         
         matchPromises.push(
           (async () => {
-            // Calculate match score based on multiple factors
-            let matchScore = 0;
-            
-            // Job type match (high weight: 0.3)
-            if (findJobData.job_type === jobData.job_type) {
-              matchScore += 0.3;
-            }
-            
-            // Location match (medium weight: 0.2)
-            if (findJobData.province === jobData.province) {
-              matchScore += 0.1;
-              
-              if (findJobData.district === jobData.district) {
-                matchScore += 0.05;
-                
-                if (findJobData.subdistrict === jobData.subdistrict) {
-                  matchScore += 0.05;
-                }
-              }
-            }
-            
-            // Time preference match (medium weight: 0.1)
-            const jobStartTime = jobData.start_time ? parseInt(jobData.start_time.replace(':', '')) : 0;
-            const jobEndTime = jobData.end_time ? parseInt(jobData.end_time.replace(':', '')) : 0;
-            const findJobStartTime = findJobData.start_time ? parseInt(findJobData.start_time.replace(':', '')) : 0;
-            const findJobEndTime = findJobData.end_time ? parseInt(findJobData.end_time.replace(':', '')) : 0;
-            
-            // If time ranges overlap
-            if (findJobStartTime <= jobEndTime && findJobEndTime >= jobStartTime) {
-              matchScore += 0.1;
-            }
-
-            // NEW: Job description and skills similarity using embeddings (high weight: 0.3)
-            try {
-              let descriptionSimilarity = 0;
-              const jobDescription = jobData.detail || '';
-              const workerSkills = findJobData.skills || '';
-              
-              if (useEmbeddings) {
-                // Try using embeddings first
-                descriptionSimilarity = await calculateTextSimilarity(
-                  jobDescription,
-                  workerSkills
-                );
-              } else {
-                // Fall back to simple string matching
-                descriptionSimilarity = calculateSimpleStringSimilarity(
-                  jobDescription,
-                  workerSkills
-                );
-              }
-              
-              console.log(`Similarity score for worker ${findJobData.first_name}: ${descriptionSimilarity}`);
-              
-              // Add the weighted similarity score (0.3 max)
-              matchScore += descriptionSimilarity * 0.3;
-            } catch (error) {
-              console.error("Error calculating text similarity:", error);
-              // Fall back to simple string similarity
-              const simpleSimilarity = calculateSimpleStringSimilarity(
-                jobData.detail || '',
-                findJobData.skills || ''
-              );
-              matchScore += simpleSimilarity * 0.15; // Half weight for fallback method
-            }
+            // Use new overall match scoring function
+            const matchScore = await calculateOverallMatchScore(
+              {
+                job_type: jobData.job_type,
+                province: jobData.province,
+                district: jobData.district,
+                subdistrict: jobData.subdistrict,
+                start_time: jobData.start_time,
+                end_time: jobData.end_time,
+                job_date: jobData.job_date,
+                salary: jobData.salary,
+                detail: jobData.job_detail || jobData.detail
+              },
+              {
+                job_type: findJobData.job_type,
+                province: findJobData.province,
+                district: findJobData.district,
+                subdistrict: findJobData.subdistrict,
+                start_time: findJobData.start_time,
+                end_time: findJobData.end_time,
+                job_date: findJobData.job_date || findJobData.start_date,
+                expected_salary: findJobData.expected_salary || findJobData.start_salary,
+                skills: findJobData.skills
+              },
+              useEmbeddings
+            );
 
             // Add a slight random factor for refresh variance (small weight)
+            let finalScore = matchScore;
             if (forceRefresh) {
-              matchScore += (Math.random() * 0.1) - 0.05; // -0.05 to +0.05 variance
+              finalScore += (Math.random() * 0.1) - 0.05; // -0.05 to +0.05 variance
+              finalScore = Math.min(Math.max(finalScore, 0), 1); // Keep in 0-1 range
             }
             
-            // Ensure score is within 0-1 range
-            matchScore = Math.min(Math.max(matchScore, 0), 1);
+            console.log(`Match score for ${findJobData.first_name}: ${finalScore.toFixed(3)} (using WangchanBERTa)`);
             
             // Create the match object
             return {
@@ -164,7 +128,7 @@ const AIMatchingDetailPage: React.FC = () => {
               location: `${findJobData.province || ""}/${findJobData.district || ""}/${findJobData.subdistrict || ""}`,
               salary: findJobData.expected_salary || findJobData.start_salary || 0,
               email: findJobData.email || "",
-              aiScore: matchScore,
+              aiScore: finalScore,
               workerId: findJobData.user_id,
               user_id: findJobData.user_id,
               province: findJobData.province,
@@ -183,14 +147,41 @@ const AIMatchingDetailPage: React.FC = () => {
         // Sort by AI score descending
         matches.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
         
-        // Take only top 5 matches
-        matches = matches.slice(0, 5);
-        
-        // Assign initial priority values based on AI score order
-        matches = matches.map((match, index) => ({
-          ...match,
-          priority: index + 1
-        }));
+        if (matches.length === 0) {
+          // No candidates found
+          setModelInfo("ไม่พบผู้สมัครที่เหมาะสม");
+          
+          if (!hasExistingMatches && jobData && forceRefresh) {
+            // Create a placeholder match record with status no_candidates
+            await createSimpleMatch({
+              job_id: jobId,
+              job_type: jobData.job_type,
+              job_date: jobData.job_date,
+              start_time: jobData.start_time,
+              end_time: jobData.end_time,
+              job_address: jobData.job_address,
+              province: jobData.province,
+              district: jobData.district,
+              subdistrict: jobData.subdistrict,
+              zip_code: jobData.zip_code,
+              job_salary: jobData.salary,
+              user_id: userId
+            });
+            
+            toast.info("ไม่พบผู้สมัครที่เหมาะสม บันทึกสถานะแล้ว");
+            navigate(`/status/${jobId}`);
+            return;
+          }
+        } else {
+          // Take only top 5 matches
+          matches = matches.slice(0, 5);
+          
+          // Assign initial priority values based on AI score order
+          matches = matches.map((match, index) => ({
+            ...match,
+            priority: index + 1
+          }));
+        }
         
         setMatchResults(matches);
         
@@ -202,7 +193,8 @@ const AIMatchingDetailPage: React.FC = () => {
         // If embedding fails, try with simple string matching
         if (useEmbeddings) {
           setUseEmbeddings(false);
-          toast.error("ไม่สามารถใช้ AI Embedding ได้ กำลังใช้การเปรียบเทียบแบบพื้นฐานแทน");
+          setModelInfo("ใช้การเปรียบเทียบแบบพื้นฐาน");
+          toast.error("ไม่สามารถใช้ WangchanBERTa ได้ กำลังใช้การเปรียบเทียบแบบพื้นฐานแทน");
           fetchJobAndMatches(forceRefresh);
         } else {
           throw error;
@@ -222,6 +214,8 @@ const AIMatchingDetailPage: React.FC = () => {
   }, [jobId, userId]);
 
   const handleRefresh = () => {
+    setUseEmbeddings(true);  // Reset to try embeddings again
+    setModelInfo("WangchanBERTa (ไทย)");
     fetchJobAndMatches(true);
   };
 
@@ -283,7 +277,8 @@ const AIMatchingDetailPage: React.FC = () => {
           gender: match.gender || '',
           email: match.email || '',
           workerId: match.workerId || '',
-          skills: match.skills || ''
+          skills: match.skills || '',
+          embedding_model: 'airesearch/wangchanberta-base-att-spm-uncased'
         });
       }
       
@@ -362,6 +357,9 @@ const AIMatchingDetailPage: React.FC = () => {
                   {refreshing ? "กำลังจับคู่ใหม่..." : "จับคู่ใหม่"}
                 </Button>
               </div>
+              <div className="mt-2 text-sm text-gray-500">
+                ใช้โมเดล: {modelInfo}
+              </div>
             </CardHeader>
             <CardContent>
               <h2 className="text-xl font-semibold mb-4">Job ID: {jobId}</h2>
@@ -382,9 +380,9 @@ const AIMatchingDetailPage: React.FC = () => {
                       <p><span className="font-medium">ค่าตอบแทน:</span> {job.salary} บาท</p>
                     </div>
                   </div>
-                  {job.detail && (
+                  {(job.detail || job.job_detail) && (
                     <div className="mt-2">
-                      <p><span className="font-medium">รายละเอียดงาน:</span> {job.detail}</p>
+                      <p><span className="font-medium">รายละเอียดงาน:</span> {job.detail || job.job_detail}</p>
                     </div>
                   )}
                 </div>
@@ -395,13 +393,20 @@ const AIMatchingDetailPage: React.FC = () => {
                 <p className="text-sm text-gray-500 mb-4">คุณสามารถเปลี่ยนอันดับลำดับความสำคัญของผลการจับคู่ได้ด้วย</p>
               </div>
               
-              <JobMatchDetails 
-                matches={matchResults} 
-                rankLimit={5} 
-                allowRanking={true} 
-                onRankChange={handleRankChange}
-                showSkills={true}
-              />
+              {matchResults.length > 0 ? (
+                <JobMatchDetails 
+                  matches={matchResults} 
+                  rankLimit={5} 
+                  allowRanking={true} 
+                  onRankChange={handleRankChange}
+                  showSkills={true}
+                />
+              ) : (
+                <div className="text-center p-6 bg-gray-50 rounded-lg">
+                  <p className="text-lg text-gray-600">ไม่พบผู้สมัครที่เหมาะสมในระบบ</p>
+                  <p className="text-sm text-gray-500 mt-2">ลองปรับรายละเอียดงานหรือกดปุ่มจับคู่ใหม่</p>
+                </div>
+              )}
               
               <div className="flex justify-center mt-6">
                 <Button 
@@ -414,7 +419,9 @@ const AIMatchingDetailPage: React.FC = () => {
                     ? "ได้ยืนยันการจับคู่แล้ว" 
                     : submitting 
                       ? "กำลังบันทึกข้อมูล..." 
-                      : "ยืนยันการจับคู่"
+                      : matchResults.length === 0 
+                        ? "ไม่พบผู้สมัครที่เหมาะสม"
+                        : "ยืนยันการจับคู่"
                   }
                 </Button>
               </div>

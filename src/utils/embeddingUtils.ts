@@ -8,16 +8,27 @@ let embeddingModel: any = null;
 export const getEmbeddingModel = async () => {
   if (!embeddingModel) {
     try {
-      console.log("Loading text embedding model...");
-      // Use a smaller model that's similar to all-mpnet-base-v2 but works in browser
+      console.log("Loading WangchanBERTa embedding model...");
+      // Use WangchanBERTa model for Thai language
       embeddingModel = await pipeline(
         "feature-extraction",
-        "mixedbread-ai/mxbai-embed-xsmall-v1"
+        "airesearch/wangchanberta-base-att-spm-uncased"
       );
-      console.log("Text embedding model loaded successfully");
+      console.log("WangchanBERTa embedding model loaded successfully");
     } catch (error) {
-      console.error("Failed to load embedding model:", error);
-      throw error;
+      console.error("Failed to load WangchanBERTa embedding model:", error);
+      // Fallback to a smaller model if WangchanBERTa fails to load
+      try {
+        console.log("Attempting to load fallback model...");
+        embeddingModel = await pipeline(
+          "feature-extraction",
+          "mixedbread-ai/mxbai-embed-xsmall-v1"
+        );
+        console.log("Fallback model loaded successfully");
+      } catch (fallbackError) {
+        console.error("Failed to load fallback model:", fallbackError);
+        throw error;
+      }
     }
   }
   return embeddingModel;

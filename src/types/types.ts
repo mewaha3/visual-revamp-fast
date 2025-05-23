@@ -164,13 +164,14 @@ export interface MatchResultFirestore {
   subdistrict: string;
   zip_code: string;
   priority: number;
-  status: "on_queue" | "accepted" | "declined" | "paid" | "completed";
+  status: "on_queue" | "accepted" | "declined" | "paid" | "completed" | "no_candidates";
   findjob_id: string;
   job_id: string;
   job_salary: number;
   created_at?: any;
   updated_at?: any;
   skills?: string;
+  embedding_model?: string;
 }
 
 export interface MatchResult {
@@ -214,6 +215,7 @@ export interface MatchResult {
   last_name_find_jobs?: string;
   gender_find_jobs?: string;
   skills?: string; // Add skills field
+  embedding_model?: string; // Add field for tracking which model was used
 }
 
 export interface StatusResult {
@@ -235,4 +237,5 @@ export interface StatusResult {
   first_name?: string;
   last_name?: string;
   skills?: string; // Add skills field
+  embedding_model?: string; // Add field for tracking which model was used
 }
